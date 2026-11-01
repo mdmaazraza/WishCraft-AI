@@ -149,9 +149,37 @@ class AmbientParticles {
       const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
       return colors[Math.floor(Math.random() * colors.length)];
     }
+    if (this.effectType === 'calm_stars' || this.effectType === 'calm_droplets' || this.effectType === 'apology') {
+      const colors = ['#818cf8', '#a5b4fc', '#93c5fd', '#c7d2fe', '#e0e7ff'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+    if (this.effectType === 'petals' || this.effectType === 'gratitude') {
+      const colors = ['#fda4af', '#fbcfe8', '#f472b6', '#fed7aa', '#fecdd3'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
     // stars / luxury
     const colors = ['#fbbf24', '#f59e0b', '#fde047', '#e0e7ff', '#c084fc'];
     return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  drawCalmDroplet(x, y, size, color, opacity) {
+    this.ctx.save();
+    this.ctx.globalAlpha = opacity * 0.7;
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size * 0.45, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  drawPetal(x, y, size, color, opacity) {
+    this.ctx.save();
+    this.ctx.globalAlpha = opacity * 0.8;
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.ellipse(x, y, size * 0.35, size * 0.65, Math.PI / 4, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
   }
 
   drawHeart(x, y, size, color, opacity) {
@@ -213,6 +241,10 @@ class AmbientParticles {
         this.drawHeart(p.x, p.y, p.size, p.color, p.opacity);
       } else if (this.effectType === 'balloons' || this.effectType === 'birthday') {
         this.drawBalloon(p.x, p.y, p.size, p.color, p.opacity);
+      } else if (this.effectType === 'petals' || this.effectType === 'gratitude') {
+        this.drawPetal(p.x, p.y, p.size, p.color, p.opacity);
+      } else if (this.effectType === 'calm_droplets' || this.effectType === 'apology') {
+        this.drawCalmDroplet(p.x, p.y, p.size, p.color, p.opacity);
       } else {
         this.drawStar(p.x, p.y, p.size * 0.6, p.color, p.opacity);
       }

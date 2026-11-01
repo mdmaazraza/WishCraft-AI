@@ -80,6 +80,8 @@ const {
   handleDeleteScheduledWish,
   handleTriggerCron
 } = require('./api/scheduled');
+const { correctTextWithAI } = require('./data/text_cleaner');
+const { OCCASIONS } = require('./data/occasions');
 const { startSchedulerLoop } = require('./scheduler/engine');
 
 // MIME types dictionary
@@ -241,6 +243,18 @@ async function requestHandler(req, res) {
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       const result = await handleGenerateMessage(body, clientIp);
       return sendJSON(res, 200, result);
+    }
+
+    // Text Improvement & Polish (Spelling, Grammar & Personal Detail Clean up)
+    if (pathname === '/api/correct-text' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = await correctTextWithAI(body.text, body.context);
+      return sendJSON(res, 200, result);
+    }
+
+    // Occasions Registry
+    if (pathname === '/api/occasions' && method === 'GET') {
+      return sendJSON(res, 200, { status: 'success', occasions: OCCASIONS });
     }
 
     // Wishes CRUD

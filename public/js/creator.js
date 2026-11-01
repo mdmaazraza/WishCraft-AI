@@ -27,6 +27,7 @@ const WishCreator = {
   aiVariations: [],
   selectedVariationIndex: 0,
   createdWish: null,
+  correctedMemory: null,
 
   init() {
     this.bindEvents();
@@ -173,12 +174,30 @@ const WishCreator = {
     const memoriesBlock = document.getElementById('previewMemoriesBlock');
     const memoriesText = document.getElementById('previewMemoriesText');
 
-    if (recEl) recEl.innerText = this.data.recipient_name || 'Friend';
-    if (senderEl) senderEl.innerText = `With love from ${this.data.sender_name || 'Someone special'}`;
-    if (badgeEl) badgeEl.innerText = `${this.data.occasion || 'Celebration'}`;
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
+    const recipient = this.data.recipient_name || 'Friend';
+    const sender = this.data.sender_name || 'Someone special';
+
+    if (recEl) {
+      recEl.innerText = recipient;
+    }
+    if (senderEl) {
+      const prefix = occMeta?.senderPrefix || 'With love from';
+      senderEl.innerText = `${prefix} ${sender}`;
+    }
+    if (badgeEl) {
+      badgeEl.innerText = occMeta?.cardBadge || `${this.data.occasion || 'Celebration'}`;
+      if (occMeta && !occMeta.isCelebration) {
+        badgeEl.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700/60';
+      } else {
+        badgeEl.className = 'text-xs px-2.5 py-0.5 rounded-full bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700';
+      }
+    }
 
     if (messageEl) {
-      messageEl.innerText = this.data.message || 'Select or write a greeting message above to preview it here...';
+      messageEl.innerText = this.data.message || (occMeta && !occMeta.isCelebration 
+        ? 'Select or write a thoughtful note above to preview it here...' 
+        : 'Select or write a greeting message above to preview it here...');
       messageEl.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
       messageEl.classList.add(this.getFontClass(this.data.font_family));
       messageEl.style.fontFamily = this.getFontStack(this.data.font_family);
@@ -198,6 +217,7 @@ const WishCreator = {
     const ageWrapper = document.getElementById('ageFieldWrapper');
     const annivWrapper = document.getElementById('annivFieldWrapper');
     const occ = this.data.occasion.toLowerCase();
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
 
     if (ageWrapper) {
       ageWrapper.style.display = occ.includes('birthday') ? 'block' : 'none';
@@ -206,10 +226,36 @@ const WishCreator = {
       annivWrapper.style.display = occ.includes('anniversary') ? 'block' : 'none';
     }
 
-    // Auto-suggest optimal theme based on occasion
-    if (occ.includes('birthday')) this.data.theme = 'birthday_celebration';
-    else if (occ.includes('anniversary') || occ.includes('valentine')) this.data.theme = 'romantic_theme';
-    else if (occ.includes('friend')) this.data.theme = 'friendship_theme';
+    // Auto-suggest optimal theme and audio track based on occasion
+    if (occ.includes('birthday')) {
+      this.data.theme = 'birthday_celebration';
+      this.data.music_track = 'birthday_celebration';
+    } else if (occ.includes('anniversary') || occ.includes('valentine')) {
+      this.data.theme = 'romantic_theme';
+      this.data.music_track = 'romantic_melody';
+    } else if (occ.includes('friend')) {
+      this.data.theme = 'friendship_theme';
+      this.data.music_track = 'celebration_tune';
+    } else if (occ.includes('sorry') || occ.includes('sympath') || occ.includes('thank')) {
+      this.data.theme = 'minimalist_theme';
+      this.data.music_track = 'peaceful_melody';
+    }
+
+    // Dynamic Step 1 Subhead
+    const step1Title = document.getElementById('step1Title');
+    const step1Sub = document.getElementById('step1Subtitle');
+    if (step1Title && occMeta) {
+      step1Title.innerText = occMeta.isCelebration 
+        ? `What are we celebrating? ${occMeta.emoji}` 
+        : `Sending a ${occMeta.name} Message ${occMeta.emoji}`;
+    }
+    if (step1Sub && occMeta) {
+      step1Sub.innerText = occMeta.isCelebration 
+        ? 'Select an occasion to tailor the celebration design, music, and AI prompts.' 
+        : 'Tailor the emotional tone, thoughtful design, and peaceful music.';
+    }
+
+    this.updateLivePreview();
   },
 
   goToStep(stepNumber) {
@@ -345,6 +391,125 @@ const WishCreator = {
     `).join('');
   },
 
+
+  // Smart Memory Polish & Grammar Checker
+  async polishMemoryGrammar() {
+    const memoriesInput = document.getElementById('memoriesInput');
+    const polishBtn = document.getElementById('polishMemoryBtn');
+    const correctionBox = document.getElementById('memoryCorrectionBox');
+    const origDisplay = document.getElementById('memoryOriginalDisplay');
+    const impDisplay = document.getElementById('memoryImprovedDisplay');
+
+    const raw = memoriesInput ? memoriesInput.value.trim() : '';
+    if (!raw) {
+      showToast('Please type some memories or notes first to polish.', 'info');
+      memoriesInput?.focus();
+      return;
+    }
+
+    if (polishBtn) {
+      polishBtn.disabled = true;
+      polishBtn.innerHTML = '<span>⏳ Polishing...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/correct-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: raw,
+          context: {
+            occasion: this.data.occasion,
+            relationship: this.data.relationship,
+            recipientName: this.data.recipient_name,
+            senderName: this.data.sender_name
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Could not polish text');
+
+      this.correctedMemory = data.improved;
+
+      if (data.improved.trim() === raw) {
+        showToast('✨ Your memory text is already clean and grammatically sound!', 'success');
+        if (correctionBox) correctionBox.style.display = 'none';
+      } else {
+        if (origDisplay) origDisplay.innerText = raw;
+        if (impDisplay) impDisplay.innerText = data.improved;
+        if (correctionBox) {
+          correctionBox.style.display = 'block';
+          correctionBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        showToast('✨ Polished grammar and spelling suggestions ready!', 'success');
+      }
+
+    } catch (err) {
+      console.warn('Text polish note:', err);
+      showToast('Could not polish text right now. Your original text is preserved.', 'info');
+    } finally {
+      if (polishBtn) {
+        polishBtn.disabled = false;
+        polishBtn.innerHTML = '<span>✨ Polish Grammar & Typos</span>';
+      }
+    }
+  },
+
+  applyCorrectedMemory() {
+    if (!this.correctedMemory) return;
+    const input = document.getElementById('memoriesInput');
+    if (input) {
+      input.value = this.correctedMemory;
+      this.data.memories = this.correctedMemory;
+      this.updateLivePreview();
+    }
+    this.dismissMemoryCorrection();
+    showToast('Applied polished text! ✓', 'success');
+  },
+
+  dismissMemoryCorrection() {
+    const box = document.getElementById('memoryCorrectionBox');
+    if (box) box.style.display = 'none';
+    this.correctedMemory = null;
+  },
+
+  async polishFinalMessage() {
+    const finalInput = document.getElementById('finalMessageInput');
+    if (!finalInput || !finalInput.value.trim()) {
+      showToast('Please enter or select a message to polish.', 'info');
+      return;
+    }
+
+    const raw = finalInput.value.trim();
+    showToast('Polishing message grammar...', 'info');
+
+    try {
+      const res = await fetch('/api/correct-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: raw,
+          context: {
+            occasion: this.data.occasion,
+            relationship: this.data.relationship,
+            recipientName: this.data.recipient_name
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (data && data.improved) {
+        finalInput.value = data.improved;
+        this.data.message = data.improved;
+        this.updateLivePreview();
+        showToast('Message text polished! ✓', 'success');
+      }
+    } catch (err) {
+      showToast('Could not polish message. Original text kept.', 'info');
+    }
+  },
+
   // AI Message Generation using backend Gemini integration
   async generateAIWishes() {
     this.saveStep3Inputs();
@@ -353,7 +518,20 @@ const WishCreator = {
     const resultsEl = document.getElementById('aiResultsContainer');
     const genBtn = document.getElementById('regenerateBtn');
 
-    if (loadingEl) loadingEl.style.display = 'block';
+    if (loadingEl) {
+      loadingEl.style.display = 'block';
+      const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
+      const loadingP = loadingEl.querySelector('p.font-semibold');
+      const loadingSub = loadingEl.querySelector('p.text-xs');
+      if (loadingP && occMeta) {
+        loadingP.innerText = occMeta.isCelebration 
+          ? 'Gemini AI is crafting 3 personalized greetings...' 
+          : `Crafting 3 heartfelt, sincere ${occMeta.name} messages...`;
+      }
+      if (loadingSub && occMeta) {
+        loadingSub.innerText = `Weaving your personal memories, ${this.data.relationship} bond, and desired tone.`;
+      }
+    }
     if (resultsEl) resultsEl.style.display = 'none';
     if (genBtn) genBtn.disabled = true;
 

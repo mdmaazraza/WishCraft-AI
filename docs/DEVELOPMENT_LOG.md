@@ -175,3 +175,55 @@
 - **Verification**:
   - Created and ran `tests/test_scheduler.js`: 13/13 automated tests passed.
   - Generated comprehensive research document `docs/SMS_VOICE_RESEARCH.md`.
+
+---
+
+### Issue 5: Occasion Emotion Intelligence, Text Grammar Polish & Form Contrast Audit
+
+#### 1. Root Cause Diagnosis
+1. **Form Input Readability & Browser Autofill Inconsistencies**:
+   - In Chromium browsers (Chrome/Edge on Windows), native inputs and `<select>` elements without an explicit `color-scheme: dark !important;` or browser autofill reset defaulted to `#ffffff` background with white or light text, causing invisible text and illegible dropdowns.
+   - Date and time picker icons lacked inverted contrast filters on dark slate backgrounds.
+2. **Occasion Emotion Mismatch (Tone Blindness)**:
+   - Occasions were previously treated as homogeneous celebrations (e.g., rendering "Let's celebrate your sorry" or celebratory cake animations on apologies).
+   - Apologies (`Sorry`), Condolences (`Condolence & Sympathy`), and Gratitude (`Thank You`) require distinct emotional gravity, respectful language, sincere letter layouts, and non-celebratory audio/visual ambient effects.
+3. **Messy User Notes Compromising AI Quality**:
+   - Users frequently type informal shorthand or unpunctuated notes (e.g., `"we was frnds from collage and you always suport me when i was sad"`). Without pre-cleaning, grammatical errors cascaded into AI-generated greetings.
+   - Critical requirement: Cleaning must strictly preserve all user facts, names, dates, inside jokes, and original sentiment without fabricating generic details.
+
+#### 2. Implementation Summary
+- **Master Dark Form Control System (`public/css/styles.css`)**:
+  - Enforced `color-scheme: dark !important;` globally.
+  - Set `#0f172a !important;` background and `#f8fafc !important;` text on all `input`, `select`, and `textarea` controls.
+  - Overrode browser `-webkit-autofill` with dark slate inset box-shadows.
+  - Custom SVG arrow indicator and dark dropdown option styling for native `<select>`.
+  - Date and time picker icon inversion filters for crisp contrast.
+- **Occasion Emotion Intelligence Engine (`data/occasions.js` & `public/js/occasions.js`)**:
+  - Defined comprehensive metadata for 12 occasions across 7 emotional categories (`celebration`, `romantic`, `apology`, `gratitude`, `achievement`, `nostalgia`, `sympathy`).
+  - Added strict negative constraints (`forbiddenKeywords`) blocking celebratory words (`celebrate`, `happy sorry`, `party`, `blast`) on apologies and condolences.
+  - Configured occasion-appropriate visual modules (`cake`, `envelope`, `sincere_letter`, `friendship_card`), ambient particle effects (`balloons`, `hearts`, `calm_droplets`, `petals`), and music tracks (`birthday_celebration`, `romantic_melody`, `peaceful_melody`).
+- **Text Improvement & Grammar Polish Engine (`data/text_cleaner.js` & `server.js`)**:
+  - Dual-mode cleaner: Gemini AI-assisted polish + robust rule-based dictionary fallback.
+  - Cleans typos (`frnds` -> `friends`, `collage` -> `college`, `suport` -> `supported`), corrects subject-verb agreement (`we was` -> `We were`), capitalizes sentences and standalone 'I', and ensures proper punctuation.
+  - Zero-hallucination constraint: strictly retains all user-entered facts and memories.
+  - Added `POST /api/correct-text` endpoint for client-side interactive suggestions.
+- **Studio Creation Experience (`public/create.html` & `public/js/creator.js`)**:
+  - Added interactive "✨ Polish Grammar & Typos" tool in Step 3 personal details with side-by-side "Original vs Improved" suggestion box and single-click "Apply Improved Version".
+  - Added "✨ Polish Text" tool in Step 6 final message editor.
+  - Dynamically updated occasion badges, guidance copy, and live previews via `OccasionManager.resolve()`.
+- **Greeting Webpage Overhaul (`public/wish.html` & `public/js/greeting.js`)**:
+  - Implemented `renderSincereLetterModule(occMeta)` for apologies, thank-you notes, and condolences.
+  - Dynamic page title and header badges adapting to emotional tone (e.g., "Heartfelt Apology 🕊️" instead of "Celebration").
+  - Connected `AmbientParticles` (`calm_droplets`, `petals`) and `SoundEffects` (`playPeacefulMelody()`).
+- **Gemini Prompt Engineering Overhaul (`api/gemini.js` & `api/generate-message.js`)**:
+  - Injected structured system instructions with strict negative constraints.
+  - Built comprehensive fallback templates across English, Hindi (`hi`), and Hinglish (`hinglish`).
+
+#### 3. Verification & Testing
+- Automated Emotion Intelligence Test Suite (`tests/test_emotions_and_polish.js`): 8/8 tests passed.
+- Full Regression Test Suite:
+  - `tests/test_api.js`: 15/15 passed.
+  - `tests/test_ai.js`: 4/4 passed.
+  - `tests/test_flow.js`: Passed end-to-end data tracing.
+  - `tests/test_scheduler.js`: 13/13 passed.
+

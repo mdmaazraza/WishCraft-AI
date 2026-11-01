@@ -389,6 +389,7 @@ const GreetingPage = {
 
   renderPage() {
     const wish = this.wish || {};
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(wish.occasion) : null;
     const occ = (wish.occasion || 'birthday').toLowerCase();
     const theme = (wish.theme || 'birthday_celebration').toLowerCase();
     const rel = (wish.relationship || 'friend').toLowerCase();
@@ -400,8 +401,12 @@ const GreetingPage = {
     const mainEl = document.getElementById('greetingMainContent');
     if (mainEl) mainEl.style.display = 'block';
 
-    // Set page title
-    document.title = `✨ For ${recipientName} — Happy ${wish.occasion || 'Celebration'}! | Wish Yours`;
+    // Set page title matching occasion emotion
+    if (occMeta && !occMeta.isCelebration) {
+      document.title = `✨ For ${recipientName} — ${occMeta.name} | Wish Yours`;
+    } else {
+      document.title = `✨ For ${recipientName} — Happy ${wish.occasion || 'Celebration'}! | Wish Yours`;
+    }
 
     // Check if user just published this wish (?created=1)
     const urlParams = new URLSearchParams(window.location.search);
@@ -409,25 +414,47 @@ const GreetingPage = {
       this.renderCreatedBanner(recipientName);
     }
 
-    // Populate recipient and sender details
+    // Populate recipient and sender details with occasion-aware prefixes
+    const prefixEl = document.getElementById('greetingPrefix');
     const recNameEl = document.getElementById('recipientHeaderName');
     const senderNameEl = document.getElementById('senderHeaderName');
     const badgeEl = document.getElementById('occasionHeaderBadge');
 
+    if (prefixEl) prefixEl.innerText = occMeta?.headlinePrefix || 'Dearest';
     if (recNameEl) recNameEl.innerText = recipientName;
-    if (senderNameEl) senderNameEl.innerText = `With love from ${senderName}`;
-    if (badgeEl) badgeEl.innerText = `${wish.occasion || 'Celebration'} Celebration`;
+    if (senderNameEl) senderNameEl.innerText = `${occMeta?.senderPrefix || 'With love from'} ${senderName}`;
+    if (badgeEl) {
+      badgeEl.innerText = occMeta?.cardBadge || `${wish.occasion || 'Celebration'}`;
+      if (occMeta && !occMeta.isCelebration) {
+        badgeEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-indigo-950 text-indigo-300 border border-indigo-700/60 mb-3 shadow';
+      } else {
+        badgeEl.className = 'inline-block px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700 border-opacity-30 mb-3 shadow';
+      }
+    }
 
     // Render occasion-specific hero module
     const heroModule = document.getElementById('occasionSpecificModule');
     if (heroModule) {
-      if (occ.includes('birthday')) {
+      if (occMeta?.greetingModule === 'cake' || occ.includes('birthday')) {
         heroModule.innerHTML = this.renderBirthdayCakeModule();
-      } else if (occ.includes('anniversary') || occ.includes('valentine') || theme.includes('romantic')) {
+      } else if (occMeta?.greetingModule === 'envelope' || occ.includes('anniversary') || occ.includes('valentine') || theme.includes('romantic')) {
         heroModule.innerHTML = this.renderWaxEnvelopeModule();
+      } else if (occMeta?.greetingModule === 'sincere_letter' || occ.includes('sorry') || occ.includes('sympath') || occ.includes('thank') || occ.includes('farewell')) {
+        heroModule.innerHTML = this.renderSincereLetterModule(occMeta);
       } else {
         heroModule.innerHTML = this.renderFriendshipHeroModule();
       }
+    }
+
+    // Update bottom re-share box copy to match occasion emotion
+    const reShareHead = document.getElementById('reShareHeading');
+    const reShareSub = document.getElementById('reShareSubheading');
+    const reShareCta = document.getElementById('reShareCtaBtn');
+
+    if (reShareHead && occMeta) reShareHead.innerText = occMeta.reShareTitle;
+    if (reShareSub && occMeta) reShareSub.innerText = occMeta.reShareSubtitle;
+    if (reShareCta && occMeta) {
+      reShareCta.innerText = occMeta.isCelebration ? 'Create Your Own Wish ✨' : 'Send a Heartfelt Note 🕊️';
     }
 
     const chosenFont = wish.font_family || 'Playfair Display';
@@ -463,6 +490,32 @@ const GreetingPage = {
 
     // Render Timeline / Badges
     this.renderMilestonesAndBadges();
+  },
+
+
+  // 3. Sincere Letter Module (For Apologies, Thank You, Condolences, Farewell)
+  renderSincereLetterModule(occMeta) {
+    const icon = occMeta?.icon || '🕊️';
+    const recipient = this.wish?.recipient_name || 'Friend';
+    const sender = this.wish?.sender_name || 'Someone special';
+    const isSorry = (this.wish?.occasion || '').toLowerCase().includes('sorry');
+
+    return `
+      <div class="max-w-xl mx-auto py-4">
+        <div class="glass-card rounded-3xl p-6 sm:p-8 text-center border border-indigo-500/30 bg-gradient-to-b from-slate-900/90 to-indigo-950/60 shadow-2xl relative overflow-hidden">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-3xl mb-3 shadow">
+            ${icon}
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white mb-1">
+            ${occMeta?.headlinePrefix || 'A Sincere Message For'} <span class="text-indigo-300">${recipient}</span>
+          </h2>
+          <p class="text-xs text-gray-300 italic mb-4">${occMeta?.senderPrefix || 'Sincerely from'} ${sender}</p>
+          <div class="inline-block px-3.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-gray-300 text-xs font-medium">
+            ${isSorry ? 'A sincere, heartfelt message straight from the heart.' : 'A personal note written especially for you.'}
+          </div>
+        </div>
+      </div>
+    `;
   },
 
   // 1. Birthday Cake with Interactive Candles
@@ -713,8 +766,9 @@ const GreetingPage = {
 
   // Setup Floating Music Bar
   setupAudioPlayer() {
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.wish?.occasion) : null;
     const occ = (this.wish?.occasion || '').toLowerCase();
-    const track = this.wish?.music_track || (occ.includes('birthday') ? 'birthday_celebration' : 'romantic_melody');
+    const track = this.wish?.music_track || occMeta?.musicTrack || (occ.includes('birthday') ? 'birthday_celebration' : 'peaceful_melody');
     const audioBtn = document.getElementById('floatingAudioToggle');
     const audioIcon = document.getElementById('audioPlayIcon');
     const musicBars = document.getElementById('musicVisualizerBars');
@@ -745,11 +799,10 @@ const GreetingPage = {
   },
 
   initAmbientEffects() {
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.wish?.occasion) : null;
     const occ = (this.wish?.occasion || '').toLowerCase();
     const theme = (this.wish?.theme || '').toLowerCase();
-    let effect = 'hearts';
-    if (occ.includes('birthday')) effect = 'balloons';
-    else if (occ.includes('friend') || theme.includes('luxury')) effect = 'stars';
+    let effect = occMeta?.ambientEffect || 'hearts';
 
     if (typeof AmbientParticles === 'function' && document.getElementById('ambientCanvas')) {
       try {

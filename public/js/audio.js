@@ -125,6 +125,33 @@ class WishCraftAudio {
     }, 9500);
   }
 
+  // Synthesize Peaceful / Reflective Ambient Chimes (for Apologies, Thank You, Sympathy, Farewell)
+  playPeacefulMelody() {
+    this.initContext();
+    this.isPlaying = true;
+    const now = this.ctx.currentTime;
+
+    // Gentle, calming ambient progression (C - G - Am - F)
+    const chords = [
+      [261.63, 329.63, 392.00, 523.25], // C
+      [196.00, 246.94, 293.66, 392.00], // G
+      [220.00, 261.63, 329.63, 440.00], // Am
+      [174.61, 220.00, 261.63, 349.23]  // F
+    ];
+
+    let offset = 0;
+    chords.forEach((chord) => {
+      chord.forEach((freq, i) => {
+        this.playTone(freq, now + offset + (i * 0.6), 2.2, 'sine', 0.12);
+      });
+      offset += 2.8;
+    });
+
+    this.loopTimer = setTimeout(() => {
+      if (this.isPlaying) this.playPeacefulMelody();
+    }, 11500);
+  }
+
   // Synthesize Upbeat Celebration Fanfare
   playCelebrationTune() {
     this.initContext();
@@ -199,7 +226,9 @@ class WishCraftAudio {
   play(track = 'birthday_celebration') {
     this.pause();
     this.currentTrack = track;
-    if (track.includes('romantic')) {
+    if (track.includes('peaceful') || track.includes('sorry') || track.includes('calm') || track.includes('sympath') || track.includes('thank')) {
+      this.playPeacefulMelody();
+    } else if (track.includes('romantic')) {
       this.playRomanticMelody();
     } else if (track.includes('friendship') || track.includes('celebration')) {
       this.playCelebrationTune();

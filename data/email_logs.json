@@ -1,5 +1,27 @@
 [
   {
+    "id": "elog_10b76ea0f04f",
+    "wish_id": "w_02caedb530c55511",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793518976556",
+    "error_message": null,
+    "created_at": "2026-11-01T07:42:56.557Z"
+  },
+  {
+    "id": "elog_5dc8b0aeb318",
+    "wish_id": "w_798c7b9decf1f993",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793518961683",
+    "error_message": null,
+    "created_at": "2026-11-01T07:42:41.697Z"
+  },
+  {
     "id": "elog_cb11c85400b6",
     "wish_id": "w_318f3ad74b35f8f9",
     "recipient_email": "emily.test@example.com",

@@ -191,3 +191,43 @@ WishCraft-AI/
      - Allows free cron providers (such as [cron-job.org](https://cron-job.org) or GitHub Actions scheduled workflows) to ping `/api/cron/process-scheduled` every 5-10 minutes.
      - Pinging this endpoint wakes the Render free service and triggers immediate batch processing of all due wishes with zero server cost!
 
+---
+
+## 7. Occasion Emotion Intelligence & Text Grammar Polish Engine
+
+### A. Occasion-Emotion Categorization
+The platform organizes all greeting experiences into emotional categories, each enforcing dedicated styling, tone guidance, forbidden vocabulary, audio tracks, and interactive modules:
+
+| Occasion | Category | Is Celebration? | Visual Module | Ambient Particles | Music Track | Tone Guidance |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Birthday** | `celebration` | Yes | Cake with Candles | Balloons | Birthday Celebration | Joyful milestone, excitement, health & happiness |
+| **Anniversary** | `romantic` | Yes | Wax Love Letter | Hearts | Romantic Melody | Devotion, shared journey, eternal commitment |
+| **Valentine's** | `romantic` | Yes | Wax Love Letter | Hearts | Romantic Melody | Passionate affection, intimate romance |
+| **Friendship** | `celebration` | Yes | Friendship Card | Confetti | Upbeat Melody | Loyalty, inside jokes, shared adventures |
+| **Congratulations** | `achievement` | Yes | Achievement Card | Stars | Triumphant Melody | Pride, cheering success, recognition |
+| **Thank You** | `gratitude` | No | Sincere Letter | Petals | Peaceful Melody | Profound appreciation, acknowledging kindness |
+| **Sorry** | `apology` | No | Sincere Letter | Calm Droplets | Peaceful Melody | Sincere remorse, accountability, rebuilding trust |
+| **Farewell** | `nostalgia` | No | Sincere Letter | Calm Stars | Peaceful Melody | Bittersweet memories, wishing best on next journey |
+| **Sympathy** | `sympathy` | No | Sincere Letter | Calm Droplets | Peaceful Melody | Comfort, quiet presence, gentle solace in grief |
+
+### B. Negative Constraint Guard & Prompt Engineering
+- Strict negative constraints (`forbiddenKeywords`) prevent inappropriate celebration terminology from ever surfacing on apologies or condolences (e.g. banning `"Let's celebrate your sorry"`, `"Happy Sorry"`, `"party"`, `"cake"`, or `"candles"`).
+- Relationship nuances adapt tone:
+  - **Sorry to Girlfriend**: Vulnerable, tender, emotionally intimate.
+  - **Sorry to Colleague**: Dignified, professional, focused on workplace accountability and moving forward smoothly.
+  - **Birthday to Best Friend**: Vibrant, playful, weaving inside jokes.
+  - **Birthday to Colleague**: Warm, respectful, cheering career success.
+
+### C. Text Grammar & Typo Polish Engine
+- **Engine**: Rule-based dictionary + Gemini AI-assisted grammar engine (`data/text_cleaner.js`).
+- **Core Principle**: Strictly cleans spelling errors, texting shorthands (`frnds` -> `friends`, `collage` -> `college`, `suport` -> `supported`), and broken syntax (`we was` -> `We were`), while **strictly preserving all user-entered facts, dates, names, locations, and personal memories**.
+- **Interactive Studio UI**:
+  - Step 3 (Personal Details) features a **"✨ Polish Grammar & Typos"** button.
+  - Displays a side-by-side **Original vs Improved** comparison box allowing the user to preview changes and click **"Apply Improved Version ✓"** or keep their original text.
+  - Step 6 (Final Message Editor) provides a **"✨ Polish Text"** tool for quick message refinement.
+- **Form Readability Polyfill**:
+  - Global `color-scheme: dark !important;` with `#0f172a` backgrounds and `#f8fafc` text.
+  - Browser `-webkit-autofill` dark overrides.
+  - Custom SVG arrow indicator and dark dropdown option styling for native `<select>`.
+  - Date and time picker icon inversion filters for crisp contrast.
+

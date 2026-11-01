@@ -77,55 +77,106 @@
       <!-- ============================================== -->
       <section id="stepSection1">
         <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 1 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">What are we celebrating? 🎉</h2>
-          <p class="text-gray-400 text-sm mt-1">Select an occasion to tailor the design, music, and AI prompts.</p>
+          <span class="text-xs font-bold uppercase tracking-wider text-pink-400" id="step1Indicator">Step 1 of 6</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1" id="step1Title">What is the occasion? ✨</h2>
+          <p class="text-gray-400 text-sm mt-1" id="step1Subtitle">Select an occasion to tailor the emotion, visual design, music, and AI guidance.</p>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
           <button type="button" data-occasion="Birthday" class="occasion-btn ring-4 ring-pink-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28">
             <span class="text-3xl">🎂</span>
-            <span class="font-bold text-sm text-white">Birthday</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Birthday</span>
+              <span class="text-[10px] text-pink-400">Celebration</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Wedding Anniversary" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">💍</span>
-            <span class="font-bold text-sm text-white">Anniversary</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Anniversary</span>
+              <span class="text-[10px] text-rose-400">Romantic</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Friendship Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">🌟</span>
-            <span class="font-bold text-sm text-white">Friendship Day</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Friendship Day</span>
+              <span class="text-[10px] text-yellow-400">Loyal & Fun</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Valentine's Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">🌹</span>
-            <span class="font-bold text-sm text-white">Valentine's Day</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Valentine's Day</span>
+              <span class="text-[10px] text-pink-400">Love Letter</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Congratulations" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">🥂</span>
-            <span class="font-bold text-sm text-white">Congratulations</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Congratulations</span>
+              <span class="text-[10px] text-emerald-400">Triumph</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Thank You" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">🙏</span>
-            <span class="font-bold text-sm text-white">Thank You</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Thank You</span>
+              <span class="text-[10px] text-indigo-400">Gratitude</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Sorry" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">🥺</span>
-            <span class="font-bold text-sm text-white">Sorry</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Sorry</span>
+              <span class="text-[10px] text-purple-400">Heartfelt Apology</span>
+            </div>
+          </button>
+
+          <button type="button" data-occasion="Farewell" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
+            <span class="text-3xl">✈️</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Farewell</span>
+              <span class="text-[10px] text-cyan-400">New Chapter</span>
+            </div>
+          </button>
+
+          <button type="button" data-occasion="Condolence & Sympathy" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
+            <span class="text-3xl">🕯️</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Sympathy</span>
+              <span class="text-[10px] text-gray-400">Comfort & Solace</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Good Morning" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">☀️</span>
-            <span class="font-bold text-sm text-white">Good Morning</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Good Morning</span>
+              <span class="text-[10px] text-amber-400">Positive Energy</span>
+            </div>
+          </button>
+
+          <button type="button" data-occasion="Good Night" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
+            <span class="text-3xl">🌙</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Good Night</span>
+              <span class="text-[10px] text-indigo-400">Sweet Dreams</span>
+            </div>
           </button>
 
           <button type="button" data-occasion="Custom Occasion" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
             <span class="text-3xl">✨</span>
-            <span class="font-bold text-sm text-white">Custom Occasion</span>
+            <div>
+              <span class="font-bold text-sm text-white block">Custom Occasion</span>
+              <span class="text-[10px] text-pink-400">Special Note</span>
+            </div>
           </button>
         </div>
 
@@ -258,10 +309,35 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Special Memories or Inside Jokes (Optional)</label>
-            <textarea id="memoriesInput" rows="3" placeholder="e.g. The crazy road trip to the coast when it rained, or how you always steal my fries..."
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-gray-300 uppercase">Special Memories or Personal Context (Optional)</label>
+              <button type="button" id="polishMemoryBtn" onclick="WishCreator.polishMemoryGrammar()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition px-2.5 py-1 bg-indigo-950/50 hover:bg-indigo-900/60 rounded-lg border border-indigo-700/50">
+                <span>✨ Polish Grammar & Typos</span>
+              </button>
+            </div>
+            <textarea id="memoriesInput" rows="3" placeholder="e.g. We were friends from college and you always supported me when I was sad..."
               class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none resize-none"></textarea>
-            <p class="text-xs text-gray-500 mt-1">Gemini AI will weave these memories seamlessly into the generated greeting.</p>
+            
+            <!-- Smart Grammar & Typo Polish Suggestion Box -->
+            <div id="memoryCorrectionBox" class="p-3 bg-slate-950 rounded-xl border border-indigo-500/40 mt-2 space-y-2 shadow-inner" style="display: none;">
+              <div class="flex items-center justify-between">
+                <span class="text-indigo-300 font-bold text-xs flex items-center gap-1.5">
+                  <span>✨</span> Suggested Polished Version
+                </span>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="WishCreator.dismissMemoryCorrection()" class="text-xs text-gray-400 hover:text-white px-2 py-0.5">Keep Original</button>
+                  <button type="button" onclick="WishCreator.applyCorrectedMemory()" class="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white rounded-lg font-bold text-xs shadow flex items-center gap-1">
+                    <span>Apply Improved Version</span> ✓
+                  </button>
+                </div>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="text-gray-400 text-[11px]"><strong class="text-gray-500 uppercase">Original:</strong> <span id="memoryOriginalDisplay" class="line-through text-gray-400"></span></div>
+                <div class="text-emerald-400 text-xs"><strong class="text-emerald-500 uppercase text-[11px]">Improved:</strong> <span id="memoryImprovedDisplay" class="text-gray-100 font-medium"></span></div>
+              </div>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-1">Mention real memories, nicknames, or inside jokes. Our AI will weave them in while strictly preserving all personal facts.</p>
           </div>
         </div>
 
@@ -481,7 +557,12 @@
                   </select>
                 </div>
               </div>
-              <button type="button" onclick="WishShare.copyLink(document.getElementById('finalMessageInput').value)" class="text-xs text-gray-400 hover:text-white">Copy Text</button>
+              <div class="flex items-center gap-3">
+                <button type="button" onclick="WishCreator.polishFinalMessage()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
+                  <span>✨ Polish Text</span>
+                </button>
+                <button type="button" onclick="WishShare.copyLink(document.getElementById('finalMessageInput').value)" class="text-xs text-gray-400 hover:text-white">Copy Text</button>
+              </div>
             </div>
             <textarea id="finalMessageInput" rows="4" 
               class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl p-4 text-white text-sm outline-none resize-none leading-relaxed"></textarea>
@@ -791,6 +872,7 @@
   <script src="/js/audio.js"></script>
   <script src="/js/share.js"></script>
   <script src="/js/app.js"></script>
+  <script src="/js/occasions.js"></script>
   <script src="/js/creator.js"></script>
 </body>
 </html>

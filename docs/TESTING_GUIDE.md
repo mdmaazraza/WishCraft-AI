@@ -49,21 +49,52 @@ cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
 node tests/test_ai.js
 ```
 
+---
+
+### C. Emotion Intelligence, Tone Nuance & Grammar Polish Test Suite
+Tests occasion emotion profiles, negative prompt constraints (preventing celebratory words on apologies/condolences), relationship nuances (girlfriend vs colleague), and grammar/typo correction while preserving 100% of user facts.
+
+```bash
+cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
+node tests/test_emotions_and_polish.js
+```
+
 **Expected Result**:
 ```
-🧪 Starting Wish Yours Message Generation Tests...
+🧪 Starting Wish Yours Emotion Intelligence & Text Polish Tests...
 
-✅ Test 1: Generated 3 diverse English variations with recipient name & memories
-✅ Test 2: Generated 3 poetic Hindi variations
-✅ Test 3: Generated 3 natural Hinglish variations
-✅ Test 4: Direct fallback synthesizer produces 3 fully structured variations
+[Text Polish Engine] Raw:     "we was frnds from collage and you always suport me when i was sad"
+[Text Polish Engine] Cleaned: "We were friends from college and you always supported me when I was sad."
+✅ Test 1: Grammar & Typo Polish Engine cleans messy input while strictly preserving facts
+✅ Test 2: Occasion Profile Engine correctly configures emotional parameters and constraints
+[Validation Guard] Detected violations: celebrate, party
+✅ Test 3: Negative Constraint validator blocks inappropriate celebratory language
+✅ Test 4: Sorry to Girlfriend generates deeply heartfelt, non-celebratory apology
+[Colleague Apology Sample]: "Dear Sarah, I am writing to sincerely apologize for the recent miscommunication and any disruption it may have..."
+✅ Test 5: Sorry to Colleague generates professional, accountable message
+✅ Test 6: Birthday tone adapts appropriately between Best Friend and Colleague
+  ✓ Generated 3 variations for "Thank You" to Mentor
+  ✓ Generated 3 variations for "Congratulations" to Sister
+  ✓ Generated 3 variations for "Farewell" to Colleague
+✅ Test 7: Thank You, Congratulations, and Farewell all generate tailored emotional variations
+✅ Test 8: Fallback synthesizer reliably handles remorseful and sympathy occasions across languages
 
-🎉 All 4/4 AI & Multi-Language tests passed successfully!
+🎉 All 8/8 Emotion Intelligence & Text Polish Tests Passed Successfully!
 ```
 
 ---
 
-### C. Resend Live Diagnostic & Verification Tool
+### D. Scheduled Wishes & Delivery Engine Test Suite
+Tests automated scheduling, timezone conversion, status transitions, idempotent batch worker processing, and rescheduling.
+
+```bash
+cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
+node tests/test_scheduler.js
+```
+
+---
+
+### E. Resend Live Diagnostic & Verification Tool
 Use this diagnostic script to test Resend configuration and email dispatch.
 
 #### 1. Test in Simulation Mode (No API key needed)
