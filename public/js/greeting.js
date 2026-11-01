@@ -435,14 +435,15 @@ const GreetingPage = {
       }
     }
 
-    // Render occasion-specific hero module
+    // Render occasion-specific or user-selected hero module
     const heroModule = document.getElementById('occasionSpecificModule');
     if (heroModule) {
-      if (occMeta?.greetingModule === 'cake' || occ.includes('birthday')) {
+      const selectedTemplate = (wish.template || occMeta?.greetingModule || (occ.includes('birthday') ? 'cake' : 'sincere_letter')).toLowerCase();
+      if (selectedTemplate === 'cake') {
         heroModule.innerHTML = this.renderBirthdayCakeModule();
-      } else if (occMeta?.greetingModule === 'envelope' || occ.includes('anniversary') || occ.includes('valentine') || theme.includes('romantic')) {
+      } else if (selectedTemplate === 'envelope') {
         heroModule.innerHTML = this.renderWaxEnvelopeModule();
-      } else if (occMeta?.greetingModule === 'sincere_letter' || occ.includes('sorry') || occ.includes('sympath') || occ.includes('thank') || occ.includes('farewell')) {
+      } else if (selectedTemplate === 'sincere_letter') {
         heroModule.innerHTML = this.renderSincereLetterModule(occMeta);
       } else {
         heroModule.innerHTML = this.renderFriendshipHeroModule();
@@ -454,8 +455,12 @@ const GreetingPage = {
     const reShareSub = document.getElementById('reShareSubheading');
     const reShareCta = document.getElementById('reShareCtaBtn');
 
-    if (reShareHead && occMeta) reShareHead.innerText = occMeta.reShareTitle;
-    if (reShareSub && occMeta) reShareSub.innerText = occMeta.reShareSubtitle;
+    if (reShareHead && occMeta) {
+      reShareHead.innerText = occMeta.reShareTitle || occMeta.actionBoxPrompt || (occMeta.isCelebration ? 'Loved this celebration? ✨' : 'Need to send a meaningful message? 🕊️');
+    }
+    if (reShareSub && occMeta) {
+      reShareSub.innerText = occMeta.reShareSubtitle || (occMeta.isCelebration ? 'Create an unforgettable greeting in 2 minutes.' : 'Craft a heartfelt, sincere note in 2 minutes.');
+    }
     if (reShareCta && occMeta) {
       reShareCta.innerText = occMeta.isCelebration ? 'Create Your Own Wish ✨' : 'Send a Heartfelt Note 🕊️';
     }

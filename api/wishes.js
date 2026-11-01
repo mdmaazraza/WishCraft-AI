@@ -74,32 +74,45 @@ async function handleListWishes(queryParams) {
 }
 
 async function handleCreateWish(body, userId = null) {
-  if (!body.recipient_name || !body.message) {
+  const reqData = body || {};
+  const recipientName = reqData.recipient_name || reqData.recipientName;
+  const messageText = reqData.message || reqData.generatedMessage;
+
+  if (!recipientName || !messageText) {
     throw { statusCode: 400, message: 'Recipient name and greeting message are required' };
   }
 
+  const senderRaw = reqData.sender_name || reqData.senderName || 'A loved one';
+  const relRaw = reqData.relationship || 'Friend';
+
   const sanitizedBody = {
-    ...body,
-    sender_id: userId || body.sender_id || null,
-    sender_name: isMdRazaSender(body.sender_name) ? 'MD RAZA' : sanitize(body.sender_name || 'A loved one'),
-    recipient_name: sanitize(body.recipient_name),
-    occasion: sanitize(body.occasion || 'Birthday'),
-    relationship: sanitize(body.relationship || 'Friend'),
-    style: sanitize(body.style || 'Heart-touching'),
-    theme: sanitize(body.theme || 'birthday_celebration'),
-    font_family: sanitizeFontFamily(body.font_family),
-    language: sanitize(body.language || 'en'),
-    message: isMdRazaSender(body.sender_name) 
-      ? applySignatureToMessage(body.message.trim(), 'MD RAZA', body.relationship || 'Friend')
-      : body.message.trim(),
-    memories: sanitize(body.memories || ''),
-    relationship_duration: sanitize(body.relationship_duration || ''),
-    age: body.age ? parseInt(body.age, 10) : null,
-    anniversary_years: body.anniversary_years ? parseInt(body.anniversary_years, 10) : null,
-    images: Array.isArray(body.images) ? body.images : [],
-    music_track: sanitize(body.music_track || 'celebration_tune'),
-    is_public: body.is_public !== undefined ? Boolean(body.is_public) : true,
-    custom_settings: body.custom_settings || {}
+    ...reqData,
+    sender_id: userId || reqData.sender_id || null,
+    sender_name: isMdRazaSender(senderRaw) ? 'MD RAZA' : sanitize(senderRaw),
+    recipient_name: sanitize(recipientName),
+    occasion: sanitize(reqData.occasion || 'Birthday'),
+    relationship: sanitize(relRaw),
+    style: sanitize(reqData.style || reqData.emotion || 'Heartfelt'),
+    emotion: sanitize(reqData.emotion || reqData.style || 'Heartfelt'),
+    emotion_intensity: sanitize(reqData.emotion_intensity || reqData.emotionIntensity || 'Balanced'),
+    template: sanitize(reqData.template || 'cake'),
+    theme: sanitize(reqData.theme || 'birthday_celebration'),
+    font_family: sanitizeFontFamily(reqData.font_family || reqData.font),
+    language: sanitize(reqData.language || 'en'),
+    message_length: sanitize(reqData.message_length || reqData.length || 'medium'),
+    message: isMdRazaSender(senderRaw) 
+      ? applySignatureToMessage(messageText.trim(), 'MD RAZA', relRaw)
+      : messageText.trim(),
+    memories: sanitize(reqData.memories || reqData.memory || ''),
+    original_memory: sanitize(reqData.original_memory || reqData.originalMemory || ''),
+    improved_memory: sanitize(reqData.improved_memory || reqData.improvedMemory || ''),
+    relationship_duration: sanitize(reqData.relationship_duration || reqData.relationshipDuration || ''),
+    age: reqData.age ? parseInt(reqData.age, 10) : null,
+    anniversary_years: reqData.anniversary_years ? parseInt(reqData.anniversary_years, 10) : null,
+    images: Array.isArray(reqData.images || reqData.photos) ? (reqData.images || reqData.photos) : [],
+    music_track: sanitize(reqData.music_track || 'celebration_tune'),
+    is_public: reqData.is_public !== undefined ? Boolean(reqData.is_public) : true,
+    custom_settings: reqData.custom_settings || {}
   };
 
   const newWish = db.createWish(sanitizedBody);

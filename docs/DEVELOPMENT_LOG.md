@@ -340,3 +340,56 @@
 #### 3. Verification & Testing
 - Created dedicated test runner `tests/test_details_and_redesign.js`: **8/8 tests passed**.
 - Full regression suite across all 7 test runners: **57/57 checks passed**.
+
+---
+
+### Issue 8: Creation Flow Functional Audit, State Synchronization & Occasion-Aware System Repair
+
+#### 1. Root Cause Analysis
+1. **Disconnected Form State & Dual Casing Contract Gap**:
+   - `public/js/creator.js` dispatched snake_case keys (`recipient_name`, `sender_name`, `memories`, `length`), whereas `api/generate-message.js` expected camelCase (`recipientName`, `senderName`).
+   - Consequently, user-entered recipient and sender names evaluated to `undefined` on the backend, falling back to generic placeholders (`"Special Person"`, `"Friend"`).
+2. **Missing UI Controls in Steps 4 and 6**:
+   - Emotion Intensity cards (`Light`, `Balanced`, `Deep`, `Very Emotional`) were missing from the UI and state management.
+   - Interactive Greeting Template selection cards (`Interactive Cake`, `Wax-Sealed Letter`, `Sincere Letter`, `Shield & Card`) were missing from Step 6.
+3. **Draft Summary & Preview Isolation**:
+   - Sticky summary bar only showed a subset of pills and lacked pills for Memory snippet, Emotion Intensity, Length, Template, and Font.
+   - Live greeting preview was hidden on Steps 1–6 and only visible after advancing to Step 7.
+4. **Unbounded Output Length**:
+   - Gemini outputs occasionally exceeded target bounds without a word-count validator and sentence-trimming safeguard.
+5. **Occasion Copy Integrity on Apology / Sorry**:
+   - Non-celebration occasions required strict elimination of celebratory phrases ("celebrate", "party", "happy sorry") across generation prompts, output filters, preview headings, and greeting modules.
+
+#### 2. Implementation Summary
+- **Single Canonical State (`WishCreator.draft`) & Two-Way Binding (`public/js/creator.js`)**:
+   - Refactored `WishCreator` to utilize `draft` as the single source of truth for all 20 fields (`occasion`, `relationship`, `recipientName`, `senderName`, `recipientGender`, `age`, `anniversaryYears`, `relationshipDuration`, `memory`, `originalMemory`, `improvedMemory`, `emotion`, `emotionIntensity`, `language`, `messageLength`, `template`, `font`, `theme`, `photos`, `generatedMessage`, `isPublic`).
+   - Added two-way proxy getters/setters for `this.data` ensuring backward compatibility.
+   - Master `syncAll()` called immediately on every input change, updating localStorage (`wishcraft_draft_v4`), sticky summary pills, live preview, and dynamic headings.
+- **Dual Casing Normalization (`api/generate-message.js` & `api/wishes.js` & `data/db.js`)**:
+   - Backend APIs now accept both camelCase and snake_case (`recipientName || recipient_name`, `senderName || sender_name`, `memories || memory`, `emotion || style`, `emotionIntensity || emotion_intensity`, `messageLength || length`, `template`).
+   - `db.js` persists `emotion`, `emotion_intensity`, `template`, `message_length`, `original_memory`, and `improved_memory`.
+- **Emotion Intensity & Template Selection Cards (`public/create.html`)**:
+   - Added Emotion Intensity selector in Step 4 with 4 visual cards (`Light`, `Balanced`, `Deep`, `Very Emotional`).
+   - Added Interactive Template selector in Step 6 with 4 visual cards (`cake`, `envelope`, `sincere_letter`, `friendship_card`).
+   - Automatic template and emotion recommendation when occasion changes.
+- **Word-Count Enforcement Guard (`api/generate-message.js`)**:
+   - Added `enforceWordLimit` and `sanitizeForbiddenKeywords` post-processing on all AI and fallback variations.
+   - Medium length strictly capped at 80 words.
+- **Instant Live Preview Modal (`#previewModal`)**:
+   - Added floating preview modal accessible via "Preview Wish 👁️" from any step.
+- **Occasion-Aware Copy System**:
+   - Centralized context-aware metadata across `data/occasions.js` and `public/js/occasions.js`.
+   - Sorry / Apology flows use respectful headings (`A Heartfelt Message for {name}` or `A Sincere Apology`) and strictly block celebratory keywords.
+   - Sincere letter module renders automatically for apologies, condolences, thank-you notes, and farewells.
+- **MD RAZA Attribution**:
+   - Preserved relationship-aware dynamic signatures (`Your [Relationship], MD RAZA`) exclusively when sender is MD RAZA, while strictly guaranteeing unrelated senders retain their own identities.
+
+#### 3. Verification & Testing
+- Created dedicated test suite `tests/test_audit_and_repair.js`: **6/6 tests passed**.
+- Full regression suite across all 6 test runners: **58/58 tests passed**.
+  - `test_details_and_redesign.js`: 8/8 passed.
+  - `test_developer_attribution.js`: 8/8 passed.
+  - `test_emotions_and_polish.js`: 8/8 passed.
+  - `test_api.js`: 15/15 passed.
+  - `test_scheduler.js`: 13/13 passed.
+  - `test_audit_and_repair.js`: 6/6 passed.

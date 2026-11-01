@@ -121,6 +121,34 @@ node tests/test_developer_attribution.js
 🎉 All 8/8 Developer Attribution & MD RAZA Signature Tests Passed Successfully!
 ```
 
+### G. Creation Flow Audit & State Synchronization Test Suite
+Tests single canonical state (`WishCreator.draft`), parameter casing normalization (camelCase & snake_case), Sorry/Apology non-celebration copy, word count bounding, Emotion Intensity reach, template persistence, and personal fact preservation.
+
+```bash
+cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
+node tests/test_audit_and_repair.js
+```
+
+**Expected Result**:
+```
+🧪 Wish Yours: Creation Flow Audit & Repair Test Suite
+======================================================
+▶ Test 1: Verifying backend parameter casing normalization (camelCase & snake_case)...
+  ✅ PASS: Both snake_case and camelCase payloads normalized seamlessly without dropping names.
+▶ Test 2: Testing Apology flow (Aisha, MD RAZA, Hinglish, Deep Intensity, Sincere Copy)...
+  ✅ PASS: Apology variations are 100% free of celebratory language and signed properly by MD RAZA.
+▶ Test 3: Verifying strict word count enforcement across length settings...
+  ✅ PASS: Word count bounded (Short: 45 words, Medium: 52 words).
+▶ Test 4: Verifying Thank You and Farewell context-aware copy...
+  ✅ PASS: Thank You and Farewell profiles are contextually distinct non-celebrations.
+▶ Test 5: Verifying end-to-end database persistence of new attributes...
+  ✅ PASS: All new attributes (emotion, intensity, template, memory) persisted 100% intact.
+▶ Test 6: Verifying Writing Improvement preserves user facts and inside jokes...
+  ✅ PASS: Personal facts, names, and memories preserved 100% intact through cleaning.
+
+🎉 ALL 6/6 CREATION FLOW AUDIT & REPAIR TESTS PASSED!
+```
+
 ### E. Resend Live Diagnostic & Verification Tool
 Use this diagnostic script to test Resend configuration and email dispatch.
 

@@ -214,12 +214,18 @@ const db = {
       recipient_gender: wishData.recipient_gender || "unspecified",
       occasion: wishData.occasion || "Birthday",
       relationship: wishData.relationship || "Friend",
-      style: wishData.style || "Heart-touching",
+      style: wishData.style || wishData.emotion || "Heartfelt",
+      emotion: wishData.emotion || wishData.style || "Heartfelt",
+      emotion_intensity: wishData.emotion_intensity || wishData.emotionIntensity || "Balanced",
+      template: wishData.template || "cake",
       theme: wishData.theme || "birthday_celebration",
       font_family: wishData.font_family || "Playfair Display",
       language: wishData.language || "en",
+      message_length: wishData.message_length || wishData.length || "medium",
       message: wishData.message || "",
-      memories: wishData.memories || "",
+      memories: wishData.memories || wishData.memory || "",
+      original_memory: wishData.original_memory || wishData.originalMemory || "",
+      improved_memory: wishData.improved_memory || wishData.improvedMemory || "",
       relationship_duration: wishData.relationship_duration || "",
       age: wishData.age ? parseInt(wishData.age, 10) : null,
       anniversary_years: wishData.anniversary_years ? parseInt(wishData.anniversary_years, 10) : null,
@@ -254,6 +260,7 @@ const db = {
 
     const allowedUpdates = [
       'message', 'sender_name', 'recipient_name', 'theme', 'style', 'font_family',
+      'emotion', 'emotion_intensity', 'template', 'message_length', 'original_memory', 'improved_memory',
       'images', 'music_track', 'memories', 'is_public', 'custom_settings',
       'candles_blown'
     ];

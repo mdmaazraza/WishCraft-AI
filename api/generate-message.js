@@ -4,7 +4,7 @@
  */
 
 const { callGeminiAPI, generateFallbackVariations } = require('./gemini');
-const { resolveOccasion } = require('../data/occasions');
+const { resolveOccasion, validateMessageContent } = require('../data/occasions');
 const { cleanText } = require('../data/text_cleaner');
 const { isMdRazaSender, formatRelationship, applySignatureToMessage } = require('../data/attribution');
 
@@ -12,6 +12,60 @@ const { isMdRazaSender, formatRelationship, applySignatureToMessage } = require(
 const rateLimits = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 25;
+
+const WORD_LIMITS = {
+  short: { min: 25, max: 45, label: "Short (~25–45 words, 2-3 crisp sentences, never exceed 45 words)" },
+  medium: { min: 50, max: 80, label: "Medium (~50–80 words, 3-5 balanced sentences, STRICT CEILING OF 80 WORDS)" },
+  long: { min: 90, max: 130, label: "Long (~90–130 words, 6-9 sentences, STRICT CEILING OF 130 WORDS)" }
+};
+
+function enforceWordLimit(text, targetLength = 'medium') {
+  if (!text || typeof text !== 'string') return text;
+  const config = WORD_LIMITS[targetLength.toLowerCase()] || WORD_LIMITS.medium;
+  const words = text.trim().split(/\s+/);
+  if (words.length <= config.max + 5) {
+    return text;
+  }
+  // Trim at sentence boundary within max words
+  const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g) || [text];
+  let accumulated = '';
+  for (const s of sentences) {
+    const testCount = (accumulated + ' ' + s).trim().split(/\s+/).length;
+    if (testCount <= config.max) {
+      accumulated = (accumulated + ' ' + s).trim();
+    } else {
+      break;
+    }
+  }
+  if (accumulated && accumulated.split(/\s+/).length >= config.min) {
+    return accumulated;
+  }
+  return words.slice(0, config.max).join(' ').replace(/[,;:\s]+$/, '') + '.';
+}
+
+function sanitizeForbiddenKeywords(text, occ) {
+  if (!text || typeof text !== 'string' || !occ) return text;
+  const check = validateMessageContent(occ.id, text);
+  if (check.valid) return text;
+  let cleaned = text;
+  for (const word of check.violations) {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    if (word.toLowerCase() === 'celebrate' || word.toLowerCase() === 'celebration') {
+      cleaned = cleaned.replace(regex, 'honor');
+    } else if (word.toLowerCase() === 'party') {
+      cleaned = cleaned.replace(regex, 'moment');
+    } else if (word.toLowerCase() === 'happy sorry') {
+      cleaned = cleaned.replace(regex, 'sincere apology');
+    } else if (word.toLowerCase() === 'happy') {
+      cleaned = cleaned.replace(regex, 'peaceful');
+    } else if (word.toLowerCase() === 'congratulations') {
+      cleaned = cleaned.replace(regex, 'best wishes');
+    } else {
+      cleaned = cleaned.replace(regex, '');
+    }
+  }
+  return cleaned;
+}
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -36,17 +90,18 @@ async function handleGenerateMessage(reqData, clientIp = '127.0.0.1') {
     };
   }
 
-  // 2. Validate & normalize inputs
-  const {
-    occasion = 'Birthday',
-    relationship = 'Friend',
-    recipientName = 'Special Person',
-    senderName = 'Friend',
-    style = 'Heart-touching',
-    memories = '',
-    language = 'en',
-    length = 'medium'
-  } = reqData || {};
+  // 2. Validate & normalize inputs (supporting dual camelCase & snake_case)
+  const payload = reqData || {};
+  const occasion = payload.occasion || 'Birthday';
+  const relationship = payload.relationship || 'Friend';
+  const recipientName = (payload.recipientName || payload.recipient_name || 'Special Person').trim();
+  const senderName = (payload.senderName || payload.sender_name || 'Friend').trim();
+  const style = (payload.style || payload.emotion || 'Heartfelt').trim();
+  const emotionIntensity = (payload.emotionIntensity || payload.emotion_intensity || 'Balanced').trim();
+  const memories = (payload.memories || payload.memory || '').trim();
+  const language = (payload.language || 'en').trim();
+  const length = (payload.length || payload.message_length || 'medium').trim();
+  const template = (payload.template || 'cake').trim();
 
   // Resolve the structured occasion profile
   const occ = resolveOccasion(occasion);
@@ -59,6 +114,8 @@ async function handleGenerateMessage(reqData, clientIp = '127.0.0.1') {
 
   const apiKey = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+
+  const limitConfig = WORD_LIMITS[length.toLowerCase()] || WORD_LIMITS.medium;
 
   // 3. If API key exists, call Gemini AI with structured emotional prompt
   if (apiKey && apiKey.trim().length > 10) {
@@ -82,6 +139,8 @@ CRITICAL EMOTIONAL RULES:
    - Write like a real person writing from the heart. Avoid robotic clichés or repetitive greeting-card filler phrases.
 5. STRICT LANGUAGE DIRECTIVE:
    - Match the requested language (English, pure Hindi Devanagari, or modern conversational Hinglish).
+6. WORD COUNT ENFORCEMENT:
+   - Target is ${limitConfig.label}. NEVER exceed ${limitConfig.max} words.
 
 Always return responses strictly in valid JSON matching this schema:
 {
@@ -117,10 +176,6 @@ Always return responses strictly in valid JSON matching this schema:
         langDirective = "in modern, warm conversational Hinglish (Hindi written in Roman/English alphabet, everyday WhatsApp/text style in India)";
       }
 
-      const lengthGuidance = length === 'short' 
-        ? 'Short & punchy (around 25-35 words)' 
-        : (length === 'long' ? 'Long & detailed (around 65-85 words)' : 'Standard heartfelt length (around 40-55 words)');
-
       const userPrompt = `Generate 3 personalized greeting variations for:
 - Occasion: ${occ.name}
 - Occasion Category: ${occ.category} (Is Celebration? ${occ.isCelebration ? 'YES' : 'NO - DO NOT USE CELEBRATORY LANGUAGE'})
@@ -135,22 +190,33 @@ ${isMdRazaSender(senderName)
 }
 - Relationship: ${relationship}
 - Relationship Nuance: ${relNuance}
-- Desired Style / Tone: ${style}
+- Desired Style / Emotion: ${style}
+- Emotion Intensity: ${emotionIntensity} (${emotionIntensity === 'Light' ? 'Gentle and understated' : emotionIntensity === 'Deep' ? 'Profound and deeply soulful' : emotionIntensity === 'Very Emotional' ? 'Intensely vulnerable and heartfelt' : 'Balanced, warm and natural'})
 - Personal Memories / Context (PRESERVE ACCURATELY): ${cleanedMemory || 'None specified'}
 - Language: ${langDirective}
-- Target Length: ${lengthGuidance}
+- Strict Target Word Count: ${limitConfig.label}
 
-Ensure all 3 options hit the exact emotional chord of the occasion and relationship.`;
+Ensure all 3 options hit the exact emotional chord of the occasion, intensity, and relationship without exceeding word count limits.`;
 
       const result = await callGeminiAPI(apiKey, model, systemInstruction, userPrompt);
       if (result && Array.isArray(result.variations) && result.variations.length > 0) {
+        const sanitizedVariations = result.variations.map((v, i) => {
+          let text = sanitizeForbiddenKeywords(v.text, occ);
+          text = enforceWordLimit(text, length);
+          return {
+            ...v,
+            text,
+            estimatedWords: text.trim().split(/\s+/).length
+          };
+        });
+
         return {
           status: 'success',
           source: 'gemini',
           model: model,
           occasion: occ.name,
           cleanedMemory: cleanedMemory || undefined,
-          variations: result.variations
+          variations: sanitizedVariations
         };
       }
     } catch (err) {
@@ -165,9 +231,20 @@ Ensure all 3 options hit the exact emotional chord of the occasion and relations
     recipientName,
     senderName,
     style,
+    emotionIntensity,
     memories: cleanedMemory,
     language,
     length
+  });
+
+  const sanitizedFallbacks = fallbackVariations.map(v => {
+    let text = sanitizeForbiddenKeywords(v.text, occ);
+    text = enforceWordLimit(text, length);
+    return {
+      ...v,
+      text,
+      estimatedWords: text.trim().split(/\s+/).length
+    };
   });
 
   return {
@@ -175,7 +252,7 @@ Ensure all 3 options hit the exact emotional chord of the occasion and relations
     source: 'template_synthesizer',
     occasion: occ.name,
     cleanedMemory: cleanedMemory || undefined,
-    variations: fallbackVariations
+    variations: sanitizedFallbacks
   };
 }
 

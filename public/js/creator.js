@@ -1,47 +1,117 @@
 /**
- * Wish Yours — Multi-Step Wish Creation Studio Controller (7-Step Flow)
- * Full reactive data binding, draft autosave, occasion-aware tones,
- * intelligent writing improvement, and robust data persistence.
+ * Wish Yours — Multi-Step Wish Creation Studio Controller (7-Step Wizard)
+ * Single Canonical Source of Truth (WishCreator.draft), Reactive Two-Way Data Binding,
+ * Occasion-Aware Copy & Negative Constraints, Live Draft Summary, and Instant Live Preview.
  */
 
 const WishCreator = {
   currentStep: 1,
-  data: {
+
+  // 1. SINGLE CANONICAL SOURCE OF TRUTH
+  draft: {
     occasion: 'Birthday',
     relationship: 'Best Friend',
-    recipient_name: '',
-    sender_name: '',
-    recipient_gender: 'female',
-    memories: '',
-    relationship_duration: '',
+    recipientName: '',
+    senderName: '',
+    recipientGender: 'unspecified',
     age: '',
-    anniversary_years: '',
-    style: 'Heartfelt',
-    font_family: 'Playfair Display',
-    theme: 'birthday_celebration',
+    anniversaryYears: '',
+    relationshipDuration: '',
+    memory: '',
+    originalMemory: '',
+    improvedMemory: '',
+    emotion: 'Heartfelt',
+    emotionIntensity: 'Balanced',
     language: 'en',
-    length: 'medium',
-    message: '',
-    images: [],
-    music_track: 'birthday_celebration',
-    is_public: true
+    messageLength: 'medium',
+    template: 'cake',
+    font: 'Playfair Display',
+    theme: 'birthday_celebration',
+    photos: [],
+    generatedMessage: '',
+    isPublic: true
   },
+
+  // Backward compatibility proxy so legacy reads/writes to this.data seamlessly sync with this.draft
+  get data() {
+    return {
+      occasion: this.draft.occasion,
+      relationship: this.draft.relationship,
+      recipient_name: this.draft.recipientName,
+      sender_name: this.draft.senderName,
+      recipient_gender: this.draft.recipientGender,
+      memories: this.draft.memory,
+      original_memory: this.draft.originalMemory,
+      improved_memory: this.draft.improvedMemory,
+      relationship_duration: this.draft.relationshipDuration,
+      age: this.draft.age,
+      anniversary_years: this.draft.anniversaryYears,
+      style: this.draft.emotion,
+      emotion: this.draft.emotion,
+      emotion_intensity: this.draft.emotionIntensity,
+      template: this.draft.template,
+      font_family: this.draft.font,
+      theme: this.draft.theme,
+      language: this.draft.language,
+      length: this.draft.messageLength,
+      message_length: this.draft.messageLength,
+      message: this.draft.generatedMessage,
+      images: this.draft.photos,
+      music_track: this.draft.template === 'cake' ? 'birthday_celebration' : 'peaceful_melody',
+      is_public: this.draft.isPublic
+    };
+  },
+
+  set data(newData) {
+    if (!newData || typeof newData !== 'object') return;
+    if (newData.occasion !== undefined) this.draft.occasion = newData.occasion;
+    if (newData.relationship !== undefined) this.draft.relationship = newData.relationship;
+    if (newData.recipient_name !== undefined) this.draft.recipientName = newData.recipient_name;
+    if (newData.recipientName !== undefined) this.draft.recipientName = newData.recipientName;
+    if (newData.sender_name !== undefined) this.draft.senderName = newData.sender_name;
+    if (newData.senderName !== undefined) this.draft.senderName = newData.senderName;
+    if (newData.recipient_gender !== undefined) this.draft.recipientGender = newData.recipient_gender;
+    if (newData.memories !== undefined) this.draft.memory = newData.memories;
+    if (newData.memory !== undefined) this.draft.memory = newData.memory;
+    if (newData.original_memory !== undefined) this.draft.originalMemory = newData.original_memory;
+    if (newData.improved_memory !== undefined) this.draft.improvedMemory = newData.improved_memory;
+    if (newData.age !== undefined) this.draft.age = newData.age;
+    if (newData.anniversary_years !== undefined) this.draft.anniversaryYears = newData.anniversary_years;
+    if (newData.relationship_duration !== undefined) this.draft.relationshipDuration = newData.relationship_duration;
+    if (newData.style !== undefined) this.draft.emotion = newData.style;
+    if (newData.emotion !== undefined) this.draft.emotion = newData.emotion;
+    if (newData.emotion_intensity !== undefined) this.draft.emotionIntensity = newData.emotion_intensity;
+    if (newData.emotionIntensity !== undefined) this.draft.emotionIntensity = newData.emotionIntensity;
+    if (newData.template !== undefined) this.draft.template = newData.template;
+    if (newData.font_family !== undefined) this.draft.font = newData.font_family;
+    if (newData.font !== undefined) this.draft.font = newData.font;
+    if (newData.theme !== undefined) this.draft.theme = newData.theme;
+    if (newData.language !== undefined) this.draft.language = newData.language;
+    if (newData.length !== undefined) this.draft.messageLength = newData.length;
+    if (newData.message_length !== undefined) this.draft.messageLength = newData.message_length;
+    if (newData.message !== undefined) this.draft.generatedMessage = newData.message;
+    if (newData.generatedMessage !== undefined) this.draft.generatedMessage = newData.generatedMessage;
+    if (Array.isArray(newData.images)) this.draft.photos = newData.images;
+    if (Array.isArray(newData.photos)) this.draft.photos = newData.photos;
+    if (newData.is_public !== undefined) this.draft.isPublic = Boolean(newData.is_public);
+  },
+
   aiVariations: [],
   selectedVariationIndex: 0,
   createdWish: null,
   correctedMemory: null,
 
-  // Fallback tones dictionary by occasion ID
+  // Fallback occasion tones
   OCCASION_TONES: {
-    birthday: ['Heartfelt', 'Funny & Playful', 'Sweet & Loving', 'Emotional'],
-    anniversary: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
-    sorry: ['Sincere & Apologetic', 'Gentle & Healing', 'Deeply Accountable', 'Humble'],
-    thank_you: ['Deeply Grateful', 'Warm & Appreciative', 'Respectful', 'Cheerful & Sweet'],
-    congratulations: ['Triumphant & Proud', 'Inspiring', 'Cheerful & Hype', 'Dignified'],
-    farewell: ['Bittersweet', 'Nostalgic', 'Inspiring & Hopeful', 'Warm & Connected'],
+    birthday: ['Heartfelt', 'Cheerful', 'Funny & Playful', 'Sweet & Loving', 'Emotional', 'Inspirational'],
+    anniversary: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic', 'Emotional'],
+    sorry: ['Sincere & Apologetic', 'Deeply Apologetic', 'Regretful', 'Gentle & Healing', 'Deeply Accountable', 'Humble', 'Vulnerable'],
+    thank_you: ['Deeply Grateful', 'Warm & Appreciative', 'Respectful', 'Cheerful & Sweet', 'Heartfelt', 'Invaluable Support'],
+    congratulations: ['Triumphant & Proud', 'Inspiring', 'Cheerful & Hype', 'Dignified', 'Proud & Cheerful'],
+    farewell: ['Bittersweet', 'Nostalgic', 'Inspiring & Hopeful', 'Warm & Connected', 'Emotional', 'Grateful'],
     sympathy: ['Gentle & Comforting', 'Heartfelt Sympathy', 'Peace & Solace', 'Warm & Supportive'],
-    friendship: ['Loyal & Authentic', 'Playful & Crazy', 'Heartfelt', 'Sweet'],
-    romantic: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
+    friendship: ['Loyal & Authentic', 'Playful & Crazy', 'Heartfelt', 'Sweet', 'Nostalgic'],
+    romantic: ['Deeply Romantic', 'Deep Love', 'Passionate', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
     festival: ['Warm Blessings', 'Joyful & Festive', 'Heartfelt Family Love', 'Peace & Light'],
     good_morning: ['Cheerful & Energizing', 'Warm & Loving', 'Inspirational', 'Gentle'],
     good_night: ['Sweet & Tender', 'Peaceful & Calming', 'Romantic', 'Warm'],
@@ -55,196 +125,238 @@ const WishCreator = {
     this.restoreDraft();
     this.renderDynamicTones();
     this.updateStepView();
-    this.updateStickySummary();
-    this.updateLivePreview();
+    this.syncAll();
   },
 
-  // 1. Two-Way Data Binding for ALL Form Inputs
+  // 2. TWO-WAY BINDING FOR ALL FORM INPUTS
   bindFormInputs() {
     const bindField = (id, prop) => {
       const el = document.getElementById(id);
       if (!el) return;
       const handler = (e) => {
-        this.data[prop] = e.target.value.trim();
-        this.persistDraft();
-        this.updateStickySummary();
-        this.updateLivePreview();
+        this.draft[prop] = e.target.value.trim();
+        this.syncAll();
       };
       el.addEventListener('input', handler);
       el.addEventListener('change', handler);
     };
 
-    bindField('recipientNameInput', 'recipient_name');
-    bindField('senderNameInput', 'sender_name');
-    bindField('genderSelect', 'recipient_gender');
+    bindField('recipientNameInput', 'recipientName');
+    bindField('senderNameInput', 'senderName');
+    bindField('genderSelect', 'recipientGender');
     bindField('ageInput', 'age');
-    bindField('annivYearsInput', 'anniversary_years');
-    bindField('durationInput', 'relationship_duration');
-    bindField('memoriesInput', 'memories');
-    bindField('finalMessageInput', 'message');
+    bindField('annivYearsInput', 'anniversaryYears');
+    bindField('durationInput', 'relationshipDuration');
+    bindField('memoriesInput', 'memory');
+    bindField('finalMessageInput', 'generatedMessage');
   },
 
-  // Save all DOM input values into this.data synchronously
+  // Synchronize values from DOM inputs into this.draft
   saveAllInputs() {
     const getVal = (id) => document.getElementById(id)?.value?.trim() || '';
 
     const rec = getVal('recipientNameInput');
-    if (rec) this.data.recipient_name = rec;
+    if (rec !== '') this.draft.recipientName = rec;
 
     const sender = getVal('senderNameInput');
-    if (sender) this.data.sender_name = sender;
+    if (sender !== '') this.draft.senderName = sender;
 
     const gender = document.getElementById('genderSelect')?.value;
-    if (gender) this.data.recipient_gender = gender;
+    if (gender) this.draft.recipientGender = gender;
 
     const age = getVal('ageInput');
-    if (age) this.data.age = age;
+    if (age !== '') this.draft.age = age;
 
     const anniv = getVal('annivYearsInput');
-    if (anniv) this.data.anniversary_years = anniv;
+    if (anniv !== '') this.draft.anniversaryYears = anniv;
 
     const dur = getVal('durationInput');
-    if (dur) this.data.relationship_duration = dur;
+    if (dur !== '') this.draft.relationshipDuration = dur;
 
     const mem = getVal('memoriesInput');
-    if (mem) this.data.memories = mem;
+    if (mem !== '') this.draft.memory = mem;
 
     const msg = getVal('finalMessageInput');
-    if (msg) this.data.message = msg;
+    if (msg !== '') this.draft.generatedMessage = msg;
 
     this.persistDraft();
   },
 
-  // Check URL query parameters (e.g. from template click on homepage)
+  // Check URL query parameters (e.g. from homepage cards)
   checkUrlPreload() {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('occasion')) this.data.occasion = params.get('occasion');
-    if (params.get('relationship')) this.data.relationship = params.get('relationship');
-    if (params.get('theme')) this.data.theme = params.get('theme');
-    if (params.get('style')) this.data.style = params.get('style');
-    if (params.get('font')) this.data.font_family = params.get('font');
-    if (params.get('message')) this.data.message = params.get('message');
+    if (params.get('occasion')) this.draft.occasion = params.get('occasion');
+    if (params.get('relationship')) this.draft.relationship = params.get('relationship');
+    if (params.get('theme')) this.draft.theme = params.get('theme');
+    if (params.get('style')) this.draft.emotion = params.get('style');
+    if (params.get('emotion')) this.draft.emotion = params.get('emotion');
+    if (params.get('intensity')) this.draft.emotionIntensity = params.get('intensity');
+    if (params.get('template')) this.draft.template = params.get('template');
+    if (params.get('font')) this.draft.font = params.get('font');
+    if (params.get('message')) this.draft.generatedMessage = params.get('message');
     if (params.get('step')) this.currentStep = parseInt(params.get('step'), 10) || 1;
   },
 
   // Draft Autosave to localStorage
   persistDraft() {
     try {
-      localStorage.setItem('wishcraft_draft_v3', JSON.stringify(this.data));
+      localStorage.setItem('wishcraft_draft_v4', JSON.stringify(this.draft));
     } catch (e) {
-      // Ignore quota/private mode errors
+      // Ignore storage quota/private mode restrictions
     }
   },
 
   // Restore draft from localStorage
   restoreDraft() {
     try {
-      const saved = localStorage.getItem('wishcraft_draft_v3');
+      const saved = localStorage.getItem('wishcraft_draft_v4') || localStorage.getItem('wishcraft_draft_v3');
       if (saved) {
         const parsed = JSON.parse(saved);
-        this.data = { ...this.data, ...parsed };
-
-        // Restore DOM inputs
-        const setVal = (id, val) => {
-          const el = document.getElementById(id);
-          if (el && val !== undefined) el.value = val;
+        // Handle migration from snake_case v3 schema if necessary
+        this.draft = {
+          ...this.draft,
+          occasion: parsed.occasion || this.draft.occasion,
+          relationship: parsed.relationship || this.draft.relationship,
+          recipientName: parsed.recipientName || parsed.recipient_name || this.draft.recipientName,
+          senderName: parsed.senderName || parsed.sender_name || this.draft.senderName,
+          recipientGender: parsed.recipientGender || parsed.recipient_gender || this.draft.recipientGender,
+          age: parsed.age || this.draft.age,
+          anniversaryYears: parsed.anniversaryYears || parsed.anniversary_years || this.draft.anniversaryYears,
+          relationshipDuration: parsed.relationshipDuration || parsed.relationship_duration || this.draft.relationshipDuration,
+          memory: parsed.memory || parsed.memories || this.draft.memory,
+          originalMemory: parsed.originalMemory || parsed.original_memory || this.draft.originalMemory,
+          improvedMemory: parsed.improvedMemory || parsed.improved_memory || this.draft.improvedMemory,
+          emotion: parsed.emotion || parsed.style || this.draft.emotion,
+          emotionIntensity: parsed.emotionIntensity || parsed.emotion_intensity || this.draft.emotionIntensity,
+          template: parsed.template || this.draft.template,
+          font: parsed.font || parsed.font_family || this.draft.font,
+          theme: parsed.theme || this.draft.theme,
+          language: parsed.language || this.draft.language,
+          messageLength: parsed.messageLength || parsed.length || parsed.message_length || this.draft.messageLength,
+          generatedMessage: parsed.generatedMessage || parsed.message || this.draft.generatedMessage,
+          photos: Array.isArray(parsed.photos) ? parsed.photos : (Array.isArray(parsed.images) ? parsed.images : []),
+          isPublic: parsed.isPublic !== undefined ? parsed.isPublic : (parsed.is_public !== undefined ? parsed.is_public : true)
         };
 
-        setVal('recipientNameInput', this.data.recipient_name);
-        setVal('senderNameInput', this.data.sender_name);
-        setVal('genderSelect', this.data.recipient_gender);
-        setVal('ageInput', this.data.age);
-        setVal('annivYearsInput', this.data.anniversary_years);
-        setVal('durationInput', this.data.relationship_duration);
-        setVal('memoriesInput', this.data.memories);
-        setVal('finalMessageInput', this.data.message);
+        // Populate DOM inputs
+        const setVal = (id, val) => {
+          const el = document.getElementById(id);
+          if (el && val !== undefined && val !== null) el.value = val;
+        };
 
-        // Highlight active occasion
-        document.querySelectorAll('.occasion-btn').forEach(btn => {
-          if (btn.dataset.occasion === this.data.occasion) {
-            btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
-            btn.classList.remove('bg-slate-900');
-          } else {
-            btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
-            btn.classList.add('bg-slate-900');
-          }
-        });
+        setVal('recipientNameInput', this.draft.recipientName);
+        setVal('senderNameInput', this.draft.senderName);
+        setVal('genderSelect', this.draft.recipientGender);
+        setVal('ageInput', this.draft.age);
+        setVal('annivYearsInput', this.draft.anniversaryYears);
+        setVal('durationInput', this.draft.relationshipDuration);
+        setVal('memoriesInput', this.draft.memory);
+        setVal('finalMessageInput', this.draft.generatedMessage);
 
-        // Highlight active relationship
-        document.querySelectorAll('.relationship-btn').forEach(btn => {
-          if (btn.dataset.relationship === this.data.relationship) {
-            btn.classList.add('ring-4', 'ring-purple-500', 'bg-slate-800');
-            btn.classList.remove('bg-slate-900');
-          } else {
-            btn.classList.remove('ring-4', 'ring-purple-500', 'bg-slate-800');
-            btn.classList.add('bg-slate-900');
-          }
-        });
-
-        // Highlight language
-        document.querySelectorAll('.language-card').forEach(btn => {
-          if (btn.dataset.language === this.data.language) {
-            btn.classList.add('ring-4', 'ring-emerald-500', 'bg-slate-800');
-            btn.classList.remove('bg-slate-900');
-          } else {
-            btn.classList.remove('ring-4', 'ring-emerald-500', 'bg-slate-800');
-            btn.classList.add('bg-slate-900');
-          }
-        });
-
-        // Highlight length
-        document.querySelectorAll('.length-btn').forEach(btn => {
-          if (btn.dataset.length === this.data.length) {
-            btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
-            btn.classList.remove('bg-slate-900');
-          } else {
-            btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
-            btn.classList.add('bg-slate-900');
-          }
-        });
-
-        // Highlight font
-        this.setFontFamily(this.data.font_family);
-
-        // Highlight theme
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-          if (btn.dataset.theme === this.data.theme) {
-            btn.classList.add('ring-4', 'ring-pink-500');
-          } else {
-            btn.classList.remove('ring-4', 'ring-pink-500');
-          }
-        });
+        this.highlightAllSelectors();
       }
     } catch (e) {
       console.warn('Could not restore draft:', e);
     }
   },
 
+  highlightAllSelectors() {
+    // 1. Occasion
+    document.querySelectorAll('.occasion-btn').forEach(btn => {
+      const match = btn.dataset.occasion === this.draft.occasion;
+      btn.className = `occasion-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-28 ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700 hover:border-pink-500'
+      }`;
+    });
+
+    // 2. Relationship
+    document.querySelectorAll('.relationship-btn').forEach(btn => {
+      const match = btn.dataset.relationship === this.draft.relationship;
+      btn.className = `relationship-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-24 ${
+        match ? 'ring-4 ring-purple-500 bg-slate-800 border-purple-500' : 'bg-slate-900 border-slate-700 hover:border-purple-400'
+      }`;
+    });
+
+    // 3. Emotion Intensity
+    document.querySelectorAll('.intensity-btn').forEach(btn => {
+      const match = btn.dataset.intensity === this.draft.emotionIntensity;
+      btn.className = `intensity-btn p-3.5 rounded-xl border text-center transition flex flex-col items-center justify-between h-20 ${
+        match ? 'ring-4 ring-indigo-500 bg-slate-800 border-indigo-500' : 'bg-slate-900 border-slate-700 hover:border-indigo-400'
+      }`;
+    });
+    const intBadge = document.getElementById('selectedIntensityBadge');
+    if (intBadge) intBadge.innerText = this.draft.emotionIntensity;
+
+    // 4. Language
+    document.querySelectorAll('.language-card').forEach(btn => {
+      const match = btn.dataset.language === this.draft.language;
+      btn.className = `language-card p-5 rounded-2xl border text-left transition flex flex-col justify-between h-32 ${
+        match ? 'ring-4 ring-emerald-500 bg-slate-800 border-emerald-500' : 'bg-slate-900 border-slate-700 hover:border-emerald-500'
+      }`;
+    });
+
+    // 5. Length
+    document.querySelectorAll('.length-btn').forEach(btn => {
+      const match = btn.dataset.length === this.draft.messageLength;
+      btn.className = `length-btn p-3 rounded-xl border text-center transition ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700 hover:border-pink-500'
+      }`;
+    });
+
+    // 6. Template
+    document.querySelectorAll('.template-btn').forEach(btn => {
+      const match = btn.dataset.template === this.draft.template;
+      btn.className = `template-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-28 ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700 hover:border-pink-500'
+      }`;
+    });
+    const tplBadge = document.getElementById('selectedTemplateBadge');
+    if (tplBadge) tplBadge.innerText = this.getTemplateLabel(this.draft.template);
+
+    // 7. Font
+    this.setFontFamily(this.draft.font);
+
+    // 8. Theme
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      const match = btn.dataset.theme === this.draft.theme;
+      btn.className = `theme-btn p-3.5 rounded-xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-24 ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700'
+      }`;
+    });
+
+    // 9. Photos
+    this.renderPhotoReel();
+  },
+
   clearDraftAndReset() {
-    if (!confirm('Are you sure you want to reset your wish draft? All entered fields will be cleared.')) return;
+    if (!confirm('Are you sure you want to reset your greeting draft? All entered details will be cleared.')) return;
     try {
+      localStorage.removeItem('wishcraft_draft_v4');
       localStorage.removeItem('wishcraft_draft_v3');
     } catch (e) {}
 
-    this.data = {
+    this.draft = {
       occasion: 'Birthday',
       relationship: 'Best Friend',
-      recipient_name: '',
-      sender_name: '',
-      recipient_gender: 'female',
-      memories: '',
-      relationship_duration: '',
+      recipientName: '',
+      senderName: '',
+      recipientGender: 'unspecified',
       age: '',
-      anniversary_years: '',
-      style: 'Heartfelt',
-      font_family: 'Playfair Display',
-      theme: 'birthday_celebration',
+      anniversaryYears: '',
+      relationshipDuration: '',
+      memory: '',
+      originalMemory: '',
+      improvedMemory: '',
+      emotion: 'Heartfelt',
+      emotionIntensity: 'Balanced',
       language: 'en',
-      length: 'medium',
-      message: '',
-      images: [],
-      music_track: 'birthday_celebration',
-      is_public: true
+      messageLength: 'medium',
+      template: 'cake',
+      font: 'Playfair Display',
+      theme: 'birthday_celebration',
+      photos: [],
+      generatedMessage: '',
+      isPublic: true
     };
 
     ['recipientNameInput', 'senderNameInput', 'ageInput', 'annivYearsInput', 'durationInput', 'memoriesInput', 'finalMessageInput'].forEach(id => {
@@ -254,73 +366,79 @@ const WishCreator = {
 
     this.goToStep(1);
     this.renderDynamicTones();
-    this.updateStickySummary();
-    this.updateLivePreview();
+    this.highlightAllSelectors();
+    this.syncAll();
     if (typeof showToast === 'function') showToast('Draft cleared! Starting fresh.', 'info');
   },
 
+  // 3. MASTER EVENT BINDINGS
   bindEvents() {
-    // Step 1: Occasion selector
+    // Step 1: Occasion selectors
     document.querySelectorAll('.occasion-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const val = btn.dataset.occasion;
-        this.data.occasion = val;
-        document.querySelectorAll('.occasion-btn').forEach(b => {
-          b.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
-          b.classList.add('bg-slate-900');
-        });
-        btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
-        btn.classList.remove('bg-slate-900');
+        this.draft.occasion = val;
+
+        // Auto-recommend template based on occasion
+        const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(val) : null;
+        if (occMeta && occMeta.recommendedTemplate) {
+          this.draft.template = occMeta.recommendedTemplate;
+        }
+
+        // Auto-recommend default emotion
+        if (occMeta && occMeta.defaultEmotion) {
+          this.draft.emotion = occMeta.defaultEmotion;
+        }
+
+        this.highlightAllSelectors();
         this.adjustContextualFields();
         this.renderDynamicTones();
-        this.persistDraft();
-        this.updateStickySummary();
-        this.updateLivePreview();
+        this.syncAll();
       });
     });
 
-    // Step 2: Relationship selector
+    // Step 2: Relationship selectors
     document.querySelectorAll('.relationship-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.data.relationship = btn.dataset.relationship;
-        document.querySelectorAll('.relationship-btn').forEach(b => {
-          b.classList.remove('ring-4', 'ring-purple-500', 'bg-slate-800');
-          b.classList.add('bg-slate-900');
-        });
-        btn.classList.add('ring-4', 'ring-purple-500', 'bg-slate-800');
-        btn.classList.remove('bg-slate-900');
-        this.persistDraft();
-        this.updateStickySummary();
-        this.updateLivePreview();
+        this.draft.relationship = btn.dataset.relationship;
+        this.highlightAllSelectors();
+        this.syncAll();
+      });
+    });
+
+    // Step 4: Emotion Intensity buttons
+    document.querySelectorAll('.intensity-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.draft.emotionIntensity = btn.dataset.intensity;
+        this.highlightAllSelectors();
+        this.syncAll();
       });
     });
 
     // Step 5: Language selector
     document.querySelectorAll('.language-card').forEach(card => {
       card.addEventListener('click', () => {
-        this.data.language = card.dataset.language;
-        document.querySelectorAll('.language-card').forEach(c => {
-          c.classList.remove('ring-4', 'ring-emerald-500', 'bg-slate-800');
-          c.classList.add('bg-slate-900');
-        });
-        card.classList.add('ring-4', 'ring-emerald-500', 'bg-slate-800');
-        card.classList.remove('bg-slate-900');
-        this.persistDraft();
-        this.updateStickySummary();
+        this.draft.language = card.dataset.language;
+        this.highlightAllSelectors();
+        this.syncAll();
       });
     });
 
     // Step 5: Length selector
     document.querySelectorAll('.length-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.data.length = btn.dataset.length;
-        document.querySelectorAll('.length-btn').forEach(b => {
-          b.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
-          b.classList.add('bg-slate-900');
-        });
-        btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
-        btn.classList.remove('bg-slate-900');
-        this.persistDraft();
+        this.draft.messageLength = btn.dataset.length;
+        this.highlightAllSelectors();
+        this.syncAll();
+      });
+    });
+
+    // Step 6: Template selector
+    document.querySelectorAll('.template-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.draft.template = btn.dataset.template;
+        this.highlightAllSelectors();
+        this.syncAll();
       });
     });
 
@@ -334,10 +452,9 @@ const WishCreator = {
     // Step 6: Theme selector
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.data.theme = btn.dataset.theme;
-        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('ring-4', 'ring-pink-500'));
-        btn.classList.add('ring-4', 'ring-pink-500');
-        this.persistDraft();
+        this.draft.theme = btn.dataset.theme;
+        this.highlightAllSelectors();
+        this.syncAll();
       });
     });
 
@@ -348,42 +465,54 @@ const WishCreator = {
     }
   },
 
-  // 2. Dynamic Occasion-Aware Tone Rendering for Step 4
+  // 4. OCCASION-AWARE TONES RENDERING FOR STEP 4
   renderDynamicTones() {
     const container = document.getElementById('dynamicTonesContainer');
     if (!container) return;
 
-    // Resolve occasion ID
-    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.draft.occasion) : null;
     const occId = occMeta?.id || 'birthday';
-    const tones = occMeta?.tones || this.OCCASION_TONES[occId] || this.OCCASION_TONES.custom;
+    const tones = occMeta?.allowedEmotions || occMeta?.tones || this.OCCASION_TONES[occId] || this.OCCASION_TONES.custom;
 
-    // Default tone emojis
     const toneEmojis = {
       'Heartfelt': '💖',
+      'Cheerful': '☀️',
       'Funny & Playful': '😂',
       'Sweet & Loving': '🥰',
       'Emotional': '🥺',
+      'Inspirational': '⭐',
+      'Playful': '🥳',
+      'Nostalgic': '📻',
       'Deeply Romantic': '🌹',
+      'Deep Love': '💖',
+      'Passionate': '🔥',
       'Devoted & Loyal': '💍',
       'Sweet & Playful': '✨',
       'Poetic': '📜',
       'Sincere & Apologetic': '🕊️',
+      'Deeply Apologetic': '🥺',
+      'Regretful': '🌧️',
       'Gentle & Healing': '🌿',
       'Deeply Accountable': '🤝',
       'Humble': '🙏',
+      'Vulnerable': '🤍',
+      'Asking Forgiveness': '🕊️',
+      'I Miss You': '💭',
+      'I Want to Fix Things': '✨',
+      'Deep & Meaningful': '🌟',
       'Deeply Grateful': '🙏',
       'Warm & Appreciative': '🌸',
       'Respectful': '👔',
       'Cheerful & Sweet': '🌻',
+      'Invaluable Support': '🤝',
       'Triumphant & Proud': '🏆',
-      'Inspiring': '⭐',
+      'Inspiring & Hopeful': '🚀',
       'Cheerful & Hype': '🎉',
       'Dignified': '👑',
+      'Proud & Cheerful': '🌟',
       'Bittersweet': '🌅',
-      'Nostalgic': '📻',
-      'Inspiring & Hopeful': '🚀',
       'Warm & Connected': '🤝',
+      'Grateful': '🙏',
       'Warm Blessings': '🪔',
       'Joyful & Festive': '🎆',
       'Heartfelt Family Love': '🏡',
@@ -395,57 +524,48 @@ const WishCreator = {
       'Heartfelt Sympathy': '🕯️',
       'Peace & Solace': '🌿',
       'Warm & Supportive': '🤝',
-      'Thoughtful': '💡',
-      'Cheerful': '☀️'
+      'Thoughtful': '💡'
     };
 
-    // If current style is not in available tones, default to the first one
-    if (!tones.includes(this.data.style)) {
-      this.data.style = tones[0];
+    if (!tones.includes(this.draft.emotion)) {
+      this.draft.emotion = occMeta?.defaultEmotion || tones[0];
     }
 
     container.innerHTML = tones.map(tone => {
-      const isSelected = tone === this.data.style;
+      const isSelected = tone === this.draft.emotion;
       const emoji = toneEmojis[tone] || '✨';
-      const activeClasses = isSelected ? 'ring-4 ring-indigo-500 bg-slate-800' : 'bg-slate-900';
+      const activeClasses = isSelected ? 'ring-4 ring-indigo-500 bg-slate-800 border-indigo-500' : 'bg-slate-900 border-slate-700 hover:border-indigo-400';
       return `
-        <button type="button" data-tone="${tone}" class="tone-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 hover:border-indigo-400 ${activeClasses}">
+        <button type="button" data-tone="${tone}" class="tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 ${activeClasses}">
           <span class="text-2xl">${emoji}</span>
           <span class="font-bold text-xs text-white">${tone}</span>
         </button>
       `;
     }).join('');
 
-    // Bind click events on dynamic tone buttons
     container.querySelectorAll('.tone-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const selectedTone = btn.dataset.tone;
-        this.data.style = selectedTone;
+        this.draft.emotion = btn.dataset.tone;
         container.querySelectorAll('.tone-btn').forEach(b => {
-          b.classList.remove('ring-4', 'ring-indigo-500', 'bg-slate-800');
-          b.classList.add('bg-slate-900');
+          b.className = 'tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 bg-slate-900 border-slate-700 hover:border-indigo-400';
         });
-        btn.classList.add('ring-4', 'ring-indigo-500', 'bg-slate-800');
-        btn.classList.remove('bg-slate-900');
-        this.persistDraft();
-        this.updateStickySummary();
+        btn.className = 'tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 ring-4 ring-indigo-500 bg-slate-800 border-indigo-500';
+        this.syncAll();
       });
     });
 
-    // Update Step 4 subtitle
     const sub = document.getElementById('step4Subtitle');
     if (sub) {
       if (occMeta && !occMeta.isCelebration) {
-        sub.innerText = 'Choose the emotional resonance for your sincere note.';
+        sub.innerText = 'Choose the emotional tone that best reflects your sincere intentions.';
       } else {
         sub.innerText = 'How do you want your loved one to feel?';
       }
     }
   },
 
-  // Adjust numeric fields based on occasion
   adjustContextualFields() {
-    const occ = this.data.occasion.toLowerCase();
+    const occ = this.draft.occasion.toLowerCase();
     const ageWrapper = document.getElementById('ageFieldWrapper');
     const annivWrapper = document.getElementById('annivFieldWrapper');
 
@@ -457,19 +577,15 @@ const WishCreator = {
     }
   },
 
-  // Set font family and update UI badges
   setFontFamily(fontName) {
     if (!fontName) return;
-    this.data.font_family = fontName;
+    this.draft.font = fontName;
 
     document.querySelectorAll('.font-btn').forEach(btn => {
-      if (btn.dataset.font === fontName) {
-        btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
-        btn.classList.remove('bg-slate-900');
-      } else {
-        btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
-        btn.classList.add('bg-slate-900');
-      }
+      const match = btn.dataset.font === fontName;
+      btn.className = `font-btn p-3.5 rounded-xl border text-left transition flex flex-col justify-between h-24 ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700 hover:border-pink-500'
+      }`;
     });
 
     const badge = document.getElementById('selectedFontBadge');
@@ -485,8 +601,7 @@ const WishCreator = {
       messageInput.style.fontFamily = this.getFontStack(fontName);
     }
 
-    this.persistDraft();
-    this.updateLivePreview();
+    this.syncAll();
   },
 
   getFontStack(fontName) {
@@ -501,78 +616,201 @@ const WishCreator = {
     return fontMap[fontName] || fontMap['Playfair Display'];
   },
 
-  // Update Compact Live Sticky Summary Bar
+  getTemplateLabel(tpl) {
+    const map = {
+      cake: 'Interactive Cake 🎂',
+      envelope: 'Wax-Sealed Letter 💌',
+      sincere_letter: 'Sincere Letter 🕊️',
+      friendship_card: 'Shield & Card 🌟'
+    };
+    return map[tpl] || 'Interactive Card ✨';
+  },
+
+  // 5. MASTER SYNCHRONIZATION FUNCTION (Called immediately on every state/input change)
+  syncAll() {
+    this.persistDraft();
+    this.updateStickySummary();
+    this.updateLivePreview();
+    this.updateDynamicHeadings();
+  },
+
+  updateDynamicHeadings() {
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.draft.occasion) : null;
+    const msgType = occMeta?.messageType || 'greeting';
+
+    // Step 2 title
+    const step2Title = document.getElementById('step2Title');
+    if (step2Title) {
+      step2Title.innerText = `Who is this ${msgType} for? 👥`;
+    }
+
+    // Step 7 generate button
+    const genBtnText = document.getElementById('triggerGenerateBtnText');
+    if (genBtnText) {
+      genBtnText.innerText = occMeta?.generateButtonLabel || `Create ${msgType} ✨`;
+    }
+  },
+
+  // Update Sticky Summary Bar with comprehensive, real-time pills
   updateStickySummary() {
     const setTxt = (id, txt) => {
       const el = document.getElementById(id);
       if (el) el.innerText = txt;
     };
 
-    setTxt('sumValOccasion', this.data.occasion || 'Birthday');
-    setTxt('sumValRelationship', this.data.relationship || 'Best Friend');
-    setTxt('sumValRecipient', this.data.recipient_name || 'Friend');
-    setTxt('sumValSender', this.data.sender_name || 'You');
-    setTxt('sumValTone', this.data.style || 'Heartfelt');
+    setTxt('sumValOccasion', this.draft.occasion || 'Birthday');
+    setTxt('sumValRelationship', this.draft.relationship || 'Best Friend');
+    setTxt('sumValRecipient', this.draft.recipientName || 'Friend');
+    setTxt('sumValSender', this.draft.senderName || 'You');
+    setTxt('sumValTone', this.draft.emotion || 'Heartfelt');
+    setTxt('sumValIntensity', this.draft.emotionIntensity || 'Balanced');
 
     const langLabels = { en: 'English', hi: 'हिंदी', hinglish: 'Hinglish' };
-    setTxt('sumValLanguage', langLabels[this.data.language] || 'English');
+    setTxt('sumValLanguage', langLabels[this.draft.language] || 'English');
+
+    const lenLabels = { short: 'Short', medium: 'Medium', long: 'Long' };
+    setTxt('sumValLength', lenLabels[this.draft.messageLength] || 'Medium');
+
+    const tplNames = {
+      cake: 'Cake',
+      envelope: 'Envelope',
+      sincere_letter: 'Sincere',
+      friendship_card: 'Shield'
+    };
+    setTxt('sumValTemplate', tplNames[this.draft.template] || 'Card');
+    setTxt('sumValFont', this.draft.font || 'Playfair');
+
+    // Memory pill visibility
+    const memPill = document.getElementById('sumPillMemory');
+    const memVal = document.getElementById('sumValMemory');
+    if (memPill && memVal) {
+      if (this.draft.memory && this.draft.memory.trim().length > 0) {
+        memPill.classList.remove('hidden');
+        memPill.classList.add('flex');
+        const snippet = this.draft.memory.trim().slice(0, 14);
+        memVal.innerText = `${snippet}…`;
+      } else {
+        memPill.classList.add('hidden');
+        memPill.classList.remove('flex');
+      }
+    }
   },
 
-  // 3. Update Live Interactive Webpage Preview
+  // 6. UPDATE LIVE INTERACTIVE WEBPAGE PREVIEW (Occasion-Aware & Contextual)
   updateLivePreview() {
-    const recEl = document.getElementById('previewRecipientName');
-    const senderEl = document.getElementById('previewSenderName');
-    const badgeEl = document.getElementById('previewOccasionBadge');
-    const messageEl = document.getElementById('previewMessageText');
-    const memoriesBlock = document.getElementById('previewMemoriesBlock');
-    const memoriesText = document.getElementById('previewMemoriesText');
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.draft.occasion) : null;
+    const recipient = this.draft.recipientName || 'Friend';
+    const sender = this.draft.senderName || 'Someone special';
 
-    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
-    const recipient = this.data.recipient_name || 'Friend';
-    const sender = this.data.sender_name || 'Someone special';
-
-    if (recEl) recEl.innerText = recipient;
-
-    if (senderEl) {
-      if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(sender)) {
-        senderEl.innerText = WishAttribution.getSenderSignatureInline(sender, this.data.relationship);
+    // Determine Occasion-Aware Heading: strictly non-celebratory for Sorry/Sympathy
+    let greetingHeading = `Dearest ${recipient}`;
+    if (occMeta) {
+      if (occMeta.previewHeading) {
+        greetingHeading = occMeta.previewHeading.replace('{name}', recipient);
+      } else if (!occMeta.isCelebration) {
+        greetingHeading = `A Heartfelt Message for ${recipient}`;
       } else {
-        const prefix = occMeta?.senderPrefix || 'With love from';
-        senderEl.innerText = `${prefix} ${sender}`;
+        greetingHeading = `Happy ${occMeta.displayName || occMeta.name}, ${recipient}!`;
       }
     }
 
-    if (badgeEl) {
-      badgeEl.innerText = occMeta?.cardBadge || `${this.data.occasion || 'Celebration'}`;
-      if (occMeta && !occMeta.isCelebration) {
-        badgeEl.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700/60';
-      } else {
-        badgeEl.className = 'text-xs px-2.5 py-0.5 rounded-full bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700';
-      }
+    // Determine Relationship-Aware Sender Signature
+    let senderSignature = `With love from ${sender}`;
+    if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(sender)) {
+      senderSignature = WishAttribution.getSenderSignatureInline(sender, this.draft.relationship);
+    } else if (occMeta && !occMeta.isCelebration) {
+      senderSignature = `Sincerely from ${sender}`;
     }
 
-    if (messageEl) {
-      messageEl.innerText = this.data.message || (occMeta && !occMeta.isCelebration 
-        ? 'Select or write a thoughtful note above to preview it here...' 
-        : 'Select or write a greeting message above to preview it here...');
-      messageEl.style.fontFamily = this.getFontStack(this.data.font_family);
-    }
+    // Determine Message Text
+    const defaultPlaceholder = occMeta?.emptyPreviewText || (occMeta && !occMeta.isCelebration
+      ? 'Your personalized sincere message will appear here...'
+      : 'Your personalized celebration message will appear here...');
+    const messageContent = this.draft.generatedMessage || defaultPlaceholder;
+    const fontStack = this.getFontStack(this.draft.font);
 
-    // Display personal memory section if provided
-    if (memoriesBlock && memoriesText) {
-      if (this.data.memories && this.data.memories.trim()) {
-        memoriesText.innerText = this.data.memories.trim();
-        memoriesBlock.style.display = 'block';
-      } else {
-        memoriesBlock.style.display = 'none';
+    // Template and Occasion Badges
+    const tplLabel = this.getTemplateLabel(this.draft.template);
+    const occLabel = occMeta?.cardBadge || this.draft.occasion;
+
+    // Helper to apply preview data to an element set
+    const applyPreview = (prefix) => {
+      const headingEl = document.getElementById(`${prefix}HeadingTitle`);
+      const recEl = document.getElementById(`${prefix}RecipientName`);
+      const senderEl = document.getElementById(`${prefix}SenderName`);
+      const msgEl = document.getElementById(`${prefix}MessageText`);
+      const occBadge = document.getElementById(`${prefix}OccasionBadge`);
+      const tplBadge = document.getElementById(`${prefix}TemplateBadge`);
+      const memBlock = document.getElementById(`${prefix}MemoriesBlock`);
+      const memText = document.getElementById(`${prefix}MemoriesText`);
+
+      if (headingEl) {
+        headingEl.innerHTML = greetingHeading;
+      } else if (recEl) {
+        recEl.innerText = recipient;
       }
+
+      if (senderEl) senderEl.innerText = senderSignature;
+
+      if (msgEl) {
+        msgEl.innerText = messageContent;
+        msgEl.style.fontFamily = fontStack;
+      }
+
+      if (occBadge) {
+        occBadge.innerText = occLabel;
+        if (occMeta && !occMeta.isCelebration) {
+          occBadge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700/60';
+        } else {
+          occBadge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700';
+        }
+      }
+
+      if (tplBadge) {
+        tplBadge.innerText = tplLabel;
+      }
+
+      if (memBlock && memText) {
+        if (this.draft.memory && this.draft.memory.trim()) {
+          memText.innerText = this.draft.memory.trim();
+          memBlock.classList.remove('hidden');
+          memBlock.style.display = 'block';
+        } else {
+          memBlock.classList.add('hidden');
+          memBlock.style.display = 'none';
+        }
+      }
+    };
+
+    // Apply to Step 7 inline card
+    applyPreview('preview');
+    // Apply to Preview Modal
+    applyPreview('modalPreview');
+  },
+
+  // Instant Live Preview Modal
+  openPreviewModal() {
+    this.saveAllInputs();
+    this.updateLivePreview();
+    const modal = document.getElementById('previewModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
   },
 
-  // 4. Writing Improvement Engine with Side-by-Side Comparison
+  closePreviewModal() {
+    const modal = document.getElementById('previewModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  },
+
+  // 7. WRITING IMPROVEMENT ENGINE (Side-by-Side Comparison)
   async improveMemoryWriting() {
     this.saveAllInputs();
-    const rawText = this.data.memories;
+    const rawText = this.draft.memory;
     if (!rawText || rawText.trim().length < 3) {
       if (typeof showToast === 'function') showToast('Please enter a memory or personal note first to improve.', 'info');
       document.getElementById('memoriesInput')?.focus();
@@ -591,10 +829,10 @@ const WishCreator = {
         body: JSON.stringify({
           text: rawText,
           context: {
-            occasion: this.data.occasion,
-            relationship: this.data.relationship,
-            recipientName: this.data.recipient_name,
-            language: this.data.language
+            occasion: this.draft.occasion,
+            relationship: this.draft.relationship,
+            recipientName: this.draft.recipientName,
+            language: this.draft.language
           }
         })
       });
@@ -603,7 +841,10 @@ const WishCreator = {
       if (!res.ok) throw new Error(json.message || 'Could not improve writing');
 
       if (json.improved) {
+        this.draft.originalMemory = rawText;
+        this.draft.improvedMemory = json.improved;
         this.correctedMemory = json.improved;
+
         const diffBox = document.getElementById('memoryComparisonBox');
         const diffOrig = document.getElementById('memoryDiffOriginal');
         const diffImp = document.getElementById('memoryDiffImproved');
@@ -611,7 +852,7 @@ const WishCreator = {
 
         if (diffOrig) diffOrig.innerText = json.original || rawText;
         if (diffImp) diffImp.innerText = json.improved;
-        if (badge) badge.innerText = json.explanation || 'Cleaned grammar and typos while preserving your voice';
+        if (badge) badge.innerText = json.explanation || 'Polished grammar and clarity while preserving your voice';
         if (diffBox) diffBox.classList.remove('hidden');
 
         if (typeof showToast === 'function') {
@@ -629,15 +870,14 @@ const WishCreator = {
 
   applyImprovedMemory() {
     if (!this.correctedMemory) return;
-    this.data.memories = this.correctedMemory;
+    this.draft.memory = this.correctedMemory;
     const input = document.getElementById('memoriesInput');
     if (input) input.value = this.correctedMemory;
 
     const diffBox = document.getElementById('memoryComparisonBox');
     if (diffBox) diffBox.classList.add('hidden');
 
-    this.persistDraft();
-    this.updateLivePreview();
+    this.syncAll();
     if (typeof showToast === 'function') showToast('Improved version applied! ✓', 'success');
   },
 
@@ -650,7 +890,7 @@ const WishCreator = {
   // Polish final generated message in Step 7
   async polishFinalMessage() {
     this.saveAllInputs();
-    const raw = this.data.message;
+    const raw = this.draft.generatedMessage;
     if (!raw || raw.trim().length < 5) {
       if (typeof showToast === 'function') showToast('Please enter a message to polish.', 'info');
       return;
@@ -663,20 +903,20 @@ const WishCreator = {
         body: JSON.stringify({
           text: raw,
           context: {
-            occasion: this.data.occasion,
-            relationship: this.data.relationship,
-            recipientName: this.data.recipient_name,
-            language: this.data.language
+            occasion: this.draft.occasion,
+            relationship: this.draft.relationship,
+            recipientName: this.draft.recipientName,
+            language: this.draft.language
           }
         })
       });
 
       const json = await res.json();
       if (json.improved) {
-        this.data.message = json.improved;
+        this.draft.generatedMessage = json.improved;
         const msgInput = document.getElementById('finalMessageInput');
         if (msgInput) msgInput.value = json.improved;
-        this.updateLivePreview();
+        this.syncAll();
         if (typeof showToast === 'function') showToast('✨ Message polished!', 'success');
       }
     } catch (e) {
@@ -684,11 +924,11 @@ const WishCreator = {
     }
   },
 
-  // 5. Multi-Stage AI Generation
+  // 8. MULTI-STAGE AI GENERATION
   async generateAIWishes() {
     this.saveAllInputs();
 
-    if (!this.data.recipient_name || !this.data.recipient_name.trim()) {
+    if (!this.draft.recipientName || !this.draft.recipientName.trim()) {
       if (typeof showToast === 'function') showToast("Please enter the recipient's name in Step 3 first.", 'error');
       this.goToStep(3);
       document.getElementById('recipientNameInput')?.focus();
@@ -709,37 +949,45 @@ const WishCreator = {
       triggerBtn.classList.add('opacity-50');
     }
 
-    // Animated multi-stage progress
     if (titleEl) titleEl.innerText = 'Stage 1 of 3: Analyzing personal context...';
-    if (subEl) subEl.innerText = `Weaving ${this.data.recipient_name}'s memories and ${this.data.relationship} relationship...`;
+    if (subEl) subEl.innerText = `Weaving ${this.draft.recipientName}'s memories and ${this.draft.relationship} relationship...`;
     if (barEl) barEl.style.width = '33%';
 
     const stageTimer1 = setTimeout(() => {
-      if (titleEl) titleEl.innerText = 'Stage 2 of 3: Gemini AI synthesizing message...';
-      if (subEl) subEl.innerText = `Drafting emotionally resonant ${this.data.style} variations in ${this.data.language}...`;
+      if (titleEl) titleEl.innerText = 'Stage 2 of 3: Synthesizing resonant message...';
+      if (subEl) subEl.innerText = `Crafting ${this.draft.emotionIntensity} ${this.draft.emotion} variations in ${this.draft.language}...`;
       if (barEl) barEl.style.width = '66%';
     }, 900);
 
     const stageTimer2 = setTimeout(() => {
       if (titleEl) titleEl.innerText = 'Stage 3 of 3: Perfecting interactive greeting...';
-      if (subEl) subEl.innerText = 'Applying typography, ambient soundscapes, and visual theme...';
+      if (subEl) subEl.innerText = 'Applying typography, ambient soundscapes, and visual template...';
       if (barEl) barEl.style.width = '95%';
     }, 1800);
 
     try {
       const payload = {
-        occasion: this.data.occasion,
-        relationship: this.data.relationship,
-        recipient_name: this.data.recipient_name,
-        sender_name: this.data.sender_name,
-        recipient_gender: this.data.recipient_gender,
-        age: this.data.age,
-        anniversary_years: this.data.anniversary_years,
-        relationship_duration: this.data.relationship_duration,
-        memories: this.data.memories,
-        style: this.data.style,
-        language: this.data.language,
-        length: this.data.length
+        occasion: this.draft.occasion,
+        relationship: this.draft.relationship,
+        recipientName: this.draft.recipientName,
+        recipient_name: this.draft.recipientName,
+        senderName: this.draft.senderName,
+        sender_name: this.draft.senderName,
+        recipient_gender: this.draft.recipientGender,
+        age: this.draft.age,
+        anniversary_years: this.draft.anniversaryYears,
+        relationship_duration: this.draft.relationshipDuration,
+        memories: this.draft.memory,
+        original_memory: this.draft.originalMemory,
+        improved_memory: this.draft.improvedMemory,
+        style: this.draft.emotion,
+        emotion: this.draft.emotion,
+        emotionIntensity: this.draft.emotionIntensity,
+        emotion_intensity: this.draft.emotionIntensity,
+        language: this.draft.language,
+        length: this.draft.messageLength,
+        message_length: this.draft.messageLength,
+        template: this.draft.template
       };
 
       const res = await fetch('/api/generate-message', {
@@ -757,7 +1005,6 @@ const WishCreator = {
       this.aiVariations = json.variations || [];
       this.renderVariationsList();
 
-      // Automatically select the first variation
       if (this.aiVariations.length > 0) {
         this.selectVariation(0);
       }
@@ -786,10 +1033,11 @@ const WishCreator = {
     list.innerHTML = this.aiVariations.map((v, idx) => {
       const isSelected = idx === this.selectedVariationIndex;
       const borderClass = isSelected ? 'border-pink-500 ring-2 ring-pink-500 bg-pink-950/30' : 'border-slate-700 bg-slate-900 hover:border-slate-500';
+      const wordCount = v.estimatedWords || v.text.trim().split(/\s+/).length;
       return `
         <div onclick="WishCreator.selectVariation(${idx})" class="variation-card p-4 rounded-xl border transition cursor-pointer ${borderClass}">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-pink-300 border border-slate-700">Option ${idx + 1}: ${v.tone || this.data.style}</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-pink-300 border border-slate-700">Option ${idx + 1}: ${v.tone || this.draft.emotion} (${wordCount}w)</span>
             <span class="text-xs text-gray-400 font-semibold">${isSelected ? 'Selected ✓' : 'Click to Use'}</span>
           </div>
           <p class="text-sm text-gray-200 leading-relaxed font-playfair whitespace-pre-line">${v.text}</p>
@@ -805,17 +1053,16 @@ const WishCreator = {
 
     let varText = selected.text;
 
-    // Special MD RAZA developer relationship-aware signature handling
-    if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(this.data.sender_name)) {
-      const sig = WishAttribution.getSenderSignatureInline(this.data.sender_name, this.data.relationship);
+    // Special MD RAZA relationship-aware signature handling
+    if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(this.draft.senderName)) {
+      const sig = WishAttribution.getSenderSignatureInline(this.draft.senderName, this.draft.relationship);
       if (!varText.includes(sig)) {
         varText = varText.replace(/—\s*(?:with love,\s*)?(?:your\s+[\w\s]+,\s*)?md\s+raza\s*$/i, `— ${sig}`);
       }
     }
 
-    this.data.message = varText;
+    this.draft.generatedMessage = varText;
 
-    // Update active highlight on variation cards
     document.querySelectorAll('.variation-card').forEach((c, idx) => {
       if (idx === index) {
         c.className = 'variation-card p-4 rounded-xl border transition cursor-pointer bg-pink-950/30 border-pink-500 ring-2 ring-pink-500';
@@ -824,36 +1071,37 @@ const WishCreator = {
       }
     });
 
-    // Populate active editable textarea
     const messageInput = document.getElementById('finalMessageInput');
     if (messageInput) {
       messageInput.value = varText;
     }
 
-    this.persistDraft();
-    this.updateLivePreview();
+    this.syncAll();
   },
 
-  // 6. Navigation Between 7 Steps
+  // 9. NAVIGATION BETWEEN 7 STEPS
   goToStep(stepNumber) {
     if (stepNumber < 1 || stepNumber > 7) return;
 
-    // Save inputs before moving away from current step
     this.saveAllInputs();
 
-    // Validation before moving past Step 3
+    // Validation when navigating past Step 3
     if (stepNumber > 3 && this.currentStep <= 3) {
-      if (!this.data.recipient_name || !this.data.recipient_name.trim()) {
+      if (!this.draft.recipientName || !this.draft.recipientName.trim()) {
         if (typeof showToast === 'function') showToast("Please enter the recipient's name to continue.", 'error');
-        document.getElementById('recipientNameInput')?.focus();
+        const input = document.getElementById('recipientNameInput');
+        if (input) {
+          input.focus();
+          input.classList.add('ring-2', 'ring-rose-500');
+          setTimeout(() => input.classList.remove('ring-2', 'ring-rose-500'), 2500);
+        }
         return;
       }
     }
 
     this.currentStep = stepNumber;
     this.updateStepView();
-    this.updateStickySummary();
-    this.updateLivePreview();
+    this.syncAll();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
@@ -866,7 +1114,6 @@ const WishCreator = {
   },
 
   updateStepView() {
-    // Show active section, hide others
     for (let i = 1; i <= 7; i++) {
       const section = document.getElementById(`stepSection${i}`);
       if (section) {
@@ -887,25 +1134,25 @@ const WishCreator = {
       }
     }
 
-    // Step 7 auto-generate trigger if message is still empty
-    if (this.currentStep === 7 && !this.data.message && this.aiVariations.length === 0) {
+    // Auto-generate on step 7 if message is empty
+    if (this.currentStep === 7 && !this.draft.generatedMessage && this.aiVariations.length === 0) {
       this.generateAIWishes();
     }
   },
 
-  // 7. Photo Uploads (up to 6)
+  // 10. PHOTO UPLOADS (Up to 6)
   handlePhotoUpload(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
 
-    const remainingSlots = 6 - (this.data.images?.length || 0);
+    const remainingSlots = 6 - (this.draft.photos?.length || 0);
     const filesToProcess = files.slice(0, remainingSlots);
 
     filesToProcess.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (!this.data.images) this.data.images = [];
-        this.data.images.push(e.target.result);
+        if (!this.draft.photos) this.draft.photos = [];
+        this.draft.photos.push(e.target.result);
         this.renderPhotoReel();
         this.persistDraft();
       };
@@ -917,7 +1164,7 @@ const WishCreator = {
     const reel = document.getElementById('photoPreviewReel');
     if (!reel) return;
 
-    reel.innerHTML = (this.data.images || []).map((img, idx) => `
+    reel.innerHTML = (this.draft.photos || []).map((img, idx) => `
       <div class="relative group rounded-xl overflow-hidden aspect-square border border-slate-700 shadow">
         <img src="${img}" class="w-full h-full object-cover">
         <button type="button" onclick="WishCreator.removePhoto(${idx})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
@@ -926,19 +1173,26 @@ const WishCreator = {
   },
 
   removePhoto(index) {
-    if (this.data.images) {
-      this.data.images.splice(index, 1);
+    if (this.draft.photos) {
+      this.draft.photos.splice(index, 1);
       this.renderPhotoReel();
       this.persistDraft();
     }
   },
 
-  // 8. Publish & Send Now
+  // 11. PUBLISH & SEND NOW
   async publishGreeting() {
     this.saveAllInputs();
 
-    if (!this.data.message || !this.data.message.trim()) {
+    if (!this.draft.recipientName || !this.draft.recipientName.trim()) {
+      if (typeof showToast === 'function') showToast("Please enter the recipient's name.", 'error');
+      this.goToStep(3);
+      return;
+    }
+
+    if (!this.draft.generatedMessage || !this.draft.generatedMessage.trim()) {
       if (typeof showToast === 'function') showToast('Please enter or select a greeting message.', 'error');
+      document.getElementById('finalMessageInput')?.focus();
       return;
     }
 
@@ -952,8 +1206,29 @@ const WishCreator = {
       const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
 
       const payload = {
-        ...this.data,
-        sender_id: user?.id || null
+        sender_id: user?.id || null,
+        sender_name: this.draft.senderName,
+        recipient_name: this.draft.recipientName,
+        recipient_gender: this.draft.recipientGender,
+        occasion: this.draft.occasion,
+        relationship: this.draft.relationship,
+        style: this.draft.emotion,
+        emotion: this.draft.emotion,
+        emotion_intensity: this.draft.emotionIntensity,
+        template: this.draft.template,
+        theme: this.draft.theme,
+        font_family: this.draft.font,
+        language: this.draft.language,
+        message_length: this.draft.messageLength,
+        message: this.draft.generatedMessage,
+        memories: this.draft.memory,
+        original_memory: this.draft.originalMemory,
+        improved_memory: this.draft.improvedMemory,
+        relationship_duration: this.draft.relationshipDuration,
+        age: this.draft.age,
+        anniversary_years: this.draft.anniversaryYears,
+        images: this.draft.photos,
+        is_public: this.draft.isPublic
       };
 
       const res = await fetch('/api/wishes', {
@@ -968,10 +1243,11 @@ const WishCreator = {
       this.createdWish = json.wish;
       if (typeof showToast === 'function') showToast('🎉 Your greeting is live!', 'success');
 
-      // Clear draft after successful creation
-      try { localStorage.removeItem('wishcraft_draft_v3'); } catch (e) {}
+      try {
+        localStorage.removeItem('wishcraft_draft_v4');
+        localStorage.removeItem('wishcraft_draft_v3');
+      } catch (e) {}
 
-      // Open Share modal or redirect
       this.showShareModal(json.wish);
 
     } catch (err) {
@@ -1079,30 +1355,52 @@ const WishCreator = {
     window.location.href = `sms:?&body=${text}`;
   },
 
-  // 9. Schedule for Later
+  // 12. SCHEDULE FOR LATER
   async openScheduleModal() {
     this.saveAllInputs();
 
-    if (!this.data.message || !this.data.message.trim()) {
+    if (!this.draft.generatedMessage || !this.draft.generatedMessage.trim()) {
       if (typeof showToast === 'function') showToast('Please select or write a message first.', 'error');
       return;
     }
 
     try {
-      // Ensure wish exists
       if (!this.createdWish) {
         const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
         const res = await fetch('/api/wishes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...this.data, sender_id: user?.id || null })
+          body: JSON.stringify({
+            sender_id: user?.id || null,
+            sender_name: this.draft.senderName,
+            recipient_name: this.draft.recipientName,
+            recipient_gender: this.draft.recipientGender,
+            occasion: this.draft.occasion,
+            relationship: this.draft.relationship,
+            style: this.draft.emotion,
+            emotion: this.draft.emotion,
+            emotion_intensity: this.draft.emotionIntensity,
+            template: this.draft.template,
+            theme: this.draft.theme,
+            font_family: this.draft.font,
+            language: this.draft.language,
+            message_length: this.draft.messageLength,
+            message: this.draft.generatedMessage,
+            memories: this.draft.memory,
+            original_memory: this.draft.originalMemory,
+            improved_memory: this.draft.improvedMemory,
+            relationship_duration: this.draft.relationshipDuration,
+            age: this.draft.age,
+            anniversary_years: this.draft.anniversaryYears,
+            images: this.draft.photos,
+            is_public: this.draft.isPublic
+          })
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.message || 'Could not save greeting');
         this.createdWish = json.wish;
       }
 
-      // Populate schedule modal defaults
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const yyyy = tomorrow.getFullYear();
       const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
@@ -1156,14 +1454,14 @@ const WishCreator = {
     const dateVal = document.getElementById('schedDeliveryDate')?.value;
     const timeVal = document.getElementById('schedDeliveryTime')?.value;
     const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
-    const recip = this.data.recipient_name || 'Friend';
+    const recip = this.draft.recipientName || 'Friend';
 
     if (!dateVal || !timeVal) {
       sumEl.innerText = `Your wish for ${recip} will be dispatched via ${channel.toUpperCase()} at your scheduled time.`;
       return;
     }
 
-    sumEl.innerText = `Your ${this.data.occasion} wish for ${recip} will be automatically sent via ${channel.toUpperCase()} on ${dateVal} at ${timeVal} (${tzVal}).`;
+    sumEl.innerText = `Your ${this.draft.occasion} greeting for ${recip} will be automatically sent via ${channel.toUpperCase()} on ${dateVal} at ${timeVal} (${tzVal}).`;
   },
 
   async submitScheduledWish(event) {
@@ -1179,7 +1477,7 @@ const WishCreator = {
     const personalNote = document.getElementById('schedPersonalMessage')?.value.trim();
 
     if (channel === 'email') {
-      if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         if (typeof showToast === 'function') showToast('Please enter a valid recipient email address.', 'error');
         return;
       }
@@ -1203,7 +1501,7 @@ const WishCreator = {
 
       const payload = {
         greeting_id: this.createdWish.slug,
-        recipient_name: this.createdWish.recipient_name || this.data.recipient_name,
+        recipient_name: this.createdWish.recipient_name || this.draft.recipientName,
         recipient_email: channel === 'email' ? email : undefined,
         recipient_phone: channel !== 'email' ? phone : undefined,
         delivery_method: channel,
@@ -1224,7 +1522,6 @@ const WishCreator = {
 
       this.closeScheduleModal();
 
-      // Show success modal
       const sched = json.scheduled_wish;
       document.getElementById('successRecipientName').innerText = sched.recipient_name;
       document.getElementById('successDeliveryChannel').innerText = sched.delivery_method === 'email' ? 'Email 💌' : 'SMS 📱';
