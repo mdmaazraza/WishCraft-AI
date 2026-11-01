@@ -621,3 +621,57 @@ body {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* ====================================================================
+   Critical Visibility & Modal Utility Rules (Ironclad Overlay Defense)
+   Ensures modals and hidden containers are strictly display: none and
+   pointer-events: none when inactive, preventing invisible click blocks.
+   ==================================================================== */
+.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+#previewModal,
+#shareModal,
+#scheduleWishModal,
+#scheduleSuccessModal {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+#previewModal.active-modal,
+#shareModal.active-modal,
+#scheduleWishModal.active-modal,
+#scheduleSuccessModal.active-modal,
+#previewModal.flex,
+#shareModal.flex,
+#scheduleWishModal.flex,
+#scheduleSuccessModal.flex {
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure buttons across Step 4, 5, 6, 7 are accessible and responsive */
+.tone-btn,
+.intensity-btn,
+.language-card,
+.length-btn,
+.template-btn,
+.font-btn,
+.theme-btn {
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.tone-btn *,
+.intensity-btn *,
+.language-card *,
+.length-btn *,
+.template-btn *,
+.font-btn *,
+.theme-btn * {
+  pointer-events: none;
+}
+

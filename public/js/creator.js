@@ -261,7 +261,7 @@ const WishCreator = {
   },
 
   highlightAllSelectors() {
-    // 1. Occasion
+    // 1. Occasion (Step 1)
     document.querySelectorAll('.occasion-btn').forEach(btn => {
       const match = btn.dataset.occasion === this.draft.occasion;
       btn.className = `occasion-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-28 ${
@@ -269,7 +269,7 @@ const WishCreator = {
       }`;
     });
 
-    // 2. Relationship
+    // 2. Relationship (Step 2)
     document.querySelectorAll('.relationship-btn').forEach(btn => {
       const match = btn.dataset.relationship === this.draft.relationship;
       btn.className = `relationship-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-24 ${
@@ -277,7 +277,15 @@ const WishCreator = {
       }`;
     });
 
-    // 3. Emotion Intensity
+    // 3. Dynamic Emotion / Tone (Step 4)
+    document.querySelectorAll('#dynamicTonesContainer .tone-btn').forEach(btn => {
+      const match = btn.dataset.tone === this.draft.emotion;
+      btn.className = `tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 ${
+        match ? 'ring-4 ring-indigo-500 bg-slate-800 border-indigo-500' : 'bg-slate-900 border-slate-700 hover:border-indigo-400'
+      }`;
+    });
+
+    // 4. Emotion Intensity (Step 4)
     document.querySelectorAll('.intensity-btn').forEach(btn => {
       const match = btn.dataset.intensity === this.draft.emotionIntensity;
       btn.className = `intensity-btn p-3.5 rounded-xl border text-center transition flex flex-col items-center justify-between h-20 ${
@@ -287,7 +295,7 @@ const WishCreator = {
     const intBadge = document.getElementById('selectedIntensityBadge');
     if (intBadge) intBadge.innerText = this.draft.emotionIntensity;
 
-    // 4. Language
+    // 5. Language (Step 5)
     document.querySelectorAll('.language-card').forEach(btn => {
       const match = btn.dataset.language === this.draft.language;
       btn.className = `language-card p-5 rounded-2xl border text-left transition flex flex-col justify-between h-32 ${
@@ -295,7 +303,7 @@ const WishCreator = {
       }`;
     });
 
-    // 5. Length
+    // 6. Length (Step 5)
     document.querySelectorAll('.length-btn').forEach(btn => {
       const match = btn.dataset.length === this.draft.messageLength;
       btn.className = `length-btn p-3 rounded-xl border text-center transition ${
@@ -303,7 +311,7 @@ const WishCreator = {
       }`;
     });
 
-    // 6. Template
+    // 7. Template (Step 6)
     document.querySelectorAll('.template-btn').forEach(btn => {
       const match = btn.dataset.template === this.draft.template;
       btn.className = `template-btn p-4 rounded-2xl border text-left transition flex flex-col justify-between h-28 ${
@@ -313,10 +321,25 @@ const WishCreator = {
     const tplBadge = document.getElementById('selectedTemplateBadge');
     if (tplBadge) tplBadge.innerText = this.getTemplateLabel(this.draft.template);
 
-    // 7. Font
-    this.setFontFamily(this.draft.font);
+    // 8. Font (Step 6)
+    document.querySelectorAll('.font-btn').forEach(btn => {
+      const match = btn.dataset.font === this.draft.font;
+      btn.className = `font-btn p-3.5 rounded-xl border text-left transition flex flex-col justify-between h-24 ${
+        match ? 'ring-4 ring-pink-500 bg-slate-800 border-pink-500' : 'bg-slate-900 border-slate-700 hover:border-pink-500'
+      }`;
+    });
+    const fontBadge = document.getElementById('selectedFontBadge');
+    if (fontBadge) fontBadge.innerText = this.draft.font;
+    const fontDropdown = document.getElementById('step6FontSelector');
+    if (fontDropdown && fontDropdown.value !== this.draft.font) {
+      fontDropdown.value = this.draft.font;
+    }
+    const messageInput = document.getElementById('finalMessageInput');
+    if (messageInput) {
+      messageInput.style.fontFamily = this.getFontStack(this.draft.font);
+    }
 
-    // 8. Theme
+    // 9. Theme (Step 6)
     document.querySelectorAll('.theme-btn').forEach(btn => {
       const match = btn.dataset.theme === this.draft.theme;
       btn.className = `theme-btn p-3.5 rounded-xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-24 ${
@@ -324,8 +347,75 @@ const WishCreator = {
       }`;
     });
 
-    // 9. Photos
+    // 10. Photos (Step 6)
     this.renderPhotoReel();
+  },
+
+  selectOccasion(val) {
+    if (!val) return;
+    this.draft.occasion = val;
+
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(val) : null;
+    if (occMeta && occMeta.recommendedTemplate) {
+      this.draft.template = occMeta.recommendedTemplate;
+    }
+    if (occMeta && occMeta.defaultEmotion) {
+      this.draft.emotion = occMeta.defaultEmotion;
+    }
+
+    this.renderDynamicTones();
+    this.highlightAllSelectors();
+    this.adjustContextualFields();
+    this.syncAll();
+  },
+
+  selectRelationship(val) {
+    if (!val) return;
+    this.draft.relationship = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectTone(val) {
+    if (!val) return;
+    this.draft.emotion = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectIntensity(val) {
+    if (!val) return;
+    this.draft.emotionIntensity = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectLanguage(val) {
+    if (!val) return;
+    this.draft.language = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectLength(val) {
+    if (!val) return;
+    this.draft.messageLength = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectTemplate(val) {
+    if (!val) return;
+    this.draft.template = val;
+    this.highlightAllSelectors();
+    this.syncAll();
+  },
+
+  selectTheme(val) {
+    if (!val) return;
+    this.draft.theme = val;
+    this.highlightAllSelectors();
+    this.syncAll();
   },
 
   clearDraftAndReset() {
@@ -373,96 +463,152 @@ const WishCreator = {
 
   // 3. MASTER EVENT BINDINGS
   bindEvents() {
-    // Step 1: Occasion selectors
+    // Step 1: Occasion selectors (Direct + Delegation)
     document.querySelectorAll('.occasion-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const val = btn.dataset.occasion;
-        this.draft.occasion = val;
-
-        // Auto-recommend template based on occasion
-        const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(val) : null;
-        if (occMeta && occMeta.recommendedTemplate) {
-          this.draft.template = occMeta.recommendedTemplate;
-        }
-
-        // Auto-recommend default emotion
-        if (occMeta && occMeta.defaultEmotion) {
-          this.draft.emotion = occMeta.defaultEmotion;
-        }
-
-        this.highlightAllSelectors();
-        this.adjustContextualFields();
-        this.renderDynamicTones();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectOccasion(btn.dataset.occasion);
       });
     });
 
-    // Step 2: Relationship selectors
+    // Step 2: Relationship selectors (Direct + Delegation)
     document.querySelectorAll('.relationship-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.relationship = btn.dataset.relationship;
-        this.highlightAllSelectors();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectRelationship(btn.dataset.relationship);
       });
     });
 
-    // Step 4: Emotion Intensity buttons
+    // Step 4: Dynamic Tones Container delegation
+    const dynContainer = document.getElementById('dynamicTonesContainer');
+    if (dynContainer) {
+      dynContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tone-btn');
+        if (btn && btn.dataset.tone) {
+          e.preventDefault();
+          this.selectTone(btn.dataset.tone);
+        }
+      });
+    }
+
+    // Step 4: Emotion Intensity buttons (Direct + Delegation)
     document.querySelectorAll('.intensity-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.emotionIntensity = btn.dataset.intensity;
-        this.highlightAllSelectors();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectIntensity(btn.dataset.intensity);
       });
     });
+    const intContainer = document.getElementById('emotionIntensityContainer');
+    if (intContainer) {
+      intContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.intensity-btn');
+        if (btn && btn.dataset.intensity) {
+          e.preventDefault();
+          this.selectIntensity(btn.dataset.intensity);
+        }
+      });
+    }
 
-    // Step 5: Language selector
+    // Step 5: Language cards (Direct + Delegation)
     document.querySelectorAll('.language-card').forEach(card => {
-      card.addEventListener('click', () => {
-        this.draft.language = card.dataset.language;
-        this.highlightAllSelectors();
-        this.syncAll();
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectLanguage(card.dataset.language);
       });
     });
 
-    // Step 5: Length selector
+    // Step 5: Length selector (Direct + Delegation)
     document.querySelectorAll('.length-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.messageLength = btn.dataset.length;
-        this.highlightAllSelectors();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectLength(btn.dataset.length);
       });
     });
+    const step5 = document.getElementById('stepSection5');
+    if (step5) {
+      step5.addEventListener('click', (e) => {
+        const langCard = e.target.closest('.language-card');
+        if (langCard && langCard.dataset.language) {
+          e.preventDefault();
+          this.selectLanguage(langCard.dataset.language);
+          return;
+        }
+        const lenBtn = e.target.closest('.length-btn');
+        if (lenBtn && lenBtn.dataset.length) {
+          e.preventDefault();
+          this.selectLength(lenBtn.dataset.length);
+          return;
+        }
+      });
+    }
 
-    // Step 6: Template selector
+    // Step 6: Template selector (Direct + Delegation)
     document.querySelectorAll('.template-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.template = btn.dataset.template;
-        this.highlightAllSelectors();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectTemplate(btn.dataset.template);
       });
     });
 
-    // Step 6: Font selector
+    // Step 6: Font selector (Direct + Delegation)
     document.querySelectorAll('.font-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         this.setFontFamily(btn.dataset.font);
       });
     });
 
-    // Step 6: Theme selector
+    // Step 6: Theme selector (Direct + Delegation)
     document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.theme = btn.dataset.theme;
-        this.highlightAllSelectors();
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.selectTheme(btn.dataset.theme);
       });
     });
+    const step6 = document.getElementById('stepSection6');
+    if (step6) {
+      step6.addEventListener('click', (e) => {
+        const tplBtn = e.target.closest('.template-btn');
+        if (tplBtn && tplBtn.dataset.template) {
+          e.preventDefault();
+          this.selectTemplate(tplBtn.dataset.template);
+          return;
+        }
+        const fontBtn = e.target.closest('.font-btn');
+        if (fontBtn && fontBtn.dataset.font) {
+          e.preventDefault();
+          this.setFontFamily(fontBtn.dataset.font);
+          return;
+        }
+        const themeBtn = e.target.closest('.theme-btn');
+        if (themeBtn && themeBtn.dataset.theme) {
+          e.preventDefault();
+          this.selectTheme(themeBtn.dataset.theme);
+          return;
+        }
+      });
+    }
 
     // Step 6: Photo file input listener
     const photoInput = document.getElementById('photoUploadInput');
     if (photoInput) {
       photoInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
     }
+
+    // Backdrop click-to-close listeners for all modals
+    ['previewModal', 'shareModal', 'scheduleWishModal', 'scheduleSuccessModal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('click', (e) => {
+          if (e.target === el) {
+            if (id === 'previewModal') this.closePreviewModal();
+            else if (id === 'shareModal') this.closeShareModal();
+            else if (id === 'scheduleWishModal') this.closeScheduleModal();
+            else if (id === 'scheduleSuccessModal') this.closeScheduleSuccessModal();
+          }
+        });
+      }
+    });
   },
 
   // 4. OCCASION-AWARE TONES RENDERING FOR STEP 4
@@ -537,20 +683,17 @@ const WishCreator = {
       const activeClasses = isSelected ? 'ring-4 ring-indigo-500 bg-slate-800 border-indigo-500' : 'bg-slate-900 border-slate-700 hover:border-indigo-400';
       return `
         <button type="button" data-tone="${tone}" class="tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 ${activeClasses}">
-          <span class="text-2xl">${emoji}</span>
-          <span class="font-bold text-xs text-white">${tone}</span>
+          <span class="text-2xl pointer-events-none">${emoji}</span>
+          <span class="font-bold text-xs text-white pointer-events-none">${tone}</span>
         </button>
       `;
     }).join('');
 
     container.querySelectorAll('.tone-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.draft.emotion = btn.dataset.tone;
-        container.querySelectorAll('.tone-btn').forEach(b => {
-          b.className = 'tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 bg-slate-900 border-slate-700 hover:border-indigo-400';
-        });
-        btn.className = 'tone-btn p-3.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 h-22 ring-4 ring-indigo-500 bg-slate-800 border-indigo-500';
-        this.syncAll();
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.selectTone(btn.dataset.tone);
       });
     });
 
@@ -795,7 +938,9 @@ const WishCreator = {
     const modal = document.getElementById('previewModal');
     if (modal) {
       modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.classList.add('flex', 'active-modal');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('pointer-events', 'auto', 'important');
     }
   },
 
@@ -803,7 +948,9 @@ const WishCreator = {
     const modal = document.getElementById('previewModal');
     if (modal) {
       modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.classList.remove('flex', 'active-modal');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
     }
   },
 
@@ -1101,6 +1248,15 @@ const WishCreator = {
 
     this.currentStep = stepNumber;
     this.updateStepView();
+
+    // Refresh occasion-specific tones whenever stepping into Step 4
+    if (stepNumber === 4) {
+      this.renderDynamicTones();
+    }
+
+    // Re-highlight all selectors to guarantee state reflects in DOM visual rings
+    this.highlightAllSelectors();
+    this.adjustContextualFields();
     this.syncAll();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
@@ -1320,14 +1476,18 @@ const WishCreator = {
     }
 
     modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    modal.classList.add('flex', 'active-modal');
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.style.setProperty('pointer-events', 'auto', 'important');
   },
 
   closeShareModal() {
     const modal = document.getElementById('shareModal');
     if (modal) {
       modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.classList.remove('flex', 'active-modal');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
     }
   },
 
@@ -1416,7 +1576,9 @@ const WishCreator = {
       const modal = document.getElementById('scheduleWishModal');
       if (modal) {
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        modal.classList.add('flex', 'active-modal');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('pointer-events', 'auto', 'important');
       }
     } catch (e) {
       if (typeof showToast === 'function') showToast(e.message || 'Could not prepare schedule', 'error');
@@ -1427,7 +1589,9 @@ const WishCreator = {
     const modal = document.getElementById('scheduleWishModal');
     if (modal) {
       modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.classList.remove('flex', 'active-modal');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
     }
   },
 
@@ -1532,7 +1696,9 @@ const WishCreator = {
       const successModal = document.getElementById('scheduleSuccessModal');
       if (successModal) {
         successModal.classList.remove('hidden');
-        successModal.classList.add('flex');
+        successModal.classList.add('flex', 'active-modal');
+        successModal.style.setProperty('display', 'flex', 'important');
+        successModal.style.setProperty('pointer-events', 'auto', 'important');
       }
 
       if (typeof showToast === 'function') showToast('🎉 Wish scheduled successfully!', 'success');
