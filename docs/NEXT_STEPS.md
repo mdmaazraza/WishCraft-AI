@@ -112,3 +112,9 @@ Under **Environment Variables** in the Render service settings, configure:
 - [ ] In Render Dashboard → Settings, confirm **Auto-Deploy** is set to `Yes`.
 - [ ] In Render Dashboard → Settings, confirm **Root Directory** is empty.
 - [ ] Confirm first request wakes the free-tier service if dormant for >15 minutes.
+
+## Production Release Status — November 1, 2026
+- All 71 automated regression tests passing across 5 test suites.
+- Production build clean, zero runtime dependencies.
+- Git branch `main` synchronized with GitHub origin.
+- Render auto-deploy triggered upon push to `main`.

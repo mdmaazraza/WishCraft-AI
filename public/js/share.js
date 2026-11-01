@@ -70,7 +70,8 @@ const WishShare = {
   // Generate WhatsApp Share Link (Supports with or without recipient phone number)
   getWhatsAppUrl(wish, currentUrl, recipientPhone = '') {
     const text = this.generateShareText(wish, currentUrl);
-    const cleanPhone = this.formatWhatsAppNumber(recipientPhone);
+    const rawPhone = recipientPhone || wish?.recipient_phone || wish?.recipientPhone || "";
+    const cleanPhone = this.formatWhatsAppNumber(rawPhone);
     const encodedText = encodeURIComponent(text);
 
     if (cleanPhone && cleanPhone.length >= 7) {

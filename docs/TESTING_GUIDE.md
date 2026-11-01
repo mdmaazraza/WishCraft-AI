@@ -355,7 +355,7 @@ To verify the context-aware WhatsApp share texts, international phone number for
 
 ```bash
 cd WishCraft-AI
-node tests/test_whatsapp_and_photos.js
+node tests/test_whatsapp_and_photos.js && node tests/test_production_readiness.js
 ```
 
 ### What This Suite Validates:

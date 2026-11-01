@@ -33,6 +33,8 @@ Wish Yours is designed with **zero external npm dependencies** and uses pure nat
 | `FAST2SMS_API_KEY` | Optional | Fast2SMS Indian gateway API key. |
 | `SUPABASE_URL` | Optional | Supabase project URL for PostgreSQL cloud synchronization. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional | Supabase service role key. |
+| `WHATSAPP_ACCESS_TOKEN` | Optional | Meta Cloud API System User access token (for automated level-2 WhatsApp dispatches). |
+| `WHATSAPP_PHONE_NUMBER_ID` | Optional | Meta Phone Number ID. |
 
 ---
 

@@ -158,6 +158,40 @@ function serveStaticFile(req, res, filePath, contentType) {
 }
 
 // Inject Open Graph tags dynamically into wish.html for rich social previews
+
+function getOccasionOgMeta(occasion, recipientName, senderName, message) {
+  const occ = (occasion || '').toLowerCase().trim();
+  const occMeta = OCCASIONS[occ] || Object.values(OCCASIONS).find(o => o.aliases && o.aliases.includes(occ));
+  const isApology = occ === 'sorry' || occ === 'apology' || (occMeta && !occMeta.isCelebration);
+
+  let title;
+  let description;
+
+  if (isApology) {
+    title = `🕊️ A Heartfelt Apology for ${recipientName}`;
+    description = message
+      ? message.slice(0, 150) + (message.length > 150 ? '...' : '')
+      : `A sincere, personal message sent from the heart by ${senderName}.`;
+  } else if (occ === 'thankyou' || occ === 'thank you') {
+    title = `🙏 A Message of Gratitude for ${recipientName}`;
+    description = message
+      ? message.slice(0, 150) + (message.length > 150 ? '...' : '')
+      : `A heartfelt thank you message sent with gratitude by ${senderName}.`;
+  } else if (occ === 'farewell' || occ === 'goodbye') {
+    title = `🌟 A Special Farewell Message for ${recipientName}`;
+    description = message
+      ? message.slice(0, 150) + (message.length > 150 ? '...' : '')
+      : `A warm farewell message sent with best regards by ${senderName}.`;
+  } else {
+    title = `✨ A Heartfelt ${occasion || 'Celebration'} Wish for ${recipientName}!`;
+    description = message
+      ? message.slice(0, 150) + (message.length > 150 ? '...' : '')
+      : `A personalized interactive digital greeting sent with love by ${senderName}.`;
+  }
+
+  return { title, description };
+}
+
 function serveWishPageWithOpenGraph(res, slug) {
   const wishHtmlPath = path.join(__dirname, 'public', 'wish.html');
   fs.readFile(wishHtmlPath, 'utf-8', (err, html) => {
@@ -174,8 +208,7 @@ function serveWishPageWithOpenGraph(res, slug) {
     }
 
     // Compose custom social tags
-    const title = `✨ A Heartfelt ${wish.occasion} Wish for ${wish.recipient_name}!`;
-    const description = wish.message ? wish.message.slice(0, 150) + '...' : `A personalized interactive digital greeting sent with love by ${wish.sender_name}.`;
+    const { title, description } = getOccasionOgMeta(wish.occasion, wish.recipient_name, wish.sender_name, wish.message);
     const pageUrl = `${BASE_URL}/wish/${wish.slug}`;
     const previewImage = wish.images?.[0]?.url || `${BASE_URL}/assets/og-preview.png`;
 

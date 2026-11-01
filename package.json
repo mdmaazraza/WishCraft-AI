@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/test_api.js && node tests/test_step4_controls.js && node tests/test_all_creation_controls.js && node tests/test_whatsapp_and_photos.js"
+    "test": "node tests/test_api.js && node tests/test_step4_controls.js && node tests/test_all_creation_controls.js && node tests/test_whatsapp_and_photos.js && node tests/test_production_readiness.js"
   },
   "keywords": [
     "wishes",

@@ -109,6 +109,81 @@ function callGeminiAPI(apiKey, model, systemInstruction, userPrompt) {
  * Intelligent Emotion-Aware Fallback Generator
  * Generates 3 rich personalized variations based strictly on the occasion's emotional reality.
  */
+
+function adjustFallbackForLength(variations, length, occ, lang, rel, name, sender) {
+  const targetLen = (length || 'medium').toLowerCase();
+  if (targetLen === 'long') {
+    return variations.map(v => {
+      const parts = v.text.split(/( — [^—]+$)/);
+      const body = parts[0] || v.text;
+      const signature = parts[1] || '';
+      let extension = '';
+      if (occ.id === 'sorry') {
+        if (lang === 'hi') {
+          extension = ' मुझे अहसास है कि विश्वास एक दिन में नहीं लौटता, लेकिन मैं पूरी सच्चाई और धैर्य के साथ हमारे इस रिश्ते को फिर से संवारना चाहता हूँ। आपकी खुशी और हमारा यह साथ मेरे लिए हर चीज़ से बढ़कर है।';
+        } else if (lang === 'hinglish') {
+          extension = ' I truly understand that trust takes time to rebuild, but I am completely committed to proving my sincerity with patience and care. Our bond matters more to me than anything else in the world, and I hope we can find our way back to laughter and peace together.';
+        } else {
+          extension = ' I understand that words alone cannot instantly heal the hurt, but I want you to know that I am committed to listening, growing, and rebuilding the trust between us with genuine patience. Your presence in my life is an irreplaceable gift, and my only wish is for us to heal this rift and move forward together in warmth and honesty.';
+        }
+      } else {
+        if (lang === 'hi') {
+          extension = ` आने वाला हर दिन आपके जीवन में नई रोशनी, शांति और सफलता लेकर आए। आप जैसे सच्चे ${rel} का साथ हमारे जीवन को और भी अर्थपूर्ण बनाता है। ईश्वर आपको सदैव स्वस्थ, सुरक्षित और प्रसन्न रखें।`;
+        } else if (lang === 'hinglish') {
+          extension = ` Aane wala har din tumhare liye nayi khushiyan aur exciting opportunities lekar aaye. Having you as a ${rel} makes every single challenge easier and every happy moment twice as bright. Cheers to all our past memories and so many more to come!`;
+        } else {
+          extension = ` May this special milestone surround you with the love of those who hold you dear, and may every path you walk ahead be filled with serenity, renewed courage, and fulfilling adventures. Thank you for enriching my journey as such an incredible ${rel}.`;
+        }
+      }
+      const newText = (body.trim() + extension + (signature ? signature : '')).trim();
+      return {
+        ...v,
+        text: newText,
+        estimatedWords: newText.split(/\s+/).length
+      };
+    });
+  }
+
+  if (targetLen === 'short') {
+    return variations.map(v => {
+      const words = v.text.split(/\s+/);
+      if (words.length <= 45) {
+        return {
+          ...v,
+          estimatedWords: words.length
+        };
+      }
+      const sigMatch = v.text.match(/( — [^—]+$)/);
+      const signature = sigMatch ? sigMatch[1] : '';
+      const bodyOnly = sigMatch ? v.text.replace(sigMatch[1], '').trim() : v.text.trim();
+      const sentences = bodyOnly.match(/[^.!?]+[.!?]+(\s|$)/g) || [bodyOnly];
+      let shortened = '';
+      for (const s of sentences) {
+        const testText = (shortened + ' ' + s).trim();
+        if ((testText + signature).split(/\s+/).length <= 42) {
+          shortened = testText;
+        } else {
+          break;
+        }
+      }
+      if (!shortened) {
+        shortened = words.slice(0, 32).join(' ').replace(/[,;:\s]+$/, '') + '.';
+      }
+      const newText = (shortened + signature).trim();
+      return {
+        ...v,
+        text: newText,
+        estimatedWords: newText.split(/\s+/).length
+      };
+    });
+  }
+
+  return variations.map(v => ({
+    ...v,
+    estimatedWords: v.text.split(/\s+/).length
+  }));
+}
+
 function generateFallbackVariations({ occasion, relationship, recipientName, senderName, style, memories, language, length }) {
   const occ = resolveOccasion(occasion);
   const name = recipientName || "my friend";
@@ -119,6 +194,7 @@ function generateFallbackVariations({ occasion, relationship, recipientName, sen
   const mem = cleanedMem ? ` ${cleanedMem}` : "";
   const lang = (language || "en").toLowerCase();
 
+  const baseVariations = (() => {
   // 1. SORRY / APOLOGY FALLBACKS (Zero celebratory words!)
   if (occ.id === 'sorry') {
     if (lang === 'hi') {
@@ -515,6 +591,9 @@ function generateFallbackVariations({ occasion, relationship, recipientName, sen
       estimatedWords: 32
     }
   ];
+  })();
+
+  return adjustFallbackForLength(baseVariations, length, occ, lang, rel, name, sender);
 }
 
 module.exports = {

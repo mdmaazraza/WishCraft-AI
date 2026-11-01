@@ -23,7 +23,7 @@ function enforceWordLimit(text, targetLength = 'medium') {
   if (!text || typeof text !== 'string') return text;
   const config = WORD_LIMITS[targetLength.toLowerCase()] || WORD_LIMITS.medium;
   const words = text.trim().split(/\s+/);
-  if (words.length <= config.max + 5) {
+  if (words.length <= config.max) {
     return text;
   }
   // Trim at sentence boundary within max words
