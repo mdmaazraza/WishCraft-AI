@@ -24,7 +24,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM_EMAIL
-        value: Wish Yours <wishes@resend.dev>
+        value: Wish Yours <onboarding@resend.dev>
       - key: ADMIN_SECRET_KEY
         generateValue: true
       - key: BASE_URL

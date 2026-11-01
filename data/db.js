@@ -204,6 +204,7 @@ const db = {
       relationship: wishData.relationship || "Friend",
       style: wishData.style || "Heart-touching",
       theme: wishData.theme || "birthday_celebration",
+      font_family: wishData.font_family || "Playfair Display",
       language: wishData.language || "en",
       message: wishData.message || "",
       memories: wishData.memories || "",
@@ -240,7 +241,7 @@ const db = {
     }
 
     const allowedUpdates = [
-      'message', 'sender_name', 'recipient_name', 'theme', 'style',
+      'message', 'sender_name', 'recipient_name', 'theme', 'style', 'font_family',
       'images', 'music_track', 'memories', 'is_public', 'custom_settings',
       'candles_blown'
     ];

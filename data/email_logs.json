@@ -1,5 +1,49 @@
 [
   {
+    "id": "elog_938870a21586",
+    "wish_id": "w_f93eb7b434cc724d",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793514822460",
+    "error_message": null,
+    "created_at": "2026-11-01T06:33:42.461Z"
+  },
+  {
+    "id": "elog_980ed390fc48",
+    "wish_id": null,
+    "recipient_email": "test.recipient@example.com",
+    "sender_name": "Wish Yours Test Team",
+    "status": "failed",
+    "provider": "resend",
+    "message_id": null,
+    "error_message": "Network error contacting Resend API: getaddrinfo ENOTFOUND api.resend.com",
+    "created_at": "2026-11-01T06:32:05.472Z"
+  },
+  {
+    "id": "elog_e760a2001ae9",
+    "wish_id": null,
+    "recipient_email": "test.recipient@example.com",
+    "sender_name": "Alex",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793514718132",
+    "error_message": null,
+    "created_at": "2026-11-01T06:31:58.133Z"
+  },
+  {
+    "id": "elog_10e62f459133",
+    "wish_id": "w_b9a15868d5644154",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793514648702",
+    "error_message": null,
+    "created_at": "2026-11-01T06:30:48.703Z"
+  },
+  {
     "id": "elog_4bed3c719f9b",
     "wish_id": "w_236134092b5d4eaf",
     "recipient_email": "emily@example.com",

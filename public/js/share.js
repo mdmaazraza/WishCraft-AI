@@ -73,7 +73,7 @@ const WishShare = {
   },
 
   // Send Email via Backend Service
-  async sendEmail({ wishId, slug, recipientEmail, senderName, recipientName, occasion, messageExcerpt }) {
+  async sendEmail({ wishId, slug, recipientEmail, senderName, recipientName, occasion, messageExcerpt, fontFamily }) {
     const res = await fetch('/api/share/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -84,7 +84,8 @@ const WishShare = {
         senderName,
         recipientName,
         occasion,
-        messageExcerpt
+        messageExcerpt,
+        fontFamily
       })
     });
 

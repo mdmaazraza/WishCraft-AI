@@ -6,6 +6,11 @@
   <title>Wish Creation Studio — Wish Yours</title>
   
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  <!-- Google Fonts Preconnect & High-Performance Loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700;800&family=Pacifico&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
@@ -311,6 +316,44 @@
           </button>
         </div>
 
+                <!-- Typography & Lettering Style Selection -->
+        <div class="mt-8 pt-6 border-t border-white border-opacity-10">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-purple-400">Lettering & Typography Style ✍️</label>
+              <p class="text-xs text-gray-400 mt-0.5">Choose the font for your greeting message and love letter.</p>
+            </div>
+            <span id="selectedFontBadge" class="text-xs font-semibold px-2.5 py-1 bg-slate-800 rounded-lg text-pink-300 border border-slate-700">Playfair Display</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="fontSelectionGrid">
+            <button type="button" data-font="Playfair Display" class="font-btn ring-4 ring-pink-500 bg-slate-800 p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24">
+              <span class="text-xl font-playfair font-bold text-white">Classic Serif</span>
+              <span class="text-xs text-gray-400">Playfair Display</span>
+            </button>
+            <button type="button" data-font="Dancing Script" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+              <span class="text-2xl font-dancing font-bold text-pink-400">Calligraphy</span>
+              <span class="text-xs text-gray-400">Dancing Script</span>
+            </button>
+            <button type="button" data-font="Great Vibes" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+              <span class="text-2xl font-great-vibes text-amber-300">Romantic Cursive</span>
+              <span class="text-xs text-gray-400">Great Vibes</span>
+            </button>
+            <button type="button" data-font="Outfit" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+              <span class="text-lg font-outfit font-extrabold text-blue-400">Modern Sans</span>
+              <span class="text-xs text-gray-400">Outfit</span>
+            </button>
+            <button type="button" data-font="Pacifico" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+              <span class="text-lg font-pacifico text-teal-300">Playful Brush</span>
+              <span class="text-xs text-gray-400">Pacifico</span>
+            </button>
+            <button type="button" data-font="Cinzel" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+              <span class="text-base font-cinzel font-bold text-purple-300 tracking-wider">Royal Roman</span>
+              <span class="text-xs text-gray-400">Cinzel</span>
+            </button>
+          </div>
+        </div>
+
         <div class="flex justify-between">
           <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
           <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Pick Design Theme →</button>
@@ -424,7 +467,20 @@
           <!-- Active Editable Message Area -->
           <div class="mt-6">
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-xs font-bold text-pink-400 uppercase">Edit & Finalize Message</label>
+              <div class="flex items-center gap-3">
+                <label class="block text-xs font-bold text-pink-400 uppercase">Edit & Finalize Message</label>
+                <div class="flex items-center gap-1.5">
+                  <label class="text-xs text-gray-400">Font:</label>
+                  <select id="step6FontSelector" onchange="WishCreator.setFontFamily(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none">
+                    <option value="Playfair Display">Playfair Display (Serif)</option>
+                    <option value="Dancing Script">Dancing Script (Calligraphy)</option>
+                    <option value="Great Vibes">Great Vibes (Cursive)</option>
+                    <option value="Outfit">Outfit (Modern Sans)</option>
+                    <option value="Pacifico">Pacifico (Playful)</option>
+                    <option value="Cinzel">Cinzel (Royal Roman)</option>
+                  </select>
+                </div>
+              </div>
               <button type="button" onclick="WishShare.copyLink(document.getElementById('finalMessageInput').value)" class="text-xs text-gray-400 hover:text-white">Copy Text</button>
             </div>
             <textarea id="finalMessageInput" rows="4" 

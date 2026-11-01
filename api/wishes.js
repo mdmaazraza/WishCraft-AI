@@ -4,6 +4,22 @@
 
 const db = require('../data/db');
 
+const ALLOWED_FONTS = [
+  'Playfair Display',
+  'Dancing Script',
+  'Great Vibes',
+  'Outfit',
+  'Pacifico',
+  'Cinzel'
+];
+
+function sanitizeFontFamily(font) {
+  if (!font || typeof font !== 'string') return 'Playfair Display';
+  const clean = font.trim().toLowerCase();
+  const matched = ALLOWED_FONTS.find(f => f.toLowerCase() === clean);
+  return matched || 'Playfair Display';
+}
+
 // Sanitize text against XSS attacks
 function sanitize(str) {
   if (typeof str !== 'string') return '';
@@ -70,6 +86,7 @@ async function handleCreateWish(body, userId = null) {
     relationship: sanitize(body.relationship || 'Friend'),
     style: sanitize(body.style || 'Heart-touching'),
     theme: sanitize(body.theme || 'birthday_celebration'),
+    font_family: sanitizeFontFamily(body.font_family),
     language: sanitize(body.language || 'en'),
     message: body.message.trim(), // Keep formatting intact but clean
     memories: sanitize(body.memories || ''),
@@ -96,7 +113,12 @@ async function handleUpdateWish(slugOrId, updates, userId = null) {
     throw { statusCode: 400, message: 'Slug or ID is required' };
   }
 
-  const updated = db.updateWish(slugOrId, updates, userId);
+  const cleanUpdates = { ...updates };
+  if (cleanUpdates.font_family !== undefined) {
+    cleanUpdates.font_family = sanitizeFontFamily(cleanUpdates.font_family);
+  }
+
+  const updated = db.updateWish(slugOrId, cleanUpdates, userId);
   if (!updated) {
     throw { statusCode: 404, message: 'Wish not found or update failed' };
   }

@@ -8,22 +8,49 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-// Load environment variables from .env file if it exists
+// Load environment variables from .env.local and .env files safely
 (function loadEnv() {
-  const envPath = path.join(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf-8');
-    content.split('\n').forEach(line => {
-      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-      if (match) {
-        const key = match[1];
-        let value = match[2] || '';
-        if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
-        if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
-        process.env[key] = value.trim();
+  const envFiles = [
+    path.join(__dirname, '.env.local'),
+    path.join(__dirname, '.env')
+  ];
+
+  envFiles.forEach(envPath => {
+    if (fs.existsSync(envPath)) {
+      try {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        content.split(/\r?\n/).forEach(line => {
+          // Ignore comments and empty lines
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) return;
+
+          const match = trimmed.match(/^([\w.-]+)\s*=\s*(.*)?$/);
+          if (match) {
+            const key = match[1];
+            let value = match[2] || '';
+            // Remove inline comments if not quoted
+            if ((!value.startsWith('"') && !value.startsWith("'")) && value.includes('#')) {
+              value = value.split('#')[0].trim();
+            }
+            // Strip surrounding quotes
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            value = value.trim();
+
+            // Only set if non-empty or if process.env[key] is not already set by host/Render
+            if (value.length > 0 || process.env[key] === undefined) {
+              // Priority: existing process.env (e.g. from Render dashboard) > .env.local > .env
+              if (!process.env[key] || process.env[key].length === 0) {
+                process.env[key] = value;
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.warn(`[Env Warning] Could not parse ${envPath}:`, err.message);
       }
-    });
-  }
+    }
+  });
 })();
 
 const PORT = process.env.PORT || 3000;

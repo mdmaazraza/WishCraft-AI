@@ -9,6 +9,29 @@ const GreetingPage = {
   candlesBlown: false,
   envelopeOpened: false,
 
+  getFontStack(fontName) {
+    const fontMap = {
+      'Playfair Display': "'Playfair Display', Georgia, 'Times New Roman', serif",
+      'Dancing Script': "'Dancing Script', 'Brush Script MT', cursive",
+      'Great Vibes': "'Great Vibes', 'Brush Script MT', cursive",
+      'Outfit': "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      'Pacifico': "'Pacifico', 'Comic Sans MS', cursive",
+      'Cinzel': "'Cinzel', Georgia, 'Times New Roman', serif"
+    };
+    return fontMap[fontName] || fontMap['Playfair Display'];
+  },
+
+  getFontClass(fontName) {
+    if (!fontName) return 'font-playfair';
+    const f = fontName.toLowerCase();
+    if (f.includes('dancing')) return 'font-dancing';
+    if (f.includes('vibes')) return 'font-great-vibes';
+    if (f.includes('outfit')) return 'font-outfit';
+    if (f.includes('pacifico')) return 'font-pacifico';
+    if (f.includes('cinzel')) return 'font-cinzel';
+    return 'font-playfair';
+  },
+
   async init() {
     this.extractSlug();
     if (!this.slug) {
@@ -100,18 +123,28 @@ const GreetingPage = {
       }
     }
 
-    // Populate primary message
+    const chosenFont = wish.font_family || 'Playfair Display';
+    const fontClass = this.getFontClass(chosenFont);
+    const fontStack = this.getFontStack(chosenFont);
+
+    // Populate primary message with active typography styling
     const messageEl = document.getElementById('greetingMessageBody');
     if (messageEl) {
       messageEl.innerText = wish.message;
+      messageEl.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
+      messageEl.classList.add(fontClass);
+      messageEl.style.fontFamily = fontStack;
     }
 
-    // Populate personal memories if present
+    // Populate personal memories if present with matching font
     const memorySection = document.getElementById('personalMemorySection');
     const memoryText = document.getElementById('personalMemoryText');
     if (memorySection && memoryText) {
       if (wish.memories && wish.memories.trim()) {
         memoryText.innerText = wish.memories;
+        memoryText.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
+        memoryText.classList.add(fontClass);
+        memoryText.style.fontFamily = fontStack;
         memorySection.style.display = 'block';
       } else {
         memorySection.style.display = 'none';
@@ -253,13 +286,17 @@ const GreetingPage = {
       if (envelope) {
         envelope.style.background = 'transparent';
         envelope.style.boxShadow = 'none';
+        const chosenFont = this.wish.font_family || 'Playfair Display';
+        const fontClass = this.getFontClass(chosenFont);
+        const fontStack = this.getFontStack(chosenFont);
+
         envelope.innerHTML = `
           <div class="letter-content animate-fade-in text-left">
-            <div class="text-right text-xs text-amber-800 italic mb-4 font-serif-display">Forever & Always</div>
+            <div class="text-right text-xs text-amber-800 italic mb-4 ${fontClass}" style="font-family: ${fontStack};">Forever & Always</div>
             <div class="text-xl font-script text-rose-900 mb-2">My Dearest ${this.wish.recipient_name},</div>
-            <p class="text-base text-gray-800 font-serif-display leading-relaxed mb-4">${this.wish.message}</p>
-            ${this.wish.memories ? `<div class="bg-rose-50 border-l-2 border-rose-400 p-3 my-3 text-xs italic text-rose-900 font-serif-display">"${this.wish.memories}"</div>` : ''}
-            <div class="text-right text-lg font-script text-rose-900 mt-4">— ${this.wish.sender_name}</div>
+            <p class="text-base text-gray-800 ${fontClass} leading-relaxed mb-4" style="font-family: ${fontStack};">${this.wish.message}</p>
+            ${this.wish.memories ? `<div class="bg-rose-50 border-l-2 border-rose-400 p-3 my-3 text-xs italic text-rose-900 ${fontClass}" style="font-family: ${fontStack};">"${this.wish.memories}"</div>` : ''}
+            <div class="text-right text-lg ${fontClass} text-rose-900 mt-4" style="font-family: ${fontStack};">— ${this.wish.sender_name}</div>
           </div>
         `;
       }

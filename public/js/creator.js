@@ -15,6 +15,7 @@ const WishCreator = {
     age: '',
     anniversary_years: '',
     style: 'Heart-touching',
+    font_family: 'Playfair Display',
     theme: 'birthday_celebration',
     language: 'en',
     length: 'medium',
@@ -39,6 +40,7 @@ const WishCreator = {
     if (params.get('relationship')) this.data.relationship = params.get('relationship');
     if (params.get('theme')) this.data.theme = params.get('theme');
     if (params.get('style')) this.data.style = params.get('style');
+    if (params.get('font')) this.data.font_family = params.get('font');
     if (params.get('message')) this.data.message = params.get('message');
     if (params.get('step')) this.currentStep = parseInt(params.get('step'), 10) || 1;
   },
@@ -73,6 +75,14 @@ const WishCreator = {
       });
     });
 
+    // Font selector
+    document.querySelectorAll('.font-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const font = btn.dataset.font;
+        this.setFontFamily(font);
+      });
+    });
+
     // Theme selector
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -87,6 +97,50 @@ const WishCreator = {
     if (photoInput) {
       photoInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
     }
+  },
+
+  setFontFamily(fontName) {
+    if (!fontName) return;
+    this.data.font_family = fontName;
+
+    // Update Step 4 font buttons highlight
+    document.querySelectorAll('.font-btn').forEach(btn => {
+      if (btn.dataset.font === fontName) {
+        btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
+        btn.classList.remove('bg-slate-900');
+      } else {
+        btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
+        btn.classList.add('bg-slate-900');
+      }
+    });
+
+    // Update Step 4 badge
+    const badge = document.getElementById('selectedFontBadge');
+    if (badge) badge.innerText = fontName;
+
+    // Update Step 6 dropdown if present
+    const dropdown = document.getElementById('step6FontSelector');
+    if (dropdown && dropdown.value !== fontName) {
+      dropdown.value = fontName;
+    }
+
+    // Apply live font to final message textarea
+    const messageInput = document.getElementById('finalMessageInput');
+    if (messageInput) {
+      messageInput.style.fontFamily = this.getFontStack(fontName);
+    }
+  },
+
+  getFontStack(fontName) {
+    const fontMap = {
+      'Playfair Display': "'Playfair Display', Georgia, 'Times New Roman', serif",
+      'Dancing Script': "'Dancing Script', 'Brush Script MT', cursive",
+      'Great Vibes': "'Great Vibes', 'Brush Script MT', cursive",
+      'Outfit': "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      'Pacifico': "'Pacifico', 'Comic Sans MS', cursive",
+      'Cinzel': "'Cinzel', Georgia, 'Times New Roman', serif"
+    };
+    return fontMap[fontName] || fontMap['Playfair Display'];
   },
 
   adjustContextualFields() {
@@ -432,7 +486,8 @@ const WishCreator = {
           senderName: wish.sender_name,
           recipientName: wish.recipient_name,
           occasion: wish.occasion,
-          messageExcerpt: wish.message.slice(0, 120) + '...'
+          messageExcerpt: wish.message.slice(0, 120) + '...',
+          fontFamily: wish.font_family || this.data.font_family || 'Playfair Display'
         });
 
         if (result.delivered) {
