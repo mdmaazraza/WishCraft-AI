@@ -1,7 +1,9 @@
 # WishCraft AI — Current Project Status
 
 **Date**: November 1, 2026  
-**Status**: Feature Complete, Tested, Deployment-Ready  
+**Status**: Feature Complete, Tested, Live on GitHub, Deployment-Ready  
+**GitHub Repository**: [https://github.com/mdmaazraza/WishCraft-AI](https://github.com/mdmaazraza/WishCraft-AI)  
+**Active Branch**: `main`  
 **Test Suite**: 14/14 Tests Passing (10 API/DB + 4 AI/Language)
 
 ---
@@ -21,9 +23,10 @@
 | **User & Admin Dashboards** | ✅ Complete | Guest mode, wish management, admin moderation & KPIs |
 | **Dual-Mode Database** | ✅ Complete | Persistent local JSON + Supabase schema with RLS policies |
 | **Render Deployment** | ✅ Complete | `render.yaml` Blueprint + `Dockerfile` created |
+| **GitHub Repository** | ✅ Live | Successfully pushed to `origin/main` |
 
 ---
 
 ## 📌 Next User Action:
-- Awaiting user-provided GitHub repository URL to connect `WishCraft-AI` and push initial commit.
-- Awaiting Render deployment trigger once GitHub repo is connected.
+- Deploy to Render via Blueprint or Web Service using the GitHub repository: `https://github.com/mdmaazraza/WishCraft-AI`.
+- Configure production environment variables (`GEMINI_API_KEY`, `RESEND_API_KEY`) on Render.
