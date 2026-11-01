@@ -1,0 +1,68 @@
+[
+  {
+    "id": "tpl_bday_bff",
+    "title": "BFF Epic Birthday Bash",
+    "occasion": "Birthday",
+    "relationship": "Best Friend",
+    "theme": "friendship_theme",
+    "style": "Funny",
+    "sample_message": "Happy Birthday to my human diary, secret keeper, and certified partner-in-crime! Another year older, but definitely none the wiser. May your day be filled with cake, laughs, and zero awkward photos leaked online! 🎂🎉🚀",
+    "preview_gradient": "from-amber-400 via-rose-500 to-purple-600",
+    "is_trending": true
+  },
+  {
+    "id": "tpl_anniv_luxury",
+    "title": "Golden Anniversary Romance",
+    "occasion": "Wedding Anniversary",
+    "relationship": "Wife",
+    "theme": "luxury_theme",
+    "style": "Romantic",
+    "sample_message": "To the love of my life, every heartbeat since the day we met has belonged to you. Walking this journey by your side is my greatest adventure and sweetest blessing. Happy Anniversary, my forever! 💍✨🌹",
+    "preview_gradient": "from-amber-300 via-yellow-500 to-amber-700",
+    "is_trending": true
+  },
+  {
+    "id": "tpl_bday_cake",
+    "title": "Midnight Candle Glow",
+    "occasion": "Birthday",
+    "relationship": "Girlfriend",
+    "theme": "birthday_celebration",
+    "style": "Heart-touching",
+    "sample_message": "You light up every room you walk into and every corner of my heart. Blow out your candles, make your wildest wish, and know that I'm right here wishing for your happiness always. Happy Birthday, gorgeous! 🕯️🍰💖",
+    "preview_gradient": "from-pink-500 via-purple-500 to-indigo-600",
+    "is_trending": true
+  },
+  {
+    "id": "tpl_friendship_soulmate",
+    "title": "Ride or Die Forever",
+    "occasion": "Friendship Day",
+    "relationship": "Friend",
+    "theme": "friendship_theme",
+    "style": "Emotional",
+    "sample_message": "True friendship isn't about being inseparable, it's about being separated and knowing nothing changes. Thank you for always having my back, through every high and low. Blessed to call you my friend! 🥂🌟🤗",
+    "preview_gradient": "from-teal-400 via-emerald-500 to-cyan-600",
+    "is_trending": true
+  },
+  {
+    "id": "tpl_romantic_letter",
+    "title": "Wax-Sealed Love Letter",
+    "occasion": "Valentine's Day",
+    "relationship": "Husband",
+    "theme": "romantic_theme",
+    "style": "Romantic",
+    "sample_message": "In a world full of noise, you are my serene melody and safest haven. Thank you for making everyday feel like a love story written just for us. Forever and always, yours. 💌🕊️❤️",
+    "preview_gradient": "from-rose-500 via-red-600 to-pink-700",
+    "is_trending": true
+  },
+  {
+    "id": "tpl_parents_gratitude",
+    "title": "Pillars of Love (Parents)",
+    "occasion": "Birthday",
+    "relationship": "Mother",
+    "theme": "floral_theme",
+    "style": "Emotional",
+    "sample_message": "Your gentle hands have shaped my life, and your unconditional warmth has been my shield. No words can ever capture my gratitude, Mom. Wishing you the happiest, healthiest birthday! 🌸💐💫",
+    "preview_gradient": "from-pink-300 via-purple-400 to-rose-400",
+    "is_trending": true
+  }
+]

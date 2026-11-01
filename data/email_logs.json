@@ -1,0 +1,13 @@
+[
+  {
+    "id": "elog_7f82cf8b19fe",
+    "wish_id": "w_2fdee246bb5c99b1",
+    "recipient_email": "emily@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793509241332",
+    "error_message": null,
+    "created_at": "2026-11-01T05:00:41.333Z"
+  }
+]

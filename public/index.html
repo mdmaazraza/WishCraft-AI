@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WishCraft AI — Make Every Special Moment Unforgettable</title>
+  <meta name="description" content="Generate beautiful, interactive, personalized digital birthday wishes, anniversary greetings, and celebration experiences powered by Gemini AI.">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Custom Styles & Animations -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-950 text-white relative min-h-screen">
+
+  <!-- Ambient Floating Background Particles -->
+  <canvas id="ambientCanvas"></canvas>
+
+  <!-- Navigation Bar -->
+  <nav class="glass-nav sticky top-0 z-40 w-full px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <span class="text-2xl">✨</span>
+        <span class="text-xl font-extrabold tracking-tight text-white">WishCraft <span class="text-gradient">AI</span></span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+        <a href="#birthday" class="hover:text-pink-400 transition">Birthday</a>
+        <a href="#anniversary" class="hover:text-pink-400 transition">Anniversary</a>
+        <a href="#friendship" class="hover:text-pink-400 transition">Friendship</a>
+        <a href="#romantic" class="hover:text-pink-400 transition">Romantic</a>
+        <a href="#trending" class="hover:text-pink-400 transition">Trending</a>
+        <a href="#how-it-works" class="hover:text-pink-400 transition">How It Works</a>
+      </div>
+
+      <div id="navAuthSection" class="flex items-center gap-4">
+        <a href="/create" class="btn-gradient px-5 py-2.5 rounded-xl font-bold text-sm text-white inline-flex items-center gap-2">
+          <span>Create Wish</span>
+          <span>✨</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="relative z-10 pt-20 pb-24 px-6 text-center max-w-5xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-pink-500 border-opacity-30 text-pink-300 text-xs font-bold uppercase tracking-wider mb-8 animate-pulse">
+      <span>🎉</span> Create Interactive Celebration Webpages in 2 Minutes
+    </div>
+
+    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight md:leading-tight mb-6">
+      Make Every Special Moment <br>
+      <span class="text-gradient">Unforgettable.</span>
+    </h1>
+
+    <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+      Craft breathtaking personalized birthday cakes with interactive candles, romantic wax-sealed love letters, and photo memory reels powered by Gemini AI. Generate a unique link and share the magic.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="/create" class="btn-gradient w-full sm:w-auto px-8 py-4 rounded-2xl font-extrabold text-base text-white shadow-2xl flex items-center justify-center gap-3">
+        <span>Create Your Wish Now</span>
+        <span class="text-xl">✨</span>
+      </a>
+      <a href="/wish/sarah-25th-bday" target="_blank" class="glass w-full sm:w-auto px-7 py-4 rounded-2xl font-bold text-base text-gray-200 hover:text-white hover:bg-slate-800 transition flex items-center justify-center gap-2">
+        <span>View Live Demo</span>
+        <span>🎂</span>
+      </a>
+    </div>
+
+    <!-- Live Social Proof Banner -->
+    <div class="mt-14 flex items-center justify-center gap-8 text-xs text-gray-400 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">✓</span> No sign-up required for guests
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">✓</span> Gemini AI message generation
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">✓</span> WhatsApp, Email & SMS ready
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">✓</span> 100% royalty-free musical chimes
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Occasion Shelves -->
+
+  <!-- 1. Birthday Wishes Section -->
+  <section id="birthday" class="relative z-10 py-20 px-6 max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-pink-400">Sweet Celebrations</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold mt-1">Birthday Wishes & Cakes 🎂</h2>
+        <p class="text-gray-400 text-sm mt-2 max-w-xl">Interactive glowing cakes where recipients can blow out real candles, play cheerful birthday chimes, and cherish memories.</p>
+      </div>
+      <a href="/create?occasion=Birthday" class="mt-4 md:mt-0 text-sm font-bold text-pink-400 hover:text-pink-300 flex items-center gap-1">
+        Start Birthday Greeting →
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-pink-500 transition">
+        <div>
+          <div class="text-4xl mb-3">🕯️🍰</div>
+          <h3 class="text-xl font-bold text-white mb-2">Candle Blow-Out Experience</h3>
+          <p class="text-sm text-gray-300 leading-relaxed mb-4">Tap to blow out glowing candles with rising smoke, festive chime cascade, and celebratory confetti rain.</p>
+        </div>
+        <a href="/wish/sarah-25th-bday" class="text-xs font-bold text-pink-400 hover:underline">Experience Birthday Demo ↗</a>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-pink-500 transition">
+        <div>
+          <div class="text-4xl mb-3">📸✨</div>
+          <h3 class="text-xl font-bold text-white mb-2">Photo Polaroid Gallery</h3>
+          <p class="text-sm text-gray-300 leading-relaxed mb-4">Add your favorite photos together with handwritten captions in vintage polaroids and full-screen lightbox preview.</p>
+        </div>
+        <a href="/create?occasion=Birthday&theme=birthday_celebration" class="text-xs font-bold text-pink-400 hover:underline">Customize Gallery →</a>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-pink-500 transition">
+        <div>
+          <div class="text-4xl mb-3">🎶🎵</div>
+          <h3 class="text-xl font-bold text-white mb-2">Festive Melodic Synthesizer</h3>
+          <p class="text-sm text-gray-300 leading-relaxed mb-4">Built-in harmonious Web Audio acoustic birthday song with player bar and interactive audio controls.</p>
+        </div>
+        <a href="/create?occasion=Birthday" class="text-xs font-bold text-pink-400 hover:underline">Create Musical Birthday →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Anniversary Wishes Section -->
+  <section id="anniversary" class="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white border-opacity-5">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-rose-400">Endless Love</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold mt-1">Anniversary & Romance 💍</h2>
+        <p class="text-gray-400 text-sm mt-2 max-w-xl">Wax-sealed digital love letters, relationship milestone counters, and romantic ambient music.</p>
+      </div>
+      <a href="/create?occasion=Wedding+Anniversary" class="mt-4 md:mt-0 text-sm font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1">
+        Start Anniversary Greeting →
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="glass-card rounded-2xl p-6 hover:border-rose-500 transition">
+        <div class="text-4xl mb-3">💌🕊️</div>
+        <h3 class="text-xl font-bold text-white mb-2">Wax-Sealed Love Letter</h3>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">The recipient taps a vintage wax seal to unseal their personalized letter with floating heart particles.</p>
+        <a href="/wish/claire-and-david-5years" class="text-xs font-bold text-rose-400 hover:underline">Preview Love Letter Demo ↗</a>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 hover:border-rose-500 transition">
+        <div class="text-4xl mb-3">⏳❤️</div>
+        <h3 class="text-xl font-bold text-white mb-2">Relationship Milestones</h3>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">Celebrate years together with milestone badges and countdown counters marking every step of your journey.</p>
+        <a href="/create?occasion=Wedding+Anniversary" class="text-xs font-bold text-rose-400 hover:underline">Set Milestone Count →</a>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 hover:border-rose-500 transition">
+        <div class="text-4xl mb-3">🌹🍷</div>
+        <h3 class="text-xl font-bold text-white mb-2">Golden & Luxury Themes</h3>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">Velvet red rose petals, golden champagne toasts, and soft harp acoustic music designed for spouses.</p>
+        <a href="/create?occasion=Valentine's+Day" class="text-xs font-bold text-rose-400 hover:underline">Choose Luxury Theme →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Friendship & Romantic Sections Combined Quick Selector -->
+  <section id="friendship" class="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white border-opacity-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      
+      <!-- Friendship Box -->
+      <div class="glass-card p-8 rounded-3xl border border-teal-500 border-opacity-20 flex flex-col justify-between">
+        <div>
+          <div class="inline-block px-3 py-1 rounded-full bg-teal-900 bg-opacity-40 text-teal-300 text-xs font-bold mb-4">Best Friends Forever</div>
+          <h3 class="text-2xl font-bold text-white mb-3">Friendship & Ride-or-Die Wishes 🌟</h3>
+          <p class="text-gray-300 text-sm leading-relaxed mb-6">
+            Hilarious roast & toast messages, inside jokes, "Partner in Crime" badges, and unforgettable trip photo albums. Perfect for best friends who share everything.
+          </p>
+        </div>
+        <a href="/create?occasion=Friendship+Day&relationship=Best+Friend" class="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl font-bold text-sm text-white text-center hover:opacity-90 shadow-lg">
+          Create Bestie Greeting 🚀
+        </a>
+      </div>
+
+      <!-- Romantic Box -->
+      <div id="romantic" class="glass-card p-8 rounded-3xl border border-rose-500 border-opacity-20 flex flex-col justify-between">
+        <div>
+          <div class="inline-block px-3 py-1 rounded-full bg-rose-900 bg-opacity-40 text-rose-300 text-xs font-bold mb-4">Deep Connection</div>
+          <h3 class="text-2xl font-bold text-white mb-3">Girlfriend, Boyfriend, Wife & Husband ❤️</h3>
+          <p class="text-gray-300 text-sm leading-relaxed mb-6">
+            Poetic declarations of love, romantic memories, and custom love letters in English, Hindi, or Hinglish with ambient floating hearts.
+          </p>
+        </div>
+        <a href="/create?occasion=Valentine's+Day&relationship=Girlfriend" class="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 rounded-xl font-bold text-sm text-white text-center hover:opacity-90 shadow-lg">
+          Create Romantic Wish 🌹
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. Trending Greeting Templates -->
+  <section id="trending" class="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white border-opacity-5">
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <span class="text-xs font-bold uppercase tracking-widest text-yellow-400">Instant Inspiration</span>
+      <h2 class="text-3xl md:text-4xl font-extrabold mt-1">Trending Celebration Templates 🔥</h2>
+      <p class="text-gray-400 text-sm mt-2">Pick any ready-made design and customize it with Gemini AI in seconds.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="trendingTemplatesGrid">
+      <!-- Templates loaded via API -->
+    </div>
+  </section>
+
+  <!-- 5. How It Works Section -->
+  <section id="how-it-works" class="relative z-10 py-20 px-6 max-w-7xl mx-auto border-t border-white border-opacity-5">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-xs font-bold uppercase tracking-widest text-purple-400">Simple & Delightful</span>
+      <h2 class="text-3xl md:text-4xl font-extrabold mt-1">How WishCraft AI Works 🪄</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <div class="glass p-8 rounded-2xl">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-pink-500 bg-opacity-20 border border-pink-500 flex items-center justify-center text-2xl font-bold text-pink-400 mb-6">1</div>
+        <h3 class="text-xl font-bold text-white mb-2">Select Occasion & Details</h3>
+        <p class="text-gray-400 text-sm">Choose who you're celebrating, their favorite theme, and any special memories or jokes you share.</p>
+      </div>
+
+      <div class="glass p-8 rounded-2xl">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-500 bg-opacity-20 border border-purple-500 flex items-center justify-center text-2xl font-bold text-purple-400 mb-6">2</div>
+        <h3 class="text-xl font-bold text-white mb-2">Gemini AI Crafts the Magic</h3>
+        <p class="text-gray-400 text-sm">Get 3 personalized variations in English, Hindi, or Hinglish. Customize photos, music, and candle effects.</p>
+      </div>
+
+      <div class="glass p-8 rounded-2xl">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-500 bg-opacity-20 border border-blue-500 flex items-center justify-center text-2xl font-bold text-blue-400 mb-6">3</div>
+        <h3 class="text-xl font-bold text-white mb-2">Share Unique Link</h3>
+        <p class="text-gray-400 text-sm">Send instantly via WhatsApp, Email, or SMS. Watch their reaction when they blow out the candles!</p>
+      </div>
+    </div>
+
+    <div class="text-center mt-12">
+      <a href="/create" class="btn-gradient px-8 py-4 rounded-xl font-bold text-white text-base inline-flex items-center gap-2">
+        <span>Get Started — It's Free</span>
+        <span>✨</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 py-12 px-6 border-t border-white border-opacity-10 text-gray-400 text-xs">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">✨</span>
+        <span class="font-bold text-white text-base">WishCraft AI</span>
+        <span>— Creating unforgettable digital greetings.</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a href="/dashboard" class="hover:text-white transition">My Dashboard</a>
+        <a href="/admin" class="hover:text-white transition">Admin Portal</a>
+        <button onclick="openModal('privacyModal')" class="hover:text-white transition">Privacy Policy</button>
+        <button onclick="openModal('termsModal')" class="hover:text-white transition">Terms of Service</button>
+        <button onclick="openModal('contactModal')" class="hover:text-white transition">Contact</button>
+      </div>
+
+      <div>
+        © 2026 WishCraft AI. Powered by Google Gemini.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Privacy Policy Modal -->
+  <div id="privacyModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-lg w-full p-6 rounded-2xl max-h-96 overflow-y-auto">
+      <h3 class="text-lg font-bold text-white mb-3">Privacy Policy</h3>
+      <p class="text-xs text-gray-300 leading-relaxed mb-4">
+        WishCraft AI respects your privacy. We store uploaded greeting messages and personal photographs securely for the sole purpose of rendering your personalized celebration page. You can choose to keep your wish public or private at any time, or permanently delete it through the dashboard.
+      </p>
+      <button onclick="closeModal('privacyModal')" class="btn-gradient w-full py-2 rounded-lg font-bold text-xs text-white">Close</button>
+    </div>
+  </div>
+
+  <!-- Terms Modal -->
+  <div id="termsModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-lg w-full p-6 rounded-2xl max-h-96 overflow-y-auto">
+      <h3 class="text-lg font-bold text-white mb-3">Terms of Service</h3>
+      <p class="text-xs text-gray-300 leading-relaxed mb-4">
+        By using WishCraft AI, you agree not to submit offensive, defamatory, copyrighted, or malicious content. Greetings are subject to automated sanitization and owner moderation.
+      </p>
+      <button onclick="closeModal('termsModal')" class="btn-gradient w-full py-2 rounded-lg font-bold text-xs text-white">Close</button>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div id="contactModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 rounded-2xl">
+      <h3 class="text-lg font-bold text-white mb-2">Get in Touch 💌</h3>
+      <p class="text-xs text-gray-300 mb-4">Have feedback or partnership inquiries? Reach us at <a href="mailto:support@wishcraft.ai" class="text-pink-400 underline">support@wishcraft.ai</a>.</p>
+      <button onclick="closeModal('contactModal')" class="btn-gradient w-full py-2 rounded-lg font-bold text-xs text-white">Close</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/audio.js"></script>
+  <script src="/js/share.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    // Initialize ambient background engine on landing
+    new AmbientParticles('ambientCanvas', 'hearts');
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+    }
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+    }
+
+    // Load trending templates dynamically
+    fetch('/api/templates')
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById('trendingTemplatesGrid');
+        if (!grid || !data.templates) return;
+        grid.innerHTML = data.templates.slice(0, 3).map(t => `
+          <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-pink-500 transition">
+            <div>
+              <div class="h-2 w-12 bg-gradient-to-r ${t.preview_gradient} rounded-full mb-4"></div>
+              <span class="text-xs font-bold uppercase tracking-wider text-pink-400">${t.occasion} • ${t.relationship}</span>
+              <h4 class="text-lg font-bold text-white mt-1 mb-2">${t.title}</h4>
+              <p class="text-xs text-gray-300 italic mb-4 line-clamp-3">"${t.sample_message}"</p>
+            </div>
+            <a href="/create?occasion=${encodeURIComponent(t.occasion)}&relationship=${encodeURIComponent(t.relationship)}&theme=${encodeURIComponent(t.theme)}&style=${encodeURIComponent(t.style)}&message=${encodeURIComponent(t.sample_message)}" 
+               class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-center text-white transition">
+              Use This Template ✨
+            </a>
+          </div>
+        `).join('');
+      })
+      .catch(err => console.warn('Templates load:', err));
+  </script>
+</body>
+</html>

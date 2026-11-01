@@ -1,0 +1,79 @@
+[
+  {
+    "id": "w_demo_birthday_01",
+    "slug": "sarah-25th-bday",
+    "sender_id": null,
+    "sender_name": "Alex",
+    "recipient_name": "Sarah Jenkins",
+    "recipient_gender": "female",
+    "occasion": "Birthday",
+    "relationship": "Best Friend",
+    "style": "Heart-touching",
+    "theme": "birthday_celebration",
+    "language": "en",
+    "message": "Happy 25th Birthday to the most radiant soul in the world! From late night diner talks to traveling the country, having you by my side has been life's biggest gift. May all your candle wishes come true today! 🎂✨🎉",
+    "memories": "Our road trip to the coast when the car broke down and we danced in the rain anyway!",
+    "relationship_duration": "8 years",
+    "age": 25,
+    "anniversary_years": null,
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+        "caption": "Golden hours and endless laughter"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80",
+        "caption": "Party mode activated!"
+      }
+    ],
+    "music_track": "birthday_celebration",
+    "is_public": true,
+    "views_count": 42,
+    "candles_blown": false,
+    "custom_settings": {
+      "candleCount": 3,
+      "showConfetti": true,
+      "badge": "Bestie of the Decade"
+    },
+    "created_at": "2026-10-31T04:52:18.269Z",
+    "updated_at": "2026-11-01T04:52:18.274Z"
+  },
+  {
+    "id": "w_demo_anniv_02",
+    "slug": "claire-and-david-5years",
+    "sender_id": null,
+    "sender_name": "David",
+    "recipient_name": "Claire",
+    "recipient_gender": "female",
+    "occasion": "Wedding Anniversary",
+    "relationship": "Wife",
+    "style": "Romantic",
+    "theme": "romantic_theme",
+    "language": "en",
+    "message": "Five magical years of holding hands, growing together, and falling deeper in love with you each morning. You are my home, my anchor, and my forever dance partner. Happy 5th Anniversary, my queen! 💍🌹✨",
+    "memories": "Saying 'I do' under the willow trees in 2019 and adopting little Bruno together.",
+    "relationship_duration": "5 years",
+    "age": null,
+    "anniversary_years": 5,
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
+        "caption": "The day our adventure began"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=800&q=80",
+        "caption": "Parisian sunsets with you"
+      }
+    ],
+    "music_track": "romantic_melody",
+    "is_public": true,
+    "views_count": 89,
+    "candles_blown": false,
+    "custom_settings": {
+      "showFloatingHearts": true,
+      "waxSealColor": "crimson"
+    },
+    "created_at": "2026-10-30T04:52:18.274Z",
+    "updated_at": "2026-11-01T04:52:18.274Z"
+  }
+]

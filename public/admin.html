@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — WishCraft AI</title>
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+  <nav class="glass-nav py-4 px-6 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🛡️</span>
+        <span class="text-lg font-bold text-white">WishCraft <span class="text-gradient">Admin Center</span></span>
+      </div>
+      <a href="/" class="text-xs text-gray-400 hover:text-white">← Return to Website</a>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+
+    <div id="adminLoading" class="py-16 text-center" style="display: none;">
+      <div class="text-4xl animate-spin mb-3">⚙️</div>
+      <p class="text-sm text-gray-400">Loading website analytics & moderation queue...</p>
+    </div>
+
+    <div id="adminContent" style="display: none;">
+
+      <!-- Top KPI Metric Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Wishes Created</div>
+          <div id="adminTotalWishes" class="text-3xl font-extrabold text-white">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Page Views</div>
+          <div id="adminTotalViews" class="text-3xl font-extrabold text-pink-400">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Active Public Links</div>
+          <div id="adminActiveLinks" class="text-3xl font-extrabold text-emerald-400">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Emails Dispatched</div>
+          <div id="adminEmailsSent" class="text-3xl font-extrabold text-purple-400">0</div>
+        </div>
+      </div>
+
+      <!-- Occasion Distribution -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-2xl md:col-span-1">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span>📊</span> Occasion Distribution
+          </h3>
+          <div id="adminOccasionBreakdown" class="space-y-2"></div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl md:col-span-2">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span>💌</span> Email Service Activity Logs
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-white border-opacity-10 text-xs text-gray-400 uppercase">
+                  <th class="p-3">Recipient</th>
+                  <th class="p-3">Sender</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Provider</th>
+                  <th class="p-3">Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="adminEmailLogsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation & All Greetings Table -->
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🛡️</span> Content Moderation & Active Greetings
+          </h3>
+          <button onclick="AdminApp.loadDashboardData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-gray-300">
+            Refresh Data 🔄
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-white border-opacity-10 text-xs text-gray-400 uppercase">
+                <th class="p-3">Slug / ID</th>
+                <th class="p-3">Recipient</th>
+                <th class="p-3">Sender</th>
+                <th class="p-3">Occasion</th>
+                <th class="p-3">Views</th>
+                <th class="p-3">Visibility</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminWishesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="fixed inset-0 z-50 bg-black bg-opacity-90 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-sm w-full p-6 sm:p-8 rounded-3xl text-center">
+      <div class="text-4xl mb-3">🔐</div>
+      <h3 class="text-xl font-bold text-white mb-1">Admin Authorization</h3>
+      <p class="text-xs text-gray-400 mb-6">Enter the secret key configured in <code class="text-pink-400">ADMIN_SECRET_KEY</code></p>
+
+      <form onsubmit="event.preventDefault(); AdminApp.submitLogin();" class="space-y-4">
+        <input type="password" id="adminKeyInput" placeholder="Enter Admin Secret..." required
+          value="admin_wishcraft_secret_2026"
+          class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-pink-500 text-center font-mono">
+        <button type="submit" class="btn-gradient w-full py-3 rounded-xl text-xs font-bold text-white shadow-lg">
+          Unlock Dashboard 🔓
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
