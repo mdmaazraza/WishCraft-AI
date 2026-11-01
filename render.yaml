@@ -1,0 +1,31 @@
+# ====================================================================
+# WishCraft AI — Render Blueprint Deployment Specification
+# Deploy on Render: https://render.com
+# ====================================================================
+
+services:
+  - type: web
+    name: wishcraft-ai
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        value: WishCraft <wishes@resend.dev>
+      - key: ADMIN_SECRET_KEY
+        generateValue: true
+      - key: BASE_URL
+        sync: false
