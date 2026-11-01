@@ -1,13 +1,13 @@
 # Wish Yours — Current Project Status
 
 **Date**: November 1, 2026  
-**Status**: Feature Complete, 58/58 Tests Passing, Merged into Main & Pushed to GitHub  
+**Status**: Feature Complete, 61/61 Tests Passing, Merged into Main & Pushed to GitHub  
 **Brand Name**: Wish Yours (WishCraft AI)  
 **Developer**: MD RAZA  
 **GitHub Repository**: [https://github.com/mdmaazraza/WishCraft-AI](https://github.com/mdmaazraza/WishCraft-AI)  
 **Active Branch**: `main` (Up to date with origin/main)  
-**Latest Merged Commit**: `8dbfb24` (`feat: complete creation flow audit and state repair with occasion-aware copy and template selector`)  
-**Test Suite**: 58/58 Tests Passing (6 Audit & Repair + 8 Studio Redesign & Details + 8 Developer Attribution + 8 Emotion Intelligence & Text Polish + 15 API/DB/Typography + 13 Scheduled Wishes)
+**Latest Merged Commit**: `764c8a0` (`fix(creation-flow): eliminate phantom modal overlay and repair steps 4-7 control selection & persistence`)  
+**Test Suite**: 61/61 Tests Passing (3 Step 4-7 Creation Controls + 6 Audit & Repair + 8 Studio Redesign & Details + 8 Developer Attribution + 8 Emotion Intelligence & Text Polish + 15 API/DB/Typography + 13 Scheduled Wishes)
 
 ---
 
@@ -15,6 +15,10 @@
 
 | Feature | Status | Notes |
 |---|---|---|
+| **Phantom Modal Overlay Defense** | ✅ Complete | Guaranteed `display: none !important; pointer-events: none !important;` for all 4 modals to eliminate phantom overlay click interception |
+| **Step 4–7 Controls Full Interactivity** | ✅ Complete | Dynamic tones, emotion intensity, language, length, template, font, theme all fully selectable with visual active rings |
+| **Back/Next Navigation Persistence** | ✅ Complete | `goToStep` synchronizes selectors and draft state without resetting active cards across all 7 steps |
+| **Child Pointer Event Masking** | ✅ Complete | Inner text/emoji `<span>` tags masked with `pointer-events: none` to guarantee `<button>` is always the target |
 | **Single Canonical State** | ✅ Complete | `WishCreator.draft` is the single source of truth; all inputs, summary pills, previews, and APIs stay 100% in sync |
 | **Dual Casing Normalization** | ✅ Complete | Both `api/generate-message.js` and `api/wishes.js` accept camelCase and snake_case without losing names or memories |
 | **Occasion-Aware Copy System** | ✅ Complete | Non-celebrations (Sorry, Sympathy, Thank You, Farewell) strictly forbid "celebrate", "party", "happy sorry"; use respectful headlines |
@@ -36,6 +40,6 @@
 ---
 
 ## 📌 Release Summary:
-- Feature branch `feature/creation-flow-audit-and-repair` successfully merged into `main`.
-- All 58 test suite checks pass cleanly on `main`.
+- Branch `fix/creation-flow-step4-controls` successfully merged into `main`.
+- All 61 test suite checks pass cleanly on `main`.
 - `origin/main` updated on GitHub repository.
