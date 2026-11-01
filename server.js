@@ -149,7 +149,7 @@ function serveStaticFile(req, res, filePath, contentType) {
 
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': filePath.endsWith('.html') ? 'no-cache' : 'public, max-age=86400',
+      'Cache-Control': (filePath.endsWith('.html') || filePath.endsWith('.css') || filePath.endsWith('.js')) ? 'no-cache, must-revalidate' : 'public, max-age=86400',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'SAMEORIGIN'
     });

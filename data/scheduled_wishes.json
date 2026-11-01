@@ -1,5 +1,77 @@
 [
   {
+    "id": "sched_80c3ff0e342651f9",
+    "user_id": "engine_test_user",
+    "greeting_id": "priya-sharma-d7d6b3",
+    "recipient_name": "Rohan Verma",
+    "recipient_email": "rohan.test@example.com",
+    "recipient_phone": "",
+    "delivery_method": "email",
+    "scheduled_at": "2026-11-01T08:41:48.332Z",
+    "timezone": "Asia/Kolkata",
+    "personal_message": "Happy celebration!",
+    "status": "sent",
+    "attempts": 1,
+    "sent_at": "2026-11-01T08:42:48.388Z",
+    "failed_at": null,
+    "error_message": null,
+    "provider_response": {
+      "provider": "simulator",
+      "messageId": "sim_1793522568369",
+      "delivered": false,
+      "raw": {
+        "status": "simulated",
+        "delivered": false,
+        "provider": "simulator",
+        "messageId": "sim_1793522568369",
+        "message": "Preview generated for rohan.test@example.com. To dispatch real emails over the internet, add your RESEND_API_KEY in .env or Render Dashboard.",
+        "emailPreview": {
+          "to": "rohan.test@example.com",
+          "subject": "✨ Maaz sent you a personalized Birthday wish!",
+          "url": "http://localhost:3000/wish/priya-sharma-d7d6b3"
+        }
+      }
+    },
+    "created_at": "2026-11-01T08:42:48.335Z",
+    "updated_at": "2026-11-01T08:42:48.388Z"
+  },
+  {
+    "id": "sched_4520bceacab84965",
+    "user_id": "engine_test_user",
+    "greeting_id": "priya-sharma-08e842",
+    "recipient_name": "Rohan Verma",
+    "recipient_email": "rohan.test@example.com",
+    "recipient_phone": "",
+    "delivery_method": "email",
+    "scheduled_at": "2026-11-01T08:16:47.251Z",
+    "timezone": "Asia/Kolkata",
+    "personal_message": "Happy celebration!",
+    "status": "sent",
+    "attempts": 1,
+    "sent_at": "2026-11-01T08:17:47.332Z",
+    "failed_at": null,
+    "error_message": null,
+    "provider_response": {
+      "provider": "simulator",
+      "messageId": "sim_1793521067312",
+      "delivered": false,
+      "raw": {
+        "status": "simulated",
+        "delivered": false,
+        "provider": "simulator",
+        "messageId": "sim_1793521067312",
+        "message": "Preview generated for rohan.test@example.com. To dispatch real emails over the internet, add your RESEND_API_KEY in .env or Render Dashboard.",
+        "emailPreview": {
+          "to": "rohan.test@example.com",
+          "subject": "✨ Maaz sent you a personalized Birthday wish!",
+          "url": "http://localhost:3000/wish/priya-sharma-08e842"
+        }
+      }
+    },
+    "created_at": "2026-11-01T08:17:47.256Z",
+    "updated_at": "2026-11-01T08:17:47.332Z"
+  },
+  {
     "id": "sched_c168dbfafb0d9171",
     "user_id": "engine_test_user",
     "greeting_id": "priya-sharma-8e2b56",

@@ -284,3 +284,59 @@
 #### 3. Verification & Testing
 - Created dedicated test runner `tests/test_developer_attribution.js`: **8/8 tests passed**.
 - Full regression suite across all 6 test runners: **48/48 checks passed**.
+
+---
+
+### Issue 7: Form Control Contrast & Dropdown Bug Root Cause Fix, 7-Step Creation Studio Redesign, and Memory Data Lifecycle
+
+#### 1. Root Causes Identified
+1. **White-on-White Dropdown & Input Glitch in Chromium / Windows**:
+   - In Chromium on Windows, `<select>` tags assigned Tailwind `text-white` apply `color: white;` to child `<option>` elements via inheritance.
+   - However, native Windows select popup menus DO NOT inherit background color from parent CSS classes (`bg-slate-900`). The native Windows dropdown renders options against a white background by default unless `color-scheme: dark !important` is set on `:root`, `html`, `body`, and `<select>`.
+   - Result: Unselected options displayed pure white text on pure white backgrounds (completely invisible).
+   - Furthermore, `server.js` sent `Cache-Control: public, max-age=86400` on static files, causing browsers to serve stale CSS stylesheets from disk cache rather than revalidating updates.
+2. **Details / Memory Form Inputs Bug**:
+   - Input fields in `create.html` lacked continuous two-way binding. Values remained isolated in the DOM until `saveStep3Inputs()` was manually called during forward step navigation.
+   - Jumping steps or clicking directly to generate bypassed input saving, resulting in blank or empty memory payloads reaching Gemini AI and database records.
+3. **Writing Improvement Engine Language & Fact Retention**:
+   - AI correction required strict non-translation constraints to ensure conversational Romanized Hindi (Hinglish) and Devanagari Hindi remain in their native scripts without unwanted English translation.
+
+#### 2. Implementation Summary
+- **Inlined Critical Form Stylesheet & Cross-Platform Dropdown Polyfill**:
+  - Inlined `<style>` block directly inside `<head>` across all public HTML pages (`create.html`, `wish.html`, `index.html`, `dashboard.html`, `developer.html`, `admin.html`).
+  - Guaranteed `color-scheme: dark !important;`, background `#0f172a !important;`, and text `#f8fafc !important;` for all inputs, selects, and textareas before any external stylesheet or CDN loads.
+  - Added inline `style="background-color: #0f172a; color: #f8fafc;"` on all `<option>` elements as an ironclad defense.
+  - Overrode browser autofill via `-webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important`.
+  - Updated `server.js` caching headers to `no-cache, must-revalidate` for CSS/JS assets, and added version cache-busting `?v=2.2.0` on all stylesheet links.
+- **7-Step Creation Studio Redesign (`public/create.html`)**:
+  - **Step 1: Occasion**: 10 occasion cards (Birthday, Anniversary, Sorry, Love, Friendship, Thank You, Congratulations, Farewell, Festival & Holiday, Custom).
+  - **Step 2: Who It's For**: 13 relationship options (including Teacher / Mentor).
+  - **Step 3: Personalize**: Names, gender select with dark options, contextual age/anniversary fields, and a prominent **Special Memories & Inside Jokes** card with "✨ Improve Writing" and side-by-side comparison drawer.
+  - **Step 4: Feeling & Tone**: Occasion-aware dynamic feelings container dynamically rendered based on the selected occasion. Zero celebratory options on Sorry or Sympathy.
+  - **Step 5: Language & Length**: Visual cards for English, हिंदी, and Hinglish, plus message length options (Short, Standard, Long).
+  - **Step 6: Style & Visuals**: 6 Google Fonts with actual font previews in their native typeface (`Playfair Display`, `Dancing Script`, `Great Vibes`, `Outfit`, `Pacifico`, `Cinzel`), visual themes, and photo upload reel.
+  - **Step 7: Generate & Studio Preview**:
+    - Sticky top summary bar with clickable edit pills for instant navigation without data loss.
+    - Multi-stage generation progress indicator.
+    - 3 variation cards with active highlight and font preview.
+    - Editable message textarea with "✨ Improve Writing" tool.
+    - Live interactive greeting preview (blowable candles, wax seal, memories section).
+    - "Send Now" and "Schedule for Later" action buttons.
+  - Global developer credit footer: `WishCraft AI • Developed by MD RAZA` linking to `/developer`.
+- **Reactive State & Autosave Engine (`public/js/creator.js`)**:
+  - Implemented immediate two-way data binding with `input` and `change` event listeners across all form controls.
+  - Added `saveAllInputs()` and automatic draft persistence to `localStorage` (`wishcraft_draft_v3`) on every keystroke.
+  - Added automatic draft restoration on page load with a "Reset Draft" button.
+  - Implemented `renderDynamicTones()` to populate occasion-specific tones in Step 4.
+  - Implemented `improveMemoryWriting()`, `applyImprovedMemory()`, and `keepOriginalMemory()`.
+- **Linguistic Engine Update (`data/text_cleaner.js`)**:
+  - Enforced strict script preservation rules: Devanagari Hindi stays in Devanagari, conversational Romanized Hinglish stays in Roman script without unwanted English translation.
+  - Enforced strict fact, date, name, and inside joke retention.
+- **Occasion Registry Update (`data/occasions.js` & `public/js/occasions.js`)**:
+  - Added `festival` (`Festival & Holiday`, 🪔) with appropriate festive tones and copy.
+  - Added `Teacher` relationship nuance across all occasions.
+  - Added occasion-specific `tones` array to all 13 occasions.
+
+#### 3. Verification & Testing
+- Created dedicated test runner `tests/test_details_and_redesign.js`: **8/8 tests passed**.
+- Full regression suite across all 7 test runners: **57/57 checks passed**.

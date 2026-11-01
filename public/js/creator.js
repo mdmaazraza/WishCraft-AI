@@ -1,5 +1,7 @@
 /**
- * WishCraft AI — Multi-Step Wish Creation Studio Controller
+ * Wish Yours — Multi-Step Wish Creation Studio Controller (7-Step Flow)
+ * Full reactive data binding, draft autosave, occasion-aware tones,
+ * intelligent writing improvement, and robust data persistence.
  */
 
 const WishCreator = {
@@ -14,7 +16,7 @@ const WishCreator = {
     relationship_duration: '',
     age: '',
     anniversary_years: '',
-    style: 'Heart-touching',
+    style: 'Heartfelt',
     font_family: 'Playfair Display',
     theme: 'birthday_celebration',
     language: 'en',
@@ -29,10 +31,88 @@ const WishCreator = {
   createdWish: null,
   correctedMemory: null,
 
+  // Fallback tones dictionary by occasion ID
+  OCCASION_TONES: {
+    birthday: ['Heartfelt', 'Funny & Playful', 'Sweet & Loving', 'Emotional'],
+    anniversary: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
+    sorry: ['Sincere & Apologetic', 'Gentle & Healing', 'Deeply Accountable', 'Humble'],
+    thank_you: ['Deeply Grateful', 'Warm & Appreciative', 'Respectful', 'Cheerful & Sweet'],
+    congratulations: ['Triumphant & Proud', 'Inspiring', 'Cheerful & Hype', 'Dignified'],
+    farewell: ['Bittersweet', 'Nostalgic', 'Inspiring & Hopeful', 'Warm & Connected'],
+    sympathy: ['Gentle & Comforting', 'Heartfelt Sympathy', 'Peace & Solace', 'Warm & Supportive'],
+    friendship: ['Loyal & Authentic', 'Playful & Crazy', 'Heartfelt', 'Sweet'],
+    romantic: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
+    festival: ['Warm Blessings', 'Joyful & Festive', 'Heartfelt Family Love', 'Peace & Light'],
+    good_morning: ['Cheerful & Energizing', 'Warm & Loving', 'Inspirational', 'Gentle'],
+    good_night: ['Sweet & Tender', 'Peaceful & Calming', 'Romantic', 'Warm'],
+    custom: ['Heartfelt', 'Thoughtful', 'Cheerful', 'Inspiring']
+  },
+
   init() {
     this.bindEvents();
+    this.bindFormInputs();
     this.checkUrlPreload();
+    this.restoreDraft();
+    this.renderDynamicTones();
     this.updateStepView();
+    this.updateStickySummary();
+    this.updateLivePreview();
+  },
+
+  // 1. Two-Way Data Binding for ALL Form Inputs
+  bindFormInputs() {
+    const bindField = (id, prop) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const handler = (e) => {
+        this.data[prop] = e.target.value.trim();
+        this.persistDraft();
+        this.updateStickySummary();
+        this.updateLivePreview();
+      };
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    };
+
+    bindField('recipientNameInput', 'recipient_name');
+    bindField('senderNameInput', 'sender_name');
+    bindField('genderSelect', 'recipient_gender');
+    bindField('ageInput', 'age');
+    bindField('annivYearsInput', 'anniversary_years');
+    bindField('durationInput', 'relationship_duration');
+    bindField('memoriesInput', 'memories');
+    bindField('finalMessageInput', 'message');
+  },
+
+  // Save all DOM input values into this.data synchronously
+  saveAllInputs() {
+    const getVal = (id) => document.getElementById(id)?.value?.trim() || '';
+
+    const rec = getVal('recipientNameInput');
+    if (rec) this.data.recipient_name = rec;
+
+    const sender = getVal('senderNameInput');
+    if (sender) this.data.sender_name = sender;
+
+    const gender = document.getElementById('genderSelect')?.value;
+    if (gender) this.data.recipient_gender = gender;
+
+    const age = getVal('ageInput');
+    if (age) this.data.age = age;
+
+    const anniv = getVal('annivYearsInput');
+    if (anniv) this.data.anniversary_years = anniv;
+
+    const dur = getVal('durationInput');
+    if (dur) this.data.relationship_duration = dur;
+
+    const mem = getVal('memoriesInput');
+    if (mem) this.data.memories = mem;
+
+    const msg = getVal('finalMessageInput');
+    if (msg) this.data.message = msg;
+
+    this.persistDraft();
   },
 
   // Check URL query parameters (e.g. from template click on homepage)
@@ -47,74 +127,341 @@ const WishCreator = {
     if (params.get('step')) this.currentStep = parseInt(params.get('step'), 10) || 1;
   },
 
+  // Draft Autosave to localStorage
+  persistDraft() {
+    try {
+      localStorage.setItem('wishcraft_draft_v3', JSON.stringify(this.data));
+    } catch (e) {
+      // Ignore quota/private mode errors
+    }
+  },
+
+  // Restore draft from localStorage
+  restoreDraft() {
+    try {
+      const saved = localStorage.getItem('wishcraft_draft_v3');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        this.data = { ...this.data, ...parsed };
+
+        // Restore DOM inputs
+        const setVal = (id, val) => {
+          const el = document.getElementById(id);
+          if (el && val !== undefined) el.value = val;
+        };
+
+        setVal('recipientNameInput', this.data.recipient_name);
+        setVal('senderNameInput', this.data.sender_name);
+        setVal('genderSelect', this.data.recipient_gender);
+        setVal('ageInput', this.data.age);
+        setVal('annivYearsInput', this.data.anniversary_years);
+        setVal('durationInput', this.data.relationship_duration);
+        setVal('memoriesInput', this.data.memories);
+        setVal('finalMessageInput', this.data.message);
+
+        // Highlight active occasion
+        document.querySelectorAll('.occasion-btn').forEach(btn => {
+          if (btn.dataset.occasion === this.data.occasion) {
+            btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
+            btn.classList.remove('bg-slate-900');
+          } else {
+            btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
+            btn.classList.add('bg-slate-900');
+          }
+        });
+
+        // Highlight active relationship
+        document.querySelectorAll('.relationship-btn').forEach(btn => {
+          if (btn.dataset.relationship === this.data.relationship) {
+            btn.classList.add('ring-4', 'ring-purple-500', 'bg-slate-800');
+            btn.classList.remove('bg-slate-900');
+          } else {
+            btn.classList.remove('ring-4', 'ring-purple-500', 'bg-slate-800');
+            btn.classList.add('bg-slate-900');
+          }
+        });
+
+        // Highlight language
+        document.querySelectorAll('.language-card').forEach(btn => {
+          if (btn.dataset.language === this.data.language) {
+            btn.classList.add('ring-4', 'ring-emerald-500', 'bg-slate-800');
+            btn.classList.remove('bg-slate-900');
+          } else {
+            btn.classList.remove('ring-4', 'ring-emerald-500', 'bg-slate-800');
+            btn.classList.add('bg-slate-900');
+          }
+        });
+
+        // Highlight length
+        document.querySelectorAll('.length-btn').forEach(btn => {
+          if (btn.dataset.length === this.data.length) {
+            btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
+            btn.classList.remove('bg-slate-900');
+          } else {
+            btn.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
+            btn.classList.add('bg-slate-900');
+          }
+        });
+
+        // Highlight font
+        this.setFontFamily(this.data.font_family);
+
+        // Highlight theme
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+          if (btn.dataset.theme === this.data.theme) {
+            btn.classList.add('ring-4', 'ring-pink-500');
+          } else {
+            btn.classList.remove('ring-4', 'ring-pink-500');
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Could not restore draft:', e);
+    }
+  },
+
+  clearDraftAndReset() {
+    if (!confirm('Are you sure you want to reset your wish draft? All entered fields will be cleared.')) return;
+    try {
+      localStorage.removeItem('wishcraft_draft_v3');
+    } catch (e) {}
+
+    this.data = {
+      occasion: 'Birthday',
+      relationship: 'Best Friend',
+      recipient_name: '',
+      sender_name: '',
+      recipient_gender: 'female',
+      memories: '',
+      relationship_duration: '',
+      age: '',
+      anniversary_years: '',
+      style: 'Heartfelt',
+      font_family: 'Playfair Display',
+      theme: 'birthday_celebration',
+      language: 'en',
+      length: 'medium',
+      message: '',
+      images: [],
+      music_track: 'birthday_celebration',
+      is_public: true
+    };
+
+    ['recipientNameInput', 'senderNameInput', 'ageInput', 'annivYearsInput', 'durationInput', 'memoriesInput', 'finalMessageInput'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    this.goToStep(1);
+    this.renderDynamicTones();
+    this.updateStickySummary();
+    this.updateLivePreview();
+    if (typeof showToast === 'function') showToast('Draft cleared! Starting fresh.', 'info');
+  },
+
   bindEvents() {
-    // Occasion selector
+    // Step 1: Occasion selector
     document.querySelectorAll('.occasion-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         const val = btn.dataset.occasion;
         this.data.occasion = val;
-        document.querySelectorAll('.occasion-btn').forEach(b => b.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800'));
+        document.querySelectorAll('.occasion-btn').forEach(b => {
+          b.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
+          b.classList.add('bg-slate-900');
+        });
         btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
+        btn.classList.remove('bg-slate-900');
         this.adjustContextualFields();
+        this.renderDynamicTones();
+        this.persistDraft();
+        this.updateStickySummary();
+        this.updateLivePreview();
       });
     });
 
-    // Relationship selector
+    // Step 2: Relationship selector
     document.querySelectorAll('.relationship-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.data.relationship = btn.dataset.relationship;
-        document.querySelectorAll('.relationship-btn').forEach(b => b.classList.remove('ring-4', 'ring-purple-500', 'bg-slate-800'));
+        document.querySelectorAll('.relationship-btn').forEach(b => {
+          b.classList.remove('ring-4', 'ring-purple-500', 'bg-slate-800');
+          b.classList.add('bg-slate-900');
+        });
         btn.classList.add('ring-4', 'ring-purple-500', 'bg-slate-800');
+        btn.classList.remove('bg-slate-900');
+        this.persistDraft();
+        this.updateStickySummary();
+        this.updateLivePreview();
       });
     });
 
-    // Style selector
-    document.querySelectorAll('.style-btn').forEach(btn => {
+    // Step 5: Language selector
+    document.querySelectorAll('.language-card').forEach(card => {
+      card.addEventListener('click', () => {
+        this.data.language = card.dataset.language;
+        document.querySelectorAll('.language-card').forEach(c => {
+          c.classList.remove('ring-4', 'ring-emerald-500', 'bg-slate-800');
+          c.classList.add('bg-slate-900');
+        });
+        card.classList.add('ring-4', 'ring-emerald-500', 'bg-slate-800');
+        card.classList.remove('bg-slate-900');
+        this.persistDraft();
+        this.updateStickySummary();
+      });
+    });
+
+    // Step 5: Length selector
+    document.querySelectorAll('.length-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.data.style = btn.dataset.style;
-        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('ring-4', 'ring-indigo-500', 'bg-slate-800'));
-        btn.classList.add('ring-4', 'ring-indigo-500', 'bg-slate-800');
+        this.data.length = btn.dataset.length;
+        document.querySelectorAll('.length-btn').forEach(b => {
+          b.classList.remove('ring-4', 'ring-pink-500', 'bg-slate-800');
+          b.classList.add('bg-slate-900');
+        });
+        btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
+        btn.classList.remove('bg-slate-900');
+        this.persistDraft();
       });
     });
 
-    // Font selector
+    // Step 6: Font selector
     document.querySelectorAll('.font-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const font = btn.dataset.font;
-        this.setFontFamily(font);
+        this.setFontFamily(btn.dataset.font);
       });
     });
 
-    // Theme selector
+    // Step 6: Theme selector
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.data.theme = btn.dataset.theme;
         document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('ring-4', 'ring-pink-500'));
         btn.classList.add('ring-4', 'ring-pink-500');
+        this.persistDraft();
       });
     });
 
-    // Live message input listener
-    const finalInput = document.getElementById('finalMessageInput');
-    if (finalInput) {
-      finalInput.addEventListener('input', (e) => {
-        this.data.message = e.target.value;
-        this.updateLivePreview();
-      });
-    }
-
-    // Photo file input listener
+    // Step 6: Photo file input listener
     const photoInput = document.getElementById('photoUploadInput');
     if (photoInput) {
       photoInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
     }
   },
 
+  // 2. Dynamic Occasion-Aware Tone Rendering for Step 4
+  renderDynamicTones() {
+    const container = document.getElementById('dynamicTonesContainer');
+    if (!container) return;
+
+    // Resolve occasion ID
+    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
+    const occId = occMeta?.id || 'birthday';
+    const tones = occMeta?.tones || this.OCCASION_TONES[occId] || this.OCCASION_TONES.custom;
+
+    // Default tone emojis
+    const toneEmojis = {
+      'Heartfelt': '💖',
+      'Funny & Playful': '😂',
+      'Sweet & Loving': '🥰',
+      'Emotional': '🥺',
+      'Deeply Romantic': '🌹',
+      'Devoted & Loyal': '💍',
+      'Sweet & Playful': '✨',
+      'Poetic': '📜',
+      'Sincere & Apologetic': '🕊️',
+      'Gentle & Healing': '🌿',
+      'Deeply Accountable': '🤝',
+      'Humble': '🙏',
+      'Deeply Grateful': '🙏',
+      'Warm & Appreciative': '🌸',
+      'Respectful': '👔',
+      'Cheerful & Sweet': '🌻',
+      'Triumphant & Proud': '🏆',
+      'Inspiring': '⭐',
+      'Cheerful & Hype': '🎉',
+      'Dignified': '👑',
+      'Bittersweet': '🌅',
+      'Nostalgic': '📻',
+      'Inspiring & Hopeful': '🚀',
+      'Warm & Connected': '🤝',
+      'Warm Blessings': '🪔',
+      'Joyful & Festive': '🎆',
+      'Heartfelt Family Love': '🏡',
+      'Peace & Light': '✨',
+      'Loyal & Authentic': '⚡',
+      'Playful & Crazy': '🥳',
+      'Sweet': '🍬',
+      'Gentle & Comforting': '🕊️',
+      'Heartfelt Sympathy': '🕯️',
+      'Peace & Solace': '🌿',
+      'Warm & Supportive': '🤝',
+      'Thoughtful': '💡',
+      'Cheerful': '☀️'
+    };
+
+    // If current style is not in available tones, default to the first one
+    if (!tones.includes(this.data.style)) {
+      this.data.style = tones[0];
+    }
+
+    container.innerHTML = tones.map(tone => {
+      const isSelected = tone === this.data.style;
+      const emoji = toneEmojis[tone] || '✨';
+      const activeClasses = isSelected ? 'ring-4 ring-indigo-500 bg-slate-800' : 'bg-slate-900';
+      return `
+        <button type="button" data-tone="${tone}" class="tone-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 hover:border-indigo-400 ${activeClasses}">
+          <span class="text-2xl">${emoji}</span>
+          <span class="font-bold text-xs text-white">${tone}</span>
+        </button>
+      `;
+    }).join('');
+
+    // Bind click events on dynamic tone buttons
+    container.querySelectorAll('.tone-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const selectedTone = btn.dataset.tone;
+        this.data.style = selectedTone;
+        container.querySelectorAll('.tone-btn').forEach(b => {
+          b.classList.remove('ring-4', 'ring-indigo-500', 'bg-slate-800');
+          b.classList.add('bg-slate-900');
+        });
+        btn.classList.add('ring-4', 'ring-indigo-500', 'bg-slate-800');
+        btn.classList.remove('bg-slate-900');
+        this.persistDraft();
+        this.updateStickySummary();
+      });
+    });
+
+    // Update Step 4 subtitle
+    const sub = document.getElementById('step4Subtitle');
+    if (sub) {
+      if (occMeta && !occMeta.isCelebration) {
+        sub.innerText = 'Choose the emotional resonance for your sincere note.';
+      } else {
+        sub.innerText = 'How do you want your loved one to feel?';
+      }
+    }
+  },
+
+  // Adjust numeric fields based on occasion
+  adjustContextualFields() {
+    const occ = this.data.occasion.toLowerCase();
+    const ageWrapper = document.getElementById('ageFieldWrapper');
+    const annivWrapper = document.getElementById('annivFieldWrapper');
+
+    if (ageWrapper) {
+      ageWrapper.style.display = occ.includes('birth') ? 'block' : 'none';
+    }
+    if (annivWrapper) {
+      annivWrapper.style.display = occ.includes('anniv') ? 'block' : 'none';
+    }
+  },
+
+  // Set font family and update UI badges
   setFontFamily(fontName) {
     if (!fontName) return;
     this.data.font_family = fontName;
 
-    // Update Step 4 font buttons highlight
     document.querySelectorAll('.font-btn').forEach(btn => {
       if (btn.dataset.font === fontName) {
         btn.classList.add('ring-4', 'ring-pink-500', 'bg-slate-800');
@@ -125,21 +472,20 @@ const WishCreator = {
       }
     });
 
-    // Update Step 4 badge
     const badge = document.getElementById('selectedFontBadge');
     if (badge) badge.innerText = fontName;
 
-    // Update Step 6 dropdown if present
     const dropdown = document.getElementById('step6FontSelector');
     if (dropdown && dropdown.value !== fontName) {
       dropdown.value = fontName;
     }
 
-    // Apply live font to final message textarea
     const messageInput = document.getElementById('finalMessageInput');
     if (messageInput) {
       messageInput.style.fontFamily = this.getFontStack(fontName);
     }
+
+    this.persistDraft();
     this.updateLivePreview();
   },
 
@@ -155,17 +501,24 @@ const WishCreator = {
     return fontMap[fontName] || fontMap['Playfair Display'];
   },
 
-  getFontClass(fontName) {
-    if (!fontName) return 'font-playfair';
-    const f = fontName.toLowerCase();
-    if (f.includes('dancing')) return 'font-dancing';
-    if (f.includes('vibes')) return 'font-great-vibes';
-    if (f.includes('outfit')) return 'font-outfit';
-    if (f.includes('pacifico')) return 'font-pacifico';
-    if (f.includes('cinzel')) return 'font-cinzel';
-    return 'font-playfair';
+  // Update Compact Live Sticky Summary Bar
+  updateStickySummary() {
+    const setTxt = (id, txt) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    };
+
+    setTxt('sumValOccasion', this.data.occasion || 'Birthday');
+    setTxt('sumValRelationship', this.data.relationship || 'Best Friend');
+    setTxt('sumValRecipient', this.data.recipient_name || 'Friend');
+    setTxt('sumValSender', this.data.sender_name || 'You');
+    setTxt('sumValTone', this.data.style || 'Heartfelt');
+
+    const langLabels = { en: 'English', hi: 'हिंदी', hinglish: 'Hinglish' };
+    setTxt('sumValLanguage', langLabels[this.data.language] || 'English');
   },
 
+  // 3. Update Live Interactive Webpage Preview
   updateLivePreview() {
     const recEl = document.getElementById('previewRecipientName');
     const senderEl = document.getElementById('previewSenderName');
@@ -178,13 +531,17 @@ const WishCreator = {
     const recipient = this.data.recipient_name || 'Friend';
     const sender = this.data.sender_name || 'Someone special';
 
-    if (recEl) {
-      recEl.innerText = recipient;
-    }
+    if (recEl) recEl.innerText = recipient;
+
     if (senderEl) {
-      const prefix = occMeta?.senderPrefix || 'With love from';
-      senderEl.innerText = `${prefix} ${sender}`;
+      if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(sender)) {
+        senderEl.innerText = WishAttribution.getSenderSignatureInline(sender, this.data.relationship);
+      } else {
+        const prefix = occMeta?.senderPrefix || 'With love from';
+        senderEl.innerText = `${prefix} ${sender}`;
+      }
     }
+
     if (badgeEl) {
       badgeEl.innerText = occMeta?.cardBadge || `${this.data.occasion || 'Celebration'}`;
       if (occMeta && !occMeta.isCelebration) {
@@ -198,14 +555,13 @@ const WishCreator = {
       messageEl.innerText = this.data.message || (occMeta && !occMeta.isCelebration 
         ? 'Select or write a thoughtful note above to preview it here...' 
         : 'Select or write a greeting message above to preview it here...');
-      messageEl.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
-      messageEl.classList.add(this.getFontClass(this.data.font_family));
       messageEl.style.fontFamily = this.getFontStack(this.data.font_family);
     }
 
+    // Display personal memory section if provided
     if (memoriesBlock && memoriesText) {
       if (this.data.memories && this.data.memories.trim()) {
-        memoriesText.innerText = `"${this.data.memories}"`;
+        memoriesText.innerText = this.data.memories.trim();
         memoriesBlock.style.display = 'block';
       } else {
         memoriesBlock.style.display = 'none';
@@ -213,203 +569,91 @@ const WishCreator = {
     }
   },
 
-  adjustContextualFields() {
-    const ageWrapper = document.getElementById('ageFieldWrapper');
-    const annivWrapper = document.getElementById('annivFieldWrapper');
-    const occ = this.data.occasion.toLowerCase();
-    const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
-
-    if (ageWrapper) {
-      ageWrapper.style.display = occ.includes('birthday') ? 'block' : 'none';
-    }
-    if (annivWrapper) {
-      annivWrapper.style.display = occ.includes('anniversary') ? 'block' : 'none';
+  // 4. Writing Improvement Engine with Side-by-Side Comparison
+  async improveMemoryWriting() {
+    this.saveAllInputs();
+    const rawText = this.data.memories;
+    if (!rawText || rawText.trim().length < 3) {
+      if (typeof showToast === 'function') showToast('Please enter a memory or personal note first to improve.', 'info');
+      document.getElementById('memoriesInput')?.focus();
+      return;
     }
 
-    // Auto-suggest optimal theme and audio track based on occasion
-    if (occ.includes('birthday')) {
-      this.data.theme = 'birthday_celebration';
-      this.data.music_track = 'birthday_celebration';
-    } else if (occ.includes('anniversary') || occ.includes('valentine')) {
-      this.data.theme = 'romantic_theme';
-      this.data.music_track = 'romantic_melody';
-    } else if (occ.includes('friend')) {
-      this.data.theme = 'friendship_theme';
-      this.data.music_track = 'celebration_tune';
-    } else if (occ.includes('sorry') || occ.includes('sympath') || occ.includes('thank')) {
-      this.data.theme = 'minimalist_theme';
-      this.data.music_track = 'peaceful_melody';
-    }
+    const btn = document.getElementById('polishMemoryBtn');
+    const spinner = document.getElementById('polishMemorySpinner');
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.classList.remove('hidden');
 
-    // Dynamic Step 1 Subhead
-    const step1Title = document.getElementById('step1Title');
-    const step1Sub = document.getElementById('step1Subtitle');
-    if (step1Title && occMeta) {
-      step1Title.innerText = occMeta.isCelebration 
-        ? `What are we celebrating? ${occMeta.emoji}` 
-        : `Sending a ${occMeta.name} Message ${occMeta.emoji}`;
-    }
-    if (step1Sub && occMeta) {
-      step1Sub.innerText = occMeta.isCelebration 
-        ? 'Select an occasion to tailor the celebration design, music, and AI prompts.' 
-        : 'Tailor the emotional tone, thoughtful design, and peaceful music.';
-    }
+    try {
+      const res = await fetch('/api/correct-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: rawText,
+          context: {
+            occasion: this.data.occasion,
+            relationship: this.data.relationship,
+            recipientName: this.data.recipient_name,
+            language: this.data.language
+          }
+        })
+      });
 
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Could not improve writing');
+
+      if (json.improved) {
+        this.correctedMemory = json.improved;
+        const diffBox = document.getElementById('memoryComparisonBox');
+        const diffOrig = document.getElementById('memoryDiffOriginal');
+        const diffImp = document.getElementById('memoryDiffImproved');
+        const badge = document.getElementById('memoryExplanationBadge');
+
+        if (diffOrig) diffOrig.innerText = json.original || rawText;
+        if (diffImp) diffImp.innerText = json.improved;
+        if (badge) badge.innerText = json.explanation || 'Cleaned grammar and typos while preserving your voice';
+        if (diffBox) diffBox.classList.remove('hidden');
+
+        if (typeof showToast === 'function') {
+          showToast('✨ Writing improved! Review comparison below.', 'success');
+        }
+      }
+    } catch (err) {
+      console.error('Improve text error:', err);
+      if (typeof showToast === 'function') showToast('Could not improve writing right now. Your text is safe!', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+      if (spinner) spinner.classList.add('hidden');
+    }
+  },
+
+  applyImprovedMemory() {
+    if (!this.correctedMemory) return;
+    this.data.memories = this.correctedMemory;
+    const input = document.getElementById('memoriesInput');
+    if (input) input.value = this.correctedMemory;
+
+    const diffBox = document.getElementById('memoryComparisonBox');
+    if (diffBox) diffBox.classList.add('hidden');
+
+    this.persistDraft();
     this.updateLivePreview();
+    if (typeof showToast === 'function') showToast('Improved version applied! ✓', 'success');
   },
 
-  goToStep(stepNumber) {
-    // Validation before moving forward
-    if (stepNumber > this.currentStep) {
-      if (this.currentStep === 3) {
-        const nameInput = document.getElementById('recipientNameInput');
-        if (!nameInput || !nameInput.value.trim()) {
-          showToast('Please enter the recipient’s name to continue.', 'error');
-          nameInput?.focus();
-          return;
-        }
-        this.saveStep3Inputs();
-      }
-    }
-
-    this.currentStep = stepNumber;
-    this.updateStepView();
-
-    // If entering Step 6, generate AI wishes automatically if message is empty
-    if (this.currentStep === 6) {
-      this.updateLivePreview();
-      if (!this.data.message) {
-        this.generateAIWishes();
-      }
-    }
+  keepOriginalMemory() {
+    const diffBox = document.getElementById('memoryComparisonBox');
+    if (diffBox) diffBox.classList.add('hidden');
+    if (typeof showToast === 'function') showToast('Kept your original text.', 'info');
   },
 
-  nextStep() {
-    if (this.currentStep < 6) {
-      this.goToStep(this.currentStep + 1);
-    }
-  },
-
-  prevStep() {
-    if (this.currentStep > 1) {
-      this.goToStep(this.currentStep - 1);
-    }
-  },
-
-  saveStep3Inputs() {
-    this.data.recipient_name = document.getElementById('recipientNameInput')?.value.trim() || '';
-    this.data.sender_name = document.getElementById('senderNameInput')?.value.trim() || '';
-    this.data.memories = document.getElementById('memoriesInput')?.value.trim() || '';
-    this.data.relationship_duration = document.getElementById('durationInput')?.value.trim() || '';
-    this.data.age = document.getElementById('ageInput')?.value || '';
-    this.data.anniversary_years = document.getElementById('annivYearsInput')?.value || '';
-    this.data.recipient_gender = document.getElementById('genderSelect')?.value || 'unspecified';
-  },
-
-  updateStepView() {
-    // Hide all step sections
-    for (let i = 1; i <= 6; i++) {
-      const stepEl = document.getElementById(`stepSection${i}`);
-      const indicator = document.getElementById(`stepIndicator${i}`);
-      if (stepEl) {
-        stepEl.style.display = i === this.currentStep ? 'block' : 'none';
-      }
-      if (indicator) {
-        if (i < this.currentStep) {
-          indicator.className = 'w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow';
-          indicator.innerHTML = '✓';
-        } else if (i === this.currentStep) {
-          indicator.className = 'w-9 h-9 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm ring-4 ring-pink-500 ring-opacity-40 shadow-lg';
-          indicator.innerHTML = i;
-        } else {
-          indicator.className = 'w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm';
-          indicator.innerHTML = i;
-        }
-      }
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  },
-
-  // Photo Upload Handler (supports multiple images, converts to base64 for persistent preview)
-  handlePhotoUpload(event) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file, index) => {
-      if (this.data.images.length >= 6) {
-        showToast('Maximum 6 photos allowed per greeting.', 'info');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        showToast(`Photo "${file.name}" is over 5MB. Please choose a smaller image.`, 'error');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.data.images.push({
-          url: e.target.result,
-          caption: `Memory #${this.data.images.length + 1}`
-        });
-        this.renderPhotoThumbnails();
-      };
-      reader.readAsDataURL(file);
-    });
-
-    event.target.value = '';
-  },
-
-  removePhoto(index) {
-    this.data.images.splice(index, 1);
-    this.renderPhotoThumbnails();
-  },
-
-  updatePhotoCaption(index, newCaption) {
-    if (this.data.images[index]) {
-      this.data.images[index].caption = newCaption;
-    }
-  },
-
-  renderPhotoThumbnails() {
-    const container = document.getElementById('uploadedPhotosList');
-    if (!container) return;
-
-    if (this.data.images.length === 0) {
-      container.innerHTML = `<p class="text-xs text-gray-500 italic col-span-full">No photos added yet. Upload your favorite moments above!</p>`;
+  // Polish final generated message in Step 7
+  async polishFinalMessage() {
+    this.saveAllInputs();
+    const raw = this.data.message;
+    if (!raw || raw.trim().length < 5) {
+      if (typeof showToast === 'function') showToast('Please enter a message to polish.', 'info');
       return;
-    }
-
-    container.innerHTML = this.data.images.map((img, idx) => `
-      <div class="relative bg-slate-800 p-2 rounded-xl border border-slate-700 flex flex-col gap-2">
-        <img src="${img.url}" class="w-full h-24 object-cover rounded-lg">
-        <input type="text" value="${img.caption}" onchange="WishCreator.updatePhotoCaption(${idx}, this.value)" 
-          class="text-xs bg-slate-900 border border-slate-700 rounded px-2 py-1 text-gray-300 w-full" placeholder="Add caption...">
-        <button onclick="WishCreator.removePhoto(${idx})" class="absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow font-bold">✕</button>
-      </div>
-    `).join('');
-  },
-
-
-  // Smart Memory Polish & Grammar Checker
-  async polishMemoryGrammar() {
-    const memoriesInput = document.getElementById('memoriesInput');
-    const polishBtn = document.getElementById('polishMemoryBtn');
-    const correctionBox = document.getElementById('memoryCorrectionBox');
-    const origDisplay = document.getElementById('memoryOriginalDisplay');
-    const impDisplay = document.getElementById('memoryImprovedDisplay');
-
-    const raw = memoriesInput ? memoriesInput.value.trim() : '';
-    if (!raw) {
-      showToast('Please type some memories or notes first to polish.', 'info');
-      memoriesInput?.focus();
-      return;
-    }
-
-    if (polishBtn) {
-      polishBtn.disabled = true;
-      polishBtn.innerHTML = '<span>⏳ Polishing...</span>';
     }
 
     try {
@@ -422,181 +666,136 @@ const WishCreator = {
             occasion: this.data.occasion,
             relationship: this.data.relationship,
             recipientName: this.data.recipient_name,
-            senderName: this.data.sender_name
+            language: this.data.language
           }
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Could not polish text');
-
-      this.correctedMemory = data.improved;
-
-      if (data.improved.trim() === raw) {
-        showToast('✨ Your memory text is already clean and grammatically sound!', 'success');
-        if (correctionBox) correctionBox.style.display = 'none';
-      } else {
-        if (origDisplay) origDisplay.innerText = raw;
-        if (impDisplay) impDisplay.innerText = data.improved;
-        if (correctionBox) {
-          correctionBox.style.display = 'block';
-          correctionBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        showToast('✨ Polished grammar and spelling suggestions ready!', 'success');
-      }
-
-    } catch (err) {
-      console.warn('Text polish note:', err);
-      showToast('Could not polish text right now. Your original text is preserved.', 'info');
-    } finally {
-      if (polishBtn) {
-        polishBtn.disabled = false;
-        polishBtn.innerHTML = '<span>✨ Polish Grammar & Typos</span>';
-      }
-    }
-  },
-
-  applyCorrectedMemory() {
-    if (!this.correctedMemory) return;
-    const input = document.getElementById('memoriesInput');
-    if (input) {
-      input.value = this.correctedMemory;
-      this.data.memories = this.correctedMemory;
-      this.updateLivePreview();
-    }
-    this.dismissMemoryCorrection();
-    showToast('Applied polished text! ✓', 'success');
-  },
-
-  dismissMemoryCorrection() {
-    const box = document.getElementById('memoryCorrectionBox');
-    if (box) box.style.display = 'none';
-    this.correctedMemory = null;
-  },
-
-  async polishFinalMessage() {
-    const finalInput = document.getElementById('finalMessageInput');
-    if (!finalInput || !finalInput.value.trim()) {
-      showToast('Please enter or select a message to polish.', 'info');
-      return;
-    }
-
-    const raw = finalInput.value.trim();
-    showToast('Polishing message grammar...', 'info');
-
-    try {
-      const res = await fetch('/api/correct-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: raw,
-          context: {
-            occasion: this.data.occasion,
-            relationship: this.data.relationship,
-            recipientName: this.data.recipient_name
-          }
-        })
-      });
-
-      const data = await res.json();
-      if (data && data.improved) {
-        finalInput.value = data.improved;
-        this.data.message = data.improved;
-        this.updateLivePreview();
-        showToast('Message text polished! ✓', 'success');
-      }
-    } catch (err) {
-      showToast('Could not polish message. Original text kept.', 'info');
-    }
-  },
-
-  // AI Message Generation using backend Gemini integration
-  async generateAIWishes() {
-    this.saveStep3Inputs();
-
-    const loadingEl = document.getElementById('aiLoadingState');
-    const resultsEl = document.getElementById('aiResultsContainer');
-    const genBtn = document.getElementById('regenerateBtn');
-
-    if (loadingEl) {
-      loadingEl.style.display = 'block';
-      const occMeta = typeof OccasionManager !== 'undefined' ? OccasionManager.resolve(this.data.occasion) : null;
-      const loadingP = loadingEl.querySelector('p.font-semibold');
-      const loadingSub = loadingEl.querySelector('p.text-xs');
-      if (loadingP && occMeta) {
-        loadingP.innerText = occMeta.isCelebration 
-          ? 'Gemini AI is crafting 3 personalized greetings...' 
-          : `Crafting 3 heartfelt, sincere ${occMeta.name} messages...`;
-      }
-      if (loadingSub && occMeta) {
-        loadingSub.innerText = `Weaving your personal memories, ${this.data.relationship} bond, and desired tone.`;
-      }
-    }
-    if (resultsEl) resultsEl.style.display = 'none';
-    if (genBtn) genBtn.disabled = true;
-
-    try {
-      const language = document.getElementById('languageSelect')?.value || this.data.language || 'en';
-      const length = document.getElementById('lengthSelect')?.value || 'medium';
-
-      const res = await fetch('/api/generate-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          occasion: this.data.occasion,
-          relationship: this.data.relationship,
-          recipientName: this.data.recipient_name,
-          senderName: this.data.sender_name,
-          style: this.data.style,
-          memories: this.data.memories,
-          language: language,
-          length: length
         })
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message || 'Generation failed');
+      if (json.improved) {
+        this.data.message = json.improved;
+        const msgInput = document.getElementById('finalMessageInput');
+        if (msgInput) msgInput.value = json.improved;
+        this.updateLivePreview();
+        if (typeof showToast === 'function') showToast('✨ Message polished!', 'success');
       }
-
-      this.aiVariations = json.variations || [];
-      this.renderAIVariations(json.source);
-
-      // Select first variation by default
-      if (this.aiVariations.length > 0) {
-        this.selectVariation(0);
-      }
-    } catch (err) {
-      console.error('AI generation error:', err);
-      showToast(err.message || 'Error generating wishes', 'error');
-    } finally {
-      if (loadingEl) loadingEl.style.display = 'none';
-      if (resultsEl) resultsEl.style.display = 'block';
-      if (genBtn) genBtn.disabled = false;
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('Could not polish text.', 'error');
     }
   },
 
-  renderAIVariations(source = 'gemini') {
-    const listEl = document.getElementById('variationsList');
-    if (!listEl) return;
+  // 5. Multi-Stage AI Generation
+  async generateAIWishes() {
+    this.saveAllInputs();
 
-    listEl.innerHTML = this.aiVariations.map((v, i) => `
-      <div id="variationCard_${i}" onclick="WishCreator.selectVariation(${i})" 
-        class="variation-card p-4 rounded-xl border transition cursor-pointer ${i === 0 ? 'bg-pink-950 bg-opacity-30 border-pink-500 ring-2 ring-pink-500' : 'bg-slate-900 border-slate-700 hover:border-slate-500'}">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Option ${i + 1}: ${v.title}</span>
-          <span class="text-xs bg-slate-800 text-gray-400 px-2 py-0.5 rounded-full">${v.tone || 'Heartfelt'}</span>
-        </div>
-        <p class="text-sm text-gray-200 line-clamp-3 italic">"${v.text}"</p>
-      </div>
-    `).join('');
-
-    const sourceBadge = document.getElementById('aiSourceBadge');
-    if (sourceBadge) {
-      sourceBadge.innerHTML = source === 'gemini' 
-        ? `<span class="bg-indigo-900 text-indigo-300 text-xs px-2.5 py-1 rounded-full font-medium">✨ Powered by Gemini AI</span>`
-        : `<span class="bg-slate-800 text-gray-300 text-xs px-2.5 py-1 rounded-full font-medium">⚡ Instant Template Synthesizer</span>`;
+    if (!this.data.recipient_name || !this.data.recipient_name.trim()) {
+      if (typeof showToast === 'function') showToast("Please enter the recipient's name in Step 3 first.", 'error');
+      this.goToStep(3);
+      document.getElementById('recipientNameInput')?.focus();
+      return;
     }
+
+    const loadBox = document.getElementById('aiLoadingState');
+    const resultsBox = document.getElementById('aiResultsContainer');
+    const triggerBtn = document.getElementById('triggerGenerateBtn');
+    const titleEl = document.getElementById('aiProgressTitle');
+    const subEl = document.getElementById('aiProgressSubtitle');
+    const barEl = document.getElementById('aiProgressBar');
+
+    if (loadBox) loadBox.style.display = 'block';
+    if (resultsBox) resultsBox.style.display = 'none';
+    if (triggerBtn) {
+      triggerBtn.disabled = true;
+      triggerBtn.classList.add('opacity-50');
+    }
+
+    // Animated multi-stage progress
+    if (titleEl) titleEl.innerText = 'Stage 1 of 3: Analyzing personal context...';
+    if (subEl) subEl.innerText = `Weaving ${this.data.recipient_name}'s memories and ${this.data.relationship} relationship...`;
+    if (barEl) barEl.style.width = '33%';
+
+    const stageTimer1 = setTimeout(() => {
+      if (titleEl) titleEl.innerText = 'Stage 2 of 3: Gemini AI synthesizing message...';
+      if (subEl) subEl.innerText = `Drafting emotionally resonant ${this.data.style} variations in ${this.data.language}...`;
+      if (barEl) barEl.style.width = '66%';
+    }, 900);
+
+    const stageTimer2 = setTimeout(() => {
+      if (titleEl) titleEl.innerText = 'Stage 3 of 3: Perfecting interactive greeting...';
+      if (subEl) subEl.innerText = 'Applying typography, ambient soundscapes, and visual theme...';
+      if (barEl) barEl.style.width = '95%';
+    }, 1800);
+
+    try {
+      const payload = {
+        occasion: this.data.occasion,
+        relationship: this.data.relationship,
+        recipient_name: this.data.recipient_name,
+        sender_name: this.data.sender_name,
+        recipient_gender: this.data.recipient_gender,
+        age: this.data.age,
+        anniversary_years: this.data.anniversary_years,
+        relationship_duration: this.data.relationship_duration,
+        memories: this.data.memories,
+        style: this.data.style,
+        language: this.data.language,
+        length: this.data.length
+      };
+
+      const res = await fetch('/api/generate-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
+
+      if (!res.ok) throw new Error(json.message || 'Generation failed');
+
+      this.aiVariations = json.variations || [];
+      this.renderVariationsList();
+
+      // Automatically select the first variation
+      if (this.aiVariations.length > 0) {
+        this.selectVariation(0);
+      }
+
+      if (resultsBox) resultsBox.style.display = 'block';
+      if (typeof showToast === 'function') showToast('✨ Generated 3 custom variations!', 'success');
+
+    } catch (err) {
+      clearTimeout(stageTimer1);
+      clearTimeout(stageTimer2);
+      console.error('Generation error:', err);
+      if (typeof showToast === 'function') showToast(err.message || 'Failed to generate messages.', 'error');
+    } finally {
+      if (loadBox) loadBox.style.display = 'none';
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.classList.remove('opacity-50');
+      }
+    }
+  },
+
+  renderVariationsList() {
+    const list = document.getElementById('variationsList');
+    if (!list) return;
+
+    list.innerHTML = this.aiVariations.map((v, idx) => {
+      const isSelected = idx === this.selectedVariationIndex;
+      const borderClass = isSelected ? 'border-pink-500 ring-2 ring-pink-500 bg-pink-950/30' : 'border-slate-700 bg-slate-900 hover:border-slate-500';
+      return `
+        <div onclick="WishCreator.selectVariation(${idx})" class="variation-card p-4 rounded-xl border transition cursor-pointer ${borderClass}">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-pink-300 border border-slate-700">Option ${idx + 1}: ${v.tone || this.data.style}</span>
+            <span class="text-xs text-gray-400 font-semibold">${isSelected ? 'Selected ✓' : 'Click to Use'}</span>
+          </div>
+          <p class="text-sm text-gray-200 leading-relaxed font-playfair whitespace-pre-line">${v.text}</p>
+        </div>
+      `;
+    }).join('');
   },
 
   selectVariation(index) {
@@ -605,18 +804,21 @@ const WishCreator = {
     if (!selected) return;
 
     let varText = selected.text;
+
+    // Special MD RAZA developer relationship-aware signature handling
     if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(this.data.sender_name)) {
       const sig = WishAttribution.getSenderSignatureInline(this.data.sender_name, this.data.relationship);
       if (!varText.includes(sig)) {
-        varText = varText.replace(/—\s*(?:with love,\s*)?(?:your\s+[\w\s]+,\s*)?md raza\s*$/i, `— ${sig}`);
+        varText = varText.replace(/—\s*(?:with love,\s*)?(?:your\s+[\w\s]+,\s*)?md\s+raza\s*$/i, `— ${sig}`);
       }
     }
+
     this.data.message = varText;
 
-    // Highlight active card
+    // Update active highlight on variation cards
     document.querySelectorAll('.variation-card').forEach((c, idx) => {
       if (idx === index) {
-        c.className = 'variation-card p-4 rounded-xl border transition cursor-pointer bg-pink-950 bg-opacity-30 border-pink-500 ring-2 ring-pink-500';
+        c.className = 'variation-card p-4 rounded-xl border transition cursor-pointer bg-pink-950/30 border-pink-500 ring-2 ring-pink-500';
       } else {
         c.className = 'variation-card p-4 rounded-xl border transition cursor-pointer bg-slate-900 border-slate-700 hover:border-slate-500';
       }
@@ -625,40 +827,133 @@ const WishCreator = {
     // Populate active editable textarea
     const messageInput = document.getElementById('finalMessageInput');
     if (messageInput) {
-      messageInput.value = selected.text;
+      messageInput.value = varText;
+    }
+
+    this.persistDraft();
+    this.updateLivePreview();
+  },
+
+  // 6. Navigation Between 7 Steps
+  goToStep(stepNumber) {
+    if (stepNumber < 1 || stepNumber > 7) return;
+
+    // Save inputs before moving away from current step
+    this.saveAllInputs();
+
+    // Validation before moving past Step 3
+    if (stepNumber > 3 && this.currentStep <= 3) {
+      if (!this.data.recipient_name || !this.data.recipient_name.trim()) {
+        if (typeof showToast === 'function') showToast("Please enter the recipient's name to continue.", 'error');
+        document.getElementById('recipientNameInput')?.focus();
+        return;
+      }
+    }
+
+    this.currentStep = stepNumber;
+    this.updateStepView();
+    this.updateStickySummary();
+    this.updateLivePreview();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  nextStep() {
+    this.goToStep(this.currentStep + 1);
+  },
+
+  prevStep() {
+    this.goToStep(this.currentStep - 1);
+  },
+
+  updateStepView() {
+    // Show active section, hide others
+    for (let i = 1; i <= 7; i++) {
+      const section = document.getElementById(`stepSection${i}`);
+      if (section) {
+        section.style.display = i === this.currentStep ? 'block' : 'none';
+      }
+
+      const indicator = document.getElementById(`stepIndicator${i}`);
+      if (indicator) {
+        if (i === this.currentStep) {
+          indicator.className = 'w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow ring-4 ring-pink-500/20';
+        } else if (i < this.currentStep) {
+          indicator.className = 'w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs';
+          indicator.innerHTML = '✓';
+        } else {
+          indicator.className = 'w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs';
+          indicator.innerHTML = `${i}`;
+        }
+      }
+    }
+
+    // Step 7 auto-generate trigger if message is still empty
+    if (this.currentStep === 7 && !this.data.message && this.aiVariations.length === 0) {
+      this.generateAIWishes();
     }
   },
 
-  // Final Publish & Share Creation
-  async publishGreeting() {
-    const messageInput = document.getElementById('finalMessageInput');
-    if (messageInput) {
-      this.data.message = messageInput.value.trim();
-    }
+  // 7. Photo Uploads (up to 6)
+  handlePhotoUpload(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
 
-    if (!this.data.message) {
-      showToast('Please enter or select a greeting message.', 'error');
+    const remainingSlots = 6 - (this.data.images?.length || 0);
+    const filesToProcess = files.slice(0, remainingSlots);
+
+    filesToProcess.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (!this.data.images) this.data.images = [];
+        this.data.images.push(e.target.result);
+        this.renderPhotoReel();
+        this.persistDraft();
+      };
+      reader.readAsDataURL(file);
+    });
+  },
+
+  renderPhotoReel() {
+    const reel = document.getElementById('photoPreviewReel');
+    if (!reel) return;
+
+    reel.innerHTML = (this.data.images || []).map((img, idx) => `
+      <div class="relative group rounded-xl overflow-hidden aspect-square border border-slate-700 shadow">
+        <img src="${img}" class="w-full h-full object-cover">
+        <button type="button" onclick="WishCreator.removePhoto(${idx})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
+      </div>
+    `).join('');
+  },
+
+  removePhoto(index) {
+    if (this.data.images) {
+      this.data.images.splice(index, 1);
+      this.renderPhotoReel();
+      this.persistDraft();
+    }
+  },
+
+  // 8. Publish & Send Now
+  async publishGreeting() {
+    this.saveAllInputs();
+
+    if (!this.data.message || !this.data.message.trim()) {
+      if (typeof showToast === 'function') showToast('Please enter or select a greeting message.', 'error');
       return;
     }
 
-    const publishBtn = document.getElementById('publishWishBtn');
+    const publishBtn = document.getElementById('publishGreetingBtn');
     if (publishBtn) {
       publishBtn.disabled = true;
-      publishBtn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-        </svg> Generating Celebration Page...
-      `;
+      publishBtn.innerHTML = '<span>⏳ Publishing Greeting...</span>';
     }
 
     try {
-      const user = AuthManager.getUser();
+      const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
 
       const payload = {
         ...this.data,
-        sender_id: user?.id || null,
-        language: document.getElementById('languageSelect')?.value || this.data.language || 'en'
+        sender_id: user?.id || null
       };
 
       const res = await fetch('/api/wishes', {
@@ -668,320 +963,234 @@ const WishCreator = {
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message || 'Creation failed');
-      }
+      if (!res.ok) throw new Error(json.message || 'Creation failed');
 
       this.createdWish = json.wish;
-      showToast('🎉 Your celebration greeting is live!', 'success');
-      setTimeout(() => {
-        window.location.href = `/wish/${json.wish.slug}?created=1`;
-      }, 600);
+      if (typeof showToast === 'function') showToast('🎉 Your greeting is live!', 'success');
+
+      // Clear draft after successful creation
+      try { localStorage.removeItem('wishcraft_draft_v3'); } catch (e) {}
+
+      // Open Share modal or redirect
+      this.showShareModal(json.wish);
 
     } catch (err) {
       console.error('Publish error:', err);
-      showToast(err.message || 'Could not create greeting', 'error');
+      if (typeof showToast === 'function') showToast(err.message || 'Could not create greeting', 'error');
+    } finally {
       if (publishBtn) {
         publishBtn.disabled = false;
-        publishBtn.innerHTML = `Generate & Share Greeting ✨`;
+        publishBtn.innerHTML = '<span>Send Now 🚀</span>';
       }
     }
   },
 
-
-  // Convert local date + time in given timezone to UTC ISO string
-  getIsoUtcForTimezone(dateStr, timeStr, timeZone) {
-    try {
-      const localGuess = new Date(dateStr + 'T' + timeStr + ':00Z');
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: timeZone || 'UTC',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        hour12: false
-      });
-      const parts = {};
-      formatter.formatToParts(localGuess).forEach(p => { parts[p.type] = p.value; });
-      let th = parseInt(parts.hour, 10);
-      if (th === 24) th = 0;
-      const formattedAsUtcMs = Date.UTC(parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10), th, parseInt(parts.minute, 10));
-      const diffMs = formattedAsUtcMs - localGuess.getTime();
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const [h, min] = timeStr.split(':').map(Number);
-      const desiredUtcMs = Date.UTC(y, m - 1, d, h, min) - diffMs;
-      return new Date(desiredUtcMs).toISOString();
-    } catch (e) {
-      // Fallback
-      return new Date(dateStr + 'T' + timeStr).toISOString();
-    }
-  },
-
-  // Ensure greeting is persisted on the backend before scheduling
-  async ensureWishSaved() {
-    if (this.createdWish && this.createdWish.slug) {
-      return this.createdWish;
+  showShareModal(wish) {
+    const modal = document.getElementById('shareModal');
+    if (!modal) {
+      window.location.href = `/wish/${wish.slug}`;
+      return;
     }
 
-    this.saveStep3Inputs();
-    const messageInput = document.getElementById('finalMessageInput');
-    if (messageInput) {
-      this.data.message = messageInput.value.trim();
-    }
+    const currentUrl = `${window.location.origin}/wish/${wish.slug}`;
+    document.getElementById('shareModalRecipientName').innerText = wish.recipient_name;
+    document.getElementById('shareUrlText').innerText = currentUrl;
+    document.getElementById('viewLiveWishBtn').href = `/wish/${wish.slug}`;
 
-    if (!this.data.message) {
-      throw new Error('Please enter or select a greeting message first.');
-    }
+    // Email dispatch inside modal
+    const emailForm = document.getElementById('sendEmailForm');
+    if (emailForm) {
+      emailForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('recipientEmailInput');
+        const emailBtn = document.getElementById('sendEmailBtn');
+        const email = emailInput.value.trim();
 
-    if (!this.data.recipient_name) {
-      throw new Error("Please enter the recipient's name in Step 3.");
-    }
+        if (!email) return;
+        emailBtn.disabled = true;
+        emailBtn.innerText = 'Sending...';
 
-    const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
-    const payload = {
-      ...this.data,
-      sender_id: user?.id || null,
-      language: document.getElementById('languageSelect')?.value || this.data.language || 'en'
-    };
+        try {
+          const res = await fetch('/api/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              wishId: wish.id,
+              slug: wish.slug,
+              recipientEmail: email,
+              senderName: wish.sender_name,
+              recipientName: wish.recipient_name,
+              occasion: wish.occasion,
+              messageExcerpt: wish.message.slice(0, 120) + '...',
+              fontFamily: wish.font_family || 'Playfair Display'
+            })
+          });
 
-    const res = await fetch('/api/wishes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const json = await res.json();
-    if (!res.ok) {
-      throw new Error(json.message || 'Could not save greeting');
-    }
-
-    this.createdWish = json.wish;
-    return this.createdWish;
-  },
-
-  // Open the scheduling modal
-  async openScheduleModal() {
-    try {
-      const schedBtn = document.getElementById('scheduleWishBtn');
-      if (schedBtn) {
-        schedBtn.disabled = true;
-        schedBtn.innerHTML = '<span>⏳ Preparing...</span>';
-      }
-
-      const wish = await this.ensureWishSaved();
-
-      if (schedBtn) {
-        schedBtn.disabled = false;
-        schedBtn.innerHTML = '<span>⏰ Schedule for Later</span>';
-      }
-
-      // Populate recipient & occasion displays
-      const recipDisplay = document.getElementById('schedModalRecipientDisplay');
-      if (recipDisplay) recipDisplay.innerText = wish.recipient_name || this.data.recipient_name;
-
-      const occBadge = document.getElementById('schedModalOccasionBadge');
-      if (occBadge) occBadge.innerText = wish.occasion || this.data.occasion;
-
-      // Auto-detect timezone
-      const tzSelect = document.getElementById('schedTimezoneSelect');
-      const tzBadge = document.getElementById('schedTimezoneBadge');
-      const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-
-      if (tzSelect) {
-        // Ensure option exists or add it
-        let hasOption = false;
-        for (let i = 0; i < tzSelect.options.length; i++) {
-          if (tzSelect.options[i].value === detectedTz) {
-            tzSelect.selectedIndex = i;
-            hasOption = true;
-            break;
+          const resJson = await res.json();
+          if (resJson.status === 'success' || resJson.delivered) {
+            if (typeof showToast === 'function') showToast(`✨ Email sent to ${email}!`, 'success');
+            document.getElementById('emailStatusMsg').innerText = `Sent successfully to ${email}`;
+          } else {
+            if (typeof showToast === 'function') showToast(resJson.message || 'Email dispatched.', 'info');
           }
+          emailInput.value = '';
+        } catch (err) {
+          if (typeof showToast === 'function') showToast('Could not send email.', 'error');
+        } finally {
+          emailBtn.disabled = false;
+          emailBtn.innerText = 'Send Email';
         }
-        if (!hasOption) {
-          const opt = document.createElement('option');
-          opt.value = detectedTz;
-          opt.text = `${detectedTz} (Detected)`;
-          opt.selected = true;
-          tzSelect.prepend(opt);
-        }
-      }
-
-      if (tzBadge) {
-        tzBadge.innerText = detectedTz;
-      }
-
-      // Set default Date and Time
-      const now = new Date();
-      // Default to tomorrow at 09:00 AM
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const yyyy = tomorrow.getFullYear();
-      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const dd = String(tomorrow.getDate()).padStart(2, '0');
-      const defaultDateStr = `${yyyy}-${mm}-${dd}`;
-
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-      const dateInput = document.getElementById('schedDateInput');
-      const timeInput = document.getElementById('schedTimeInput');
-
-      if (dateInput) {
-        dateInput.min = todayStr;
-        if (!dateInput.value) dateInput.value = defaultDateStr;
-      }
-
-      if (timeInput && !timeInput.value) {
-        timeInput.value = '09:00';
-      }
-
-      // Attach live summary listeners
-      ['schedDateInput', 'schedTimeInput', 'schedTimezoneSelect', 'schedRecipientEmail', 'schedRecipientPhone'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.oninput = () => WishCreator.updateScheduleSummary();
-          el.onchange = () => WishCreator.updateScheduleSummary();
-        }
-      });
-
-      this.updateScheduleSummary();
-
-      // Show modal
-      const modal = document.getElementById('scheduleModal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      }
-
-    } catch (err) {
-      console.error('Schedule open error:', err);
-      showToast(err.message || 'Error preparing schedule', 'error');
-      const schedBtn = document.getElementById('scheduleWishBtn');
-      if (schedBtn) {
-        schedBtn.disabled = false;
-        schedBtn.innerHTML = '<span>⏰ Schedule for Later</span>';
-      }
+      };
     }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
   },
 
-  openScheduleModalFromShare() {
-    const shareModal = document.getElementById('shareModal');
-    if (shareModal) {
-      shareModal.classList.add('hidden');
-      shareModal.classList.remove('flex');
-    }
-    this.openScheduleModal();
-  },
-
-  closeScheduleModal() {
-    const modal = document.getElementById('scheduleModal');
+  closeShareModal() {
+    const modal = document.getElementById('shareModal');
     if (modal) {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
   },
 
-  onScheduleMethodChange(method) {
-    const emailGroup = document.getElementById('schedEmailGroup');
-    const phoneGroup = document.getElementById('schedPhoneGroup');
-    const phoneHint = document.getElementById('schedPhoneHint');
-
-    if (method === 'email') {
-      if (emailGroup) emailGroup.style.display = 'block';
-      if (phoneGroup) phoneGroup.style.display = 'none';
-    } else {
-      if (emailGroup) emailGroup.style.display = 'none';
-      if (phoneGroup) phoneGroup.style.display = 'block';
-      if (phoneHint) {
-        phoneHint.innerText = method === 'sms' 
-          ? 'Includes country code (e.g. +91 for India, +1 for US). Automated SMS provider abstraction ready.'
-          : 'Includes country code (e.g. +91). Outbound voice call with spoken greeting will be initiated.';
-      }
-    }
-
-    this.updateScheduleSummary();
+  copyShareLink() {
+    if (!this.createdWish) return;
+    const url = `${window.location.origin}/wish/${this.createdWish.slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      if (typeof showToast === 'function') showToast('Link copied to clipboard! 📋', 'success');
+    }).catch(() => {
+      prompt('Copy your greeting link:', url);
+    });
   },
 
-  updateScheduleSummary() {
-    const summaryEl = document.getElementById('schedConfirmationSummary');
-    if (!summaryEl) return;
+  shareToWhatsApp() {
+    if (!this.createdWish) return;
+    const url = `${window.location.origin}/wish/${this.createdWish.slug}`;
+    const text = encodeURIComponent(`✨ I created a personalized ${this.createdWish.occasion || 'greeting'} for you: ${url}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  },
 
-    const recip = this.createdWish?.recipient_name || this.data.recipient_name || 'Friend';
-    const occ = this.createdWish?.occasion || this.data.occasion || 'Celebration';
+  shareViaSMS() {
+    if (!this.createdWish) return;
+    const url = `${window.location.origin}/wish/${this.createdWish.slug}`;
+    const text = encodeURIComponent(`✨ Here is a personalized celebration webpage I made for you: ${url}`);
+    window.location.href = `sms:?&body=${text}`;
+  },
 
-    const methodRadio = document.querySelector('input[name="schedDeliveryMethod"]:checked');
-    const method = methodRadio ? methodRadio.value : 'email';
-    const methodLabel = method === 'email' ? 'Email 💌' : (method === 'sms' ? 'SMS 📱' : 'Voice Call 📞');
+  // 9. Schedule for Later
+  async openScheduleModal() {
+    this.saveAllInputs();
 
-    const dateVal = document.getElementById('schedDateInput')?.value;
-    const timeVal = document.getElementById('schedTimeInput')?.value;
-    const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
-
-    if (!dateVal || !timeVal) {
-      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel} at your chosen date and time.`;
+    if (!this.data.message || !this.data.message.trim()) {
+      if (typeof showToast === 'function') showToast('Please select or write a message first.', 'error');
       return;
     }
 
     try {
-      // Format readable date
-      const [y, m, d] = dateVal.split('-').map(Number);
-      const dateObj = new Date(Date.UTC(y, m - 1, d));
-      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      const readableDate = `${d} ${monthNames[m - 1]} ${y}`;
+      // Ensure wish exists
+      if (!this.createdWish) {
+        const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
+        const res = await fetch('/api/wishes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...this.data, sender_id: user?.id || null })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Could not save greeting');
+        this.createdWish = json.wish;
+      }
 
-      // Format readable 12-hour time
-      const [h, min] = timeVal.split(':').map(Number);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const h12 = h % 12 === 0 ? 12 : h % 12;
-      const readableTime = `${String(h12).padStart(2, '0')}:${String(min).padStart(2, '0')} ${period}`;
+      // Populate schedule modal defaults
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
 
-      // Extract short timezone code
-      const tzShort = tzVal.split('/').pop().replace(/_/g, ' ');
+      const dateEl = document.getElementById('schedDeliveryDate');
+      const timeEl = document.getElementById('schedDeliveryTime');
+      if (dateEl && !dateEl.value) dateEl.value = `${yyyy}-${mm}-${dd}`;
+      if (timeEl && !timeEl.value) timeEl.value = '09:00';
 
-      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel} on ${readableDate} at ${readableTime} (${tzShort}).`;
+      this.updateScheduleSummary();
+
+      const modal = document.getElementById('scheduleWishModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
     } catch (e) {
-      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel} on ${dateVal} at ${timeVal}.`;
+      if (typeof showToast === 'function') showToast(e.message || 'Could not prepare schedule', 'error');
     }
   },
 
-  async confirmSchedule() {
-    if (!this.createdWish) {
-      showToast('Please wait, saving your greeting...', 'info');
-      await this.ensureWishSaved();
+  closeScheduleModal() {
+    const modal = document.getElementById('scheduleWishModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  },
+
+  toggleScheduleFields() {
+    const channel = document.querySelector('input[name="schedChannel"]:checked')?.value || 'email';
+    const emailWrapper = document.getElementById('schedEmailWrapper');
+    const phoneWrapper = document.getElementById('schedPhoneWrapper');
+
+    if (channel === 'email') {
+      if (emailWrapper) emailWrapper.style.display = 'block';
+      if (phoneWrapper) phoneWrapper.style.display = 'none';
+    } else {
+      if (emailWrapper) emailWrapper.style.display = 'none';
+      if (phoneWrapper) phoneWrapper.style.display = 'block';
+    }
+    this.updateScheduleSummary();
+  },
+
+  updateScheduleSummary() {
+    const sumEl = document.getElementById('schedConfirmationSummary');
+    if (!sumEl) return;
+
+    const channel = document.querySelector('input[name="schedChannel"]:checked')?.value || 'email';
+    const dateVal = document.getElementById('schedDeliveryDate')?.value;
+    const timeVal = document.getElementById('schedDeliveryTime')?.value;
+    const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
+    const recip = this.data.recipient_name || 'Friend';
+
+    if (!dateVal || !timeVal) {
+      sumEl.innerText = `Your wish for ${recip} will be dispatched via ${channel.toUpperCase()} at your scheduled time.`;
+      return;
     }
 
-    const methodRadio = document.querySelector('input[name="schedDeliveryMethod"]:checked');
-    const deliveryMethod = methodRadio ? methodRadio.value : 'email';
+    sumEl.innerText = `Your ${this.data.occasion} wish for ${recip} will be automatically sent via ${channel.toUpperCase()} on ${dateVal} at ${timeVal} (${tzVal}).`;
+  },
 
+  async submitScheduledWish(event) {
+    if (event) event.preventDefault();
+    if (!this.createdWish) return;
+
+    const channel = document.querySelector('input[name="schedChannel"]:checked')?.value || 'email';
     const email = document.getElementById('schedRecipientEmail')?.value.trim();
     const phone = document.getElementById('schedRecipientPhone')?.value.trim();
-    const dateVal = document.getElementById('schedDateInput')?.value;
-    const timeVal = document.getElementById('schedTimeInput')?.value;
+    const dateVal = document.getElementById('schedDeliveryDate')?.value;
+    const timeVal = document.getElementById('schedDeliveryTime')?.value;
     const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
     const personalNote = document.getElementById('schedPersonalMessage')?.value.trim();
 
-    // Validation
-    if (deliveryMethod === 'email') {
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showToast('Please enter a valid recipient email address.', 'error');
+    if (channel === 'email') {
+      if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) {
+        if (typeof showToast === 'function') showToast('Please enter a valid recipient email address.', 'error');
         return;
       }
     } else {
-      if (!phone || phone.replace(/[\s\-\(\)]/g, '').length < 7) {
-        showToast('Please enter a valid recipient phone number with country code (e.g. +91 9876543210).', 'error');
+      if (!phone || phone.length < 7) {
+        if (typeof showToast === 'function') showToast('Please enter a valid recipient phone number.', 'error');
         return;
       }
     }
 
-    if (!dateVal || !timeVal) {
-      showToast('Please choose both a delivery date and time.', 'error');
-      return;
-    }
-
-    const scheduledAtUtc = this.getIsoUtcForTimezone(dateVal, timeVal, tzVal);
-    const scheduleDate = new Date(scheduledAtUtc);
-
-    // Prevent past scheduling
-    if (scheduleDate.getTime() < Date.now() - 10000) {
-      showToast('Scheduled delivery time must be in the future.', 'error');
-      return;
-    }
+    const scheduledAtUtc = new Date(`${dateVal}T${timeVal}`).toISOString();
 
     const confirmBtn = document.getElementById('confirmScheduleBtn');
     if (confirmBtn) {
@@ -995,9 +1204,9 @@ const WishCreator = {
       const payload = {
         greeting_id: this.createdWish.slug,
         recipient_name: this.createdWish.recipient_name || this.data.recipient_name,
-        recipient_email: deliveryMethod === 'email' ? email : undefined,
-        recipient_phone: deliveryMethod !== 'email' ? phone : undefined,
-        delivery_method: deliveryMethod,
+        recipient_email: channel === 'email' ? email : undefined,
+        recipient_phone: channel !== 'email' ? phone : undefined,
+        delivery_method: channel,
         scheduled_at: scheduledAtUtc,
         timezone: tzVal,
         personal_message: personalNote || undefined,
@@ -1011,115 +1220,35 @@ const WishCreator = {
       });
 
       const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message || 'Scheduling failed');
-      }
+      if (!res.ok) throw new Error(json.message || 'Scheduling failed');
 
-      // Close schedule modal
       this.closeScheduleModal();
 
-      // Populate success confirmation modal
+      // Show success modal
       const sched = json.scheduled_wish;
       document.getElementById('successRecipientName').innerText = sched.recipient_name;
-      document.getElementById('successDeliveryChannel').innerText = 
-        sched.delivery_method === 'email' ? 'Email 💌' : (sched.delivery_method === 'sms' ? 'SMS 📱' : 'Voice Call 📞');
-      document.getElementById('successDeliverTo').innerText = 
-        sched.recipient_email || sched.recipient_phone || 'Recipient';
-
-      // Format local time display
-      try {
-        const localFormatted = new Date(sched.scheduled_at).toLocaleString('en-US', {
-          timeZone: sched.timezone,
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        });
-        document.getElementById('successScheduledTime').innerText = `${localFormatted} (${sched.timezone.split('/').pop()})`;
-      } catch (e) {
-        document.getElementById('successScheduledTime').innerText = sched.scheduled_at;
-      }
-
+      document.getElementById('successDeliveryChannel').innerText = sched.delivery_method === 'email' ? 'Email 💌' : 'SMS 📱';
+      document.getElementById('successDeliverTo').innerText = sched.recipient_email || sched.recipient_phone || 'Recipient';
+      document.getElementById('successScheduledTime').innerText = `${dateVal} ${timeVal} (${tzVal})`;
       document.getElementById('successViewWishLink').href = `/wish/${this.createdWish.slug}`;
 
-      // Show success modal
       const successModal = document.getElementById('scheduleSuccessModal');
       if (successModal) {
         successModal.classList.remove('hidden');
         successModal.classList.add('flex');
       }
 
-      showToast('🎉 Celebration wish scheduled successfully!', 'success');
+      if (typeof showToast === 'function') showToast('🎉 Wish scheduled successfully!', 'success');
 
     } catch (err) {
       console.error('Schedule submission error:', err);
-      showToast(err.message || 'Could not schedule greeting', 'error');
+      if (typeof showToast === 'function') showToast(err.message || 'Could not schedule wish', 'error');
     } finally {
       if (confirmBtn) {
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<span>Confirm & Schedule Wish ⏰</span>';
       }
     }
-  },
-
-  // Open sharing modal after wish creation
-  showShareModal(wish) {
-    const modal = document.getElementById('shareModal');
-    if (!modal) {
-      window.location.href = `/wish/${wish.slug}`;
-      return;
-    }
-
-    const currentUrl = `${window.location.origin}/wish/${wish.slug}`;
-
-    document.getElementById('shareModalRecipientName').innerText = wish.recipient_name;
-    document.getElementById('shareLinkInput').value = currentUrl;
-    document.getElementById('viewWishDirectLink').href = `/wish/${wish.slug}`;
-
-    // Setup action button listeners
-    document.getElementById('shareWhatsAppBtn').onclick = () => WishShare.openWhatsApp(wish, currentUrl);
-    document.getElementById('shareSmsBtn').onclick = () => WishShare.openSMS(wish, currentUrl);
-    document.getElementById('shareNativeBtn').onclick = () => WishShare.nativeShare(wish, currentUrl);
-    document.getElementById('copyShareLinkBtn').onclick = () => WishShare.copyLink(currentUrl);
-
-    // Setup email dispatch form
-    document.getElementById('sendEmailForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const emailInput = document.getElementById('recipientEmailInput');
-      const emailBtn = document.getElementById('sendEmailBtn');
-      const email = emailInput.value.trim();
-
-      if (!email) return;
-
-      emailBtn.disabled = true;
-      emailBtn.innerHTML = `Sending...`;
-
-      try {
-        const result = await WishShare.sendEmail({
-          wishId: wish.id,
-          slug: wish.slug,
-          recipientEmail: email,
-          senderName: wish.sender_name,
-          recipientName: wish.recipient_name,
-          occasion: wish.occasion,
-          messageExcerpt: wish.message.slice(0, 120) + '...',
-          fontFamily: wish.font_family || this.data.font_family || 'Playfair Display'
-        });
-
-        if (result.delivered) {
-          showToast(`✨ Email sent to ${email}!`, 'success');
-        } else {
-          showToast(result.message, 'info', 6000);
-        }
-        emailInput.value = '';
-      } catch (err) {
-        showToast(err.message || 'Could not send email', 'error');
-      } finally {
-        emailBtn.disabled = false;
-        emailBtn.innerHTML = `Send Email 💌`;
-      }
-    };
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
   }
 };
 

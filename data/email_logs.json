@@ -1,5 +1,49 @@
 [
   {
+    "id": "elog_e7ef2eb4e614",
+    "wish_id": "w_fdea0906613825c0",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793522568369",
+    "error_message": null,
+    "created_at": "2026-11-01T08:42:48.371Z"
+  },
+  {
+    "id": "elog_38d89030418a",
+    "wish_id": "w_b81cb8bbb0625c6e",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793522567438",
+    "error_message": null,
+    "created_at": "2026-11-01T08:42:47.451Z"
+  },
+  {
+    "id": "elog_e764dddaebf9",
+    "wish_id": "w_b507378b95fc23b3",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793521067312",
+    "error_message": null,
+    "created_at": "2026-11-01T08:17:47.318Z"
+  },
+  {
+    "id": "elog_3f546bd2a93f",
+    "wish_id": "w_0798c96182c37aa5",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793521058734",
+    "error_message": null,
+    "created_at": "2026-11-01T08:17:38.737Z"
+  },
+  {
     "id": "elog_4d4923016ee6",
     "wish_id": "w_4b535c606ee99912",
     "recipient_email": "rohan.test@example.com",

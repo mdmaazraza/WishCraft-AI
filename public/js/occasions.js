@@ -12,6 +12,7 @@ const OccasionManager = {
       isCelebration: true,
       emoji: '🎂',
       icon: '🎉',
+      tones: ['Heartfelt', 'Funny & Playful', 'Sweet & Loving', 'Emotional'],
       cardBadge: 'Birthday Celebration 🎂',
       headlinePrefix: 'Happy Birthday to',
       senderPrefix: 'With love from',
@@ -29,6 +30,7 @@ const OccasionManager = {
       isCelebration: true,
       emoji: '💍',
       icon: '🥂',
+      tones: ['Deeply Romantic', 'Devoted & Loyal', 'Sweet & Playful', 'Poetic'],
       cardBadge: 'Anniversary Milestone 💍',
       headlinePrefix: 'Celebrating Our Love,',
       senderPrefix: 'Forever yours,',
@@ -46,6 +48,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '🥺',
       icon: '🕊️',
+      tones: ['Sincere & Apologetic', 'Gentle & Healing', 'Deeply Accountable', 'Humble'],
       cardBadge: 'Heartfelt Apology 🕊️',
       headlinePrefix: 'A Sincere Apology For',
       senderPrefix: 'With deep sincerity from',
@@ -63,6 +66,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '🙏',
       icon: '🌸',
+      tones: ['Deeply Grateful', 'Warm & Appreciative', 'Respectful', 'Cheerful & Sweet'],
       cardBadge: 'Token of Gratitude 🌸',
       headlinePrefix: 'With Deepest Gratitude To',
       senderPrefix: 'With heartfelt thanks from',
@@ -80,6 +84,7 @@ const OccasionManager = {
       isCelebration: true,
       emoji: '🥂',
       icon: '🏆',
+      tones: ['Triumphant & Proud', 'Inspiring', 'Cheerful & Hype', 'Dignified'],
       cardBadge: 'Major Milestone 🏆',
       headlinePrefix: 'Huge Congratulations To',
       senderPrefix: 'So proud of you,',
@@ -97,6 +102,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '👋',
       icon: '✈️',
+      tones: ['Bittersweet', 'Nostalgic', 'Inspiring & Hopeful', 'Warm & Connected'],
       cardBadge: 'New Horizons ✈️',
       headlinePrefix: 'Wishing You The Very Best,',
       senderPrefix: 'Wishing you the best,',
@@ -114,6 +120,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '🕯️',
       icon: '🕊️',
+      tones: ['Gentle & Comforting', 'Heartfelt Sympathy', 'Peace & Solace', 'Warm & Supportive'],
       cardBadge: 'In Loving Remembrance 🕯️',
       headlinePrefix: 'With Deepest Sympathy For',
       senderPrefix: 'Holding you in my thoughts,',
@@ -131,6 +138,7 @@ const OccasionManager = {
       isCelebration: true,
       emoji: '🌟',
       icon: '🤝',
+      tones: ['Loyal & Authentic', 'Playful & Crazy', 'Heartfelt', 'Sweet'],
       cardBadge: 'Friendship Celebration 🌟',
       headlinePrefix: 'To My Wonderful Friend,',
       senderPrefix: 'Your partner in crime,',
@@ -165,6 +173,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '☀️',
       icon: '☕',
+      tones: ['Cheerful & Energizing', 'Warm & Loving', 'Inspirational', 'Gentle'],
       cardBadge: 'Morning Warmth ☀️',
       headlinePrefix: 'A Beautiful Morning To',
       senderPrefix: 'Wishing you a bright day,',
@@ -182,6 +191,7 @@ const OccasionManager = {
       isCelebration: false,
       emoji: '🌙',
       icon: '✨',
+      tones: ['Sweet & Tender', 'Peaceful & Calming', 'Romantic', 'Warm'],
       cardBadge: 'Sweet Dreams 🌙',
       headlinePrefix: 'Peaceful Dreams To',
       senderPrefix: 'Sweet dreams from',
@@ -192,6 +202,24 @@ const OccasionManager = {
       reShareTitle: 'Send peaceful night thoughts 🌙',
       reShareSubtitle: 'Wish sweet dreams and tranquil rest to someone you love.'
     },
+    festival: {
+      id: 'festival',
+      name: 'Festival & Holiday',
+      category: 'celebration',
+      isCelebration: true,
+      emoji: '🪔',
+      icon: '✨',
+      tones: ['Warm Blessings', 'Joyful & Festive', 'Heartfelt Family Love', 'Peace & Light'],
+      cardBadge: 'Festive Joy 🪔',
+      headlinePrefix: 'Festive Blessings To',
+      senderPrefix: 'Warm festive blessings from',
+      ctaText: 'Open Festive Card 🪔',
+      ambientEffect: 'confetti',
+      greetingModule: 'friendship_card',
+      musicTrack: 'celebration_tune',
+      reShareTitle: 'Spread festive cheer! 🪔',
+      reShareSubtitle: 'Send warm blessings and celebrate festive traditions.'
+    },
     custom: {
       id: 'custom',
       name: 'Custom Occasion',
@@ -199,6 +227,7 @@ const OccasionManager = {
       isCelebration: true,
       emoji: '✨',
       icon: '💫',
+      tones: ['Heartfelt', 'Thoughtful', 'Cheerful', 'Inspiring'],
       cardBadge: 'Special Message ✨',
       headlinePrefix: 'A Special Message For',
       senderPrefix: 'Warmly from',
@@ -226,6 +255,7 @@ const OccasionManager = {
     if (clean.includes('night') || clean.includes('dream')) return this.OCCASIONS.good_night;
     if (clean.includes('friend')) return this.OCCASIONS.friendship;
     if (clean.includes('love') || clean.includes('valen')) return this.OCCASIONS.romantic;
+    if (clean.includes('festiv') || clean.includes('diwali') || clean.includes('eid') || clean.includes('holiday') || clean.includes('christmas')) return this.OCCASIONS.festival;
 
     return this.OCCASIONS.custom;
   }

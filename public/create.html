@@ -12,633 +12,767 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700;800&family=Pacifico&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css?v=2.2.0">
+
+  <!-- Critical Form Controls Dark Theme & Native Select Styling Polyfill -->
+  <style>
+    :root, html, body {
+      color-scheme: dark !important;
+      background-color: #0a0e17 !important;
+      color: #f8fafc !important;
+    }
+    input, select, textarea {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+      color-scheme: dark !important;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #ec4899 !important;
+      outline: 2px solid rgba(236, 72, 153, 0.4) !important;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25) !important;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1 !important;
+    }
+    select {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      color-scheme: dark !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 0.75rem center !important;
+      background-size: 1rem !important;
+      padding-right: 2.25rem !important;
+    }
+    select option, select optgroup {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      color-scheme: dark !important;
+      padding: 10px 14px !important;
+    }
+    select option:checked {
+      background-color: #ec4899 !important;
+      color: #ffffff !important;
+    }
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      -webkit-text-fill-color: #f8fafc !important;
+      -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+      box-shadow: 0 0 0px 1000px #0f172a inset !important;
+      caret-color: #f8fafc !important;
+      transition: background-color 5000s ease-in-out 0s !important;
+    }
+  </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen">
+<body class="bg-gray-950 text-white min-h-screen flex flex-col justify-between">
 
-  <!-- Navigation Bar -->
-  <nav class="glass-nav sticky top-0 z-40 w-full px-6 py-4">
-    <div class="max-w-6xl mx-auto flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
-        <span class="text-2xl">✨</span>
-        <span class="text-xl font-extrabold tracking-tight text-white">Wish <span class="text-gradient">Yours</span></span>
-      </a>
+  <div>
+    <!-- Navigation Bar -->
+    <nav class="glass-nav sticky top-0 z-40 w-full px-6 py-4">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <span class="text-2xl">✨</span>
+          <span class="text-xl font-extrabold tracking-tight text-white">Wish <span class="text-gradient">Yours</span></span>
+        </a>
 
-      <div class="flex items-center gap-4 text-xs font-semibold">
-        <a href="/dashboard" class="text-gray-300 hover:text-white transition">My Greetings</a>
-        <a href="/" class="text-gray-400 hover:text-white">✕ Exit</a>
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <button type="button" onclick="WishCreator.clearDraftAndReset()" class="text-gray-400 hover:text-rose-400 transition hidden sm:inline-block">🗑️ Reset Draft</button>
+          <a href="/dashboard" class="text-gray-300 hover:text-white transition">My Greetings</a>
+          <a href="/" class="text-gray-400 hover:text-white">✕ Exit</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Compact Live Summary Bar (Sticky below nav) -->
+    <div id="stickySummaryBar" class="sticky top-16 z-30 px-4 py-2 bg-slate-900/90 backdrop-blur-md border-b border-white/10 text-xs shadow-md">
+      <div class="max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto py-1 no-scrollbar">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-gray-400 font-medium">Draft Summary:</span>
+          <button type="button" onclick="WishCreator.goToStep(1)" id="sumPillOccasion" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-pink-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
+            <span>Occasion:</span> <span id="sumValOccasion">Birthday</span> ✏️
+          </button>
+          <button type="button" onclick="WishCreator.goToStep(2)" id="sumPillRelationship" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-purple-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
+            <span>For:</span> <span id="sumValRelationship">Best Friend</span> ✏️
+          </button>
+          <button type="button" onclick="WishCreator.goToStep(3)" id="sumPillNames" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-blue-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
+            <span>To:</span> <span id="sumValRecipient">Friend</span> • <span>From:</span> <span id="sumValSender">You</span> ✏️
+          </button>
+          <button type="button" onclick="WishCreator.goToStep(4)" id="sumPillTone" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
+            <span>Feeling:</span> <span id="sumValTone">Heartfelt</span> ✏️
+          </button>
+          <button type="button" onclick="WishCreator.goToStep(5)" id="sumPillLanguage" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
+            <span>Lang:</span> <span id="sumValLanguage">English</span> ✏️
+          </button>
+        </div>
+        <button type="button" onclick="WishCreator.goToStep(7)" class="px-3 py-1 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold whitespace-nowrap shadow-sm text-xs transition">
+          Preview Wish 👁️
+        </button>
       </div>
     </div>
-  </nav>
 
-  <!-- Multi-Step Progress Tracker Bar -->
-  <div class="border-b border-white border-opacity-10 py-5 bg-slate-950 bg-opacity-60 sticky top-16 z-30 px-4">
-    <div class="max-w-3xl mx-auto flex items-center justify-between relative">
-      <div class="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 -z-10"></div>
-      
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(1)">
-        <div id="stepIndicator1" class="w-9 h-9 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow">1</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Occasion</span>
-      </div>
+    <!-- Multi-Step Progress Tracker Bar (7 Steps) -->
+    <div class="border-b border-white border-opacity-10 py-4 bg-slate-950/60 px-4">
+      <div class="max-w-3xl mx-auto flex items-center justify-between relative">
+        <div class="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 -z-10"></div>
+        
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(1)">
+          <div id="stepIndicator1" class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow">1</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Occasion</span>
+        </div>
 
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(2)">
-        <div id="stepIndicator2" class="w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm">2</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Relationship</span>
-      </div>
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(2)">
+          <div id="stepIndicator2" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">2</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Who</span>
+        </div>
 
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(3)">
-        <div id="stepIndicator3" class="w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm">3</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Details</span>
-      </div>
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(3)">
+          <div id="stepIndicator3" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">3</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Personalize</span>
+        </div>
 
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(4)">
-        <div id="stepIndicator4" class="w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm">4</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Style</span>
-      </div>
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(4)">
+          <div id="stepIndicator4" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">4</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Feeling</span>
+        </div>
 
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(5)">
-        <div id="stepIndicator5" class="w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm">5</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Design</span>
-      </div>
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(5)">
+          <div id="stepIndicator5" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">5</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Language</span>
+        </div>
 
-      <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(6)">
-        <div id="stepIndicator6" class="w-9 h-9 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-sm">6</div>
-        <span class="text-xs text-gray-400 hidden sm:block">Generate</span>
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(6)">
+          <div id="stepIndicator6" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">6</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Style</span>
+        </div>
+
+        <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="WishCreator.goToStep(7)">
+          <div id="stepIndicator7" class="w-8 h-8 rounded-full bg-slate-800 text-gray-400 flex items-center justify-center font-bold text-xs">7</div>
+          <span class="text-[10px] text-gray-400 hidden sm:block">Generate</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Studio Main Card Container -->
-  <main class="max-w-3xl mx-auto px-4 py-10">
-    <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white border-opacity-10 shadow-2xl">
+    <!-- Main Studio Wizard Form -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+      <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white border-opacity-10 shadow-2xl relative">
 
-      <!-- ============================================== -->
-      <!-- STEP 1: Select Occasion                        -->
-      <!-- ============================================== -->
-      <section id="stepSection1">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400" id="step1Indicator">Step 1 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1" id="step1Title">What is the occasion? ✨</h2>
-          <p class="text-gray-400 text-sm mt-1" id="step1Subtitle">Select an occasion to tailor the emotion, visual design, music, and AI guidance.</p>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          <button type="button" data-occasion="Birthday" class="occasion-btn ring-4 ring-pink-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28">
-            <span class="text-3xl">🎂</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Birthday</span>
-              <span class="text-[10px] text-pink-400">Celebration</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Wedding Anniversary" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">💍</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Anniversary</span>
-              <span class="text-[10px] text-rose-400">Romantic</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Friendship Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🌟</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Friendship Day</span>
-              <span class="text-[10px] text-yellow-400">Loyal & Fun</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Valentine's Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🌹</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Valentine's Day</span>
-              <span class="text-[10px] text-pink-400">Love Letter</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Congratulations" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🥂</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Congratulations</span>
-              <span class="text-[10px] text-emerald-400">Triumph</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Thank You" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🙏</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Thank You</span>
-              <span class="text-[10px] text-indigo-400">Gratitude</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Sorry" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🥺</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Sorry</span>
-              <span class="text-[10px] text-purple-400">Heartfelt Apology</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Farewell" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">✈️</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Farewell</span>
-              <span class="text-[10px] text-cyan-400">New Chapter</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Condolence & Sympathy" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🕯️</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Sympathy</span>
-              <span class="text-[10px] text-gray-400">Comfort & Solace</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Good Morning" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">☀️</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Good Morning</span>
-              <span class="text-[10px] text-amber-400">Positive Energy</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Good Night" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">🌙</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Good Night</span>
-              <span class="text-[10px] text-indigo-400">Sweet Dreams</span>
-            </div>
-          </button>
-
-          <button type="button" data-occasion="Custom Occasion" class="occasion-btn p-4 rounded-2xl border border-slate-700 hover:border-pink-500 text-left transition flex flex-col justify-between h-28 bg-slate-900">
-            <span class="text-3xl">✨</span>
-            <div>
-              <span class="font-bold text-sm text-white block">Custom Occasion</span>
-              <span class="text-[10px] text-pink-400">Special Note</span>
-            </div>
-          </button>
-        </div>
-
-        <div class="flex justify-end">
-          <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">
-            Continue to Relationship →
-          </button>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- STEP 2: Select Relationship                    -->
-      <!-- ============================================== -->
-      <section id="stepSection2" style="display: none;">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Step 2 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Who is this greeting for? 👥</h2>
-          <p class="text-gray-400 text-sm mt-1">This helps Gemini AI hit the exact emotional chord.</p>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-          <button type="button" data-relationship="Best Friend" class="relationship-btn ring-4 ring-purple-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24">
-            <span class="text-2xl">🤝</span>
-            <span class="font-bold text-sm text-white">Best Friend</span>
-          </button>
-          <button type="button" data-relationship="Friend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">😊</span>
-            <span class="font-bold text-sm text-white">Friend</span>
-          </button>
-          <button type="button" data-relationship="Girlfriend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">💖</span>
-            <span class="font-bold text-sm text-white">Girlfriend</span>
-          </button>
-          <button type="button" data-relationship="Boyfriend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">💙</span>
-            <span class="font-bold text-sm text-white">Boyfriend</span>
-          </button>
-          <button type="button" data-relationship="Wife" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">💍</span>
-            <span class="font-bold text-sm text-white">Wife</span>
-          </button>
-          <button type="button" data-relationship="Husband" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">👑</span>
-            <span class="font-bold text-sm text-white">Husband</span>
-          </button>
-          <button type="button" data-relationship="Mother" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">🌸</span>
-            <span class="font-bold text-sm text-white">Mother</span>
-          </button>
-          <button type="button" data-relationship="Father" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">🛡️</span>
-            <span class="font-bold text-sm text-white">Father</span>
-          </button>
-          <button type="button" data-relationship="Brother" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">🤜</span>
-            <span class="font-bold text-sm text-white">Brother</span>
-          </button>
-          <button type="button" data-relationship="Sister" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">🌺</span>
-            <span class="font-bold text-sm text-white">Sister</span>
-          </button>
-          <button type="button" data-relationship="Colleague" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">💼</span>
-            <span class="font-bold text-sm text-white">Colleague</span>
-          </button>
-          <button type="button" data-relationship="Other" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
-            <span class="text-2xl">💫</span>
-            <span class="font-bold text-sm text-white">Other</span>
-          </button>
-        </div>
-
-        <div class="flex justify-between">
-          <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
-          <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Personal Details →</button>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- STEP 3: Enter Personal Details                 -->
-      <!-- ============================================== -->
-      <section id="stepSection3" style="display: none;">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 3 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Make It Deeply Personal ✍️</h2>
-          <p class="text-gray-400 text-sm mt-1">Names and shared memories turn a template into a treasure.</p>
-        </div>
-
-        <div class="space-y-4 mb-8">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Name <span class="text-rose-400">*</span></label>
-              <input type="text" id="recipientNameInput" placeholder="e.g. Sarah Jenkins" required
-                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Your Name (Sender)</label>
-              <input type="text" id="senderNameInput" placeholder="e.g. Alex"
-                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition">
-            </div>
+        <!-- ============================================== -->
+        <!-- STEP 1: Select Occasion                        -->
+        <!-- ============================================== -->
+        <section id="stepSection1">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-400" id="step1Indicator">Step 1 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1" id="step1Title">What is the occasion? ✨</h2>
+            <p class="text-gray-400 text-sm mt-1" id="step1Subtitle">Select an occasion to tailor the emotion, guidance, and visual experience.</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-8">
+            <button type="button" data-occasion="Birthday" class="occasion-btn ring-4 ring-pink-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 hover:border-pink-500">
+              <span class="text-3xl">🎂</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Birthday</span>
+                <span class="text-[11px] text-gray-400">Candles & Cake</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Wedding Anniversary" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">💍</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Anniversary</span>
+                <span class="text-[11px] text-gray-400">Love & Journey</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Sorry" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🥺</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Sorry</span>
+                <span class="text-[11px] text-gray-400">Sincere & Healing</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Valentine's Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🌹</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Love / Romance</span>
+                <span class="text-[11px] text-gray-400">Wax Sealed Letter</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Friendship Day" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🌟</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Friendship</span>
+                <span class="text-[11px] text-gray-400">Bonds & Memories</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Thank You" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🙏</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Thank You</span>
+                <span class="text-[11px] text-gray-400">Deep Gratitude</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Congratulations" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🏆</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Congratulations</span>
+                <span class="text-[11px] text-gray-400">Wins & Milestones</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Farewell" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">✈️</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Farewell</span>
+                <span class="text-[11px] text-gray-400">Bittersweet Goodbye</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Festival & Holiday" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">🪔</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Festival</span>
+                <span class="text-[11px] text-gray-400">Holiday Blessings</span>
+              </div>
+            </button>
+
+            <button type="button" data-occasion="Custom Occasion" class="occasion-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-28 bg-slate-900 hover:border-pink-500">
+              <span class="text-3xl">💫</span>
+              <div>
+                <span class="font-bold text-sm text-white block">Custom</span>
+                <span class="text-[11px] text-gray-400">Any Moment</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg flex items-center gap-2">
+              <span>Choose Recipient →</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- STEP 2: Select Relationship                    -->
+        <!-- ============================================== -->
+        <section id="stepSection2" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Step 2 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Who is this wish for? 👥</h2>
+            <p class="text-gray-400 text-sm mt-1">Selecting the relationship guides Gemini AI in matching the intimacy and tone.</p>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            <button type="button" data-relationship="Best Friend" class="relationship-btn ring-4 ring-purple-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24">
+              <span class="text-2xl">⚡</span>
+              <span class="font-bold text-sm text-white">Best Friend</span>
+            </button>
+            <button type="button" data-relationship="Friend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">🤝</span>
+              <span class="font-bold text-sm text-white">Friend</span>
+            </button>
+            <button type="button" data-relationship="Girlfriend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">💖</span>
+              <span class="font-bold text-sm text-white">Girlfriend</span>
+            </button>
+            <button type="button" data-relationship="Boyfriend" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">💙</span>
+              <span class="font-bold text-sm text-white">Boyfriend</span>
+            </button>
+            <button type="button" data-relationship="Wife" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">🌹</span>
+              <span class="font-bold text-sm text-white">Wife</span>
+            </button>
+            <button type="button" data-relationship="Husband" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">💍</span>
+              <span class="font-bold text-sm text-white">Husband</span>
+            </button>
+            <button type="button" data-relationship="Mother" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">🌸</span>
+              <span class="font-bold text-sm text-white">Mother</span>
+            </button>
+            <button type="button" data-relationship="Father" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">👑</span>
+              <span class="font-bold text-sm text-white">Father</span>
+            </button>
+            <button type="button" data-relationship="Brother" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">👊</span>
+              <span class="font-bold text-sm text-white">Brother</span>
+            </button>
+            <button type="button" data-relationship="Sister" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">🌺</span>
+              <span class="font-bold text-sm text-white">Sister</span>
+            </button>
+            <button type="button" data-relationship="Colleague" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">💼</span>
+              <span class="font-bold text-sm text-white">Colleague</span>
+            </button>
+            <button type="button" data-relationship="Teacher" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">📚</span>
+              <span class="font-bold text-sm text-white">Teacher / Mentor</span>
+            </button>
+            <button type="button" data-relationship="Other" class="relationship-btn p-4 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900">
+              <span class="text-2xl">💫</span>
+              <span class="font-bold text-sm text-white">Other</span>
+            </button>
+          </div>
+
+          <div class="flex justify-between">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Personal Details →</button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- STEP 3: Enter Personal Details & Memories       -->
+        <!-- ============================================== -->
+        <section id="stepSection3" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 3 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Make It Deeply Personal ✍️</h2>
+            <p class="text-gray-400 text-sm mt-1">Names and shared memories turn a template into an unforgettable treasure.</p>
+          </div>
+
+          <div class="space-y-4 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Name <span class="text-rose-400">*</span></label>
+                <input type="text" id="recipientNameInput" placeholder="e.g. Sarah Jenkins" required
+                  class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+                  style="background-color: #0f172a !important; color: #f8fafc !important;">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Your Name (Sender)</label>
+                <input type="text" id="senderNameInput" placeholder="e.g. Alex"
+                  class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+                  style="background-color: #0f172a !important; color: #f8fafc !important;">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Gender (Optional)</label>
+                <select id="genderSelect" class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none"
+                  style="background-color: #0f172a !important; color: #f8fafc !important; color-scheme: dark !important;">
+                  <option value="female" style="background-color: #0f172a; color: #f8fafc;">Female</option>
+                  <option value="male" style="background-color: #0f172a; color: #f8fafc;">Male</option>
+                  <option value="unspecified" selected style="background-color: #0f172a; color: #f8fafc;">Prefer not to say</option>
+                </select>
+              </div>
+
+              <div id="ageFieldWrapper">
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Age (Birthday)</label>
+                <input type="number" id="ageInput" placeholder="e.g. 25" min="1" max="120"
+                  class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none"
+                  style="background-color: #0f172a !important; color: #f8fafc !important;">
+              </div>
+
+              <div id="annivFieldWrapper" style="display: none;">
+                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Anniversary Years</label>
+                <input type="number" id="annivYearsInput" placeholder="e.g. 5" min="1" max="90"
+                  class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none"
+                  style="background-color: #0f172a !important; color: #f8fafc !important;">
+              </div>
+            </div>
+
             <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Gender (Optional)</label>
-              <select id="genderSelect" class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none">
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="unspecified" selected>Prefer not to say</option>
-              </select>
+              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Relationship Duration (Optional)</label>
+              <input type="text" id="durationInput" placeholder="e.g. 8 years of friendship, or 3 months"
+                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none"
+                style="background-color: #0f172a !important; color: #f8fafc !important;">
             </div>
 
-            <div id="ageFieldWrapper">
-              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Age (Birthday)</label>
-              <input type="number" id="ageInput" placeholder="e.g. 25" min="1" max="120"
-                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none">
-            </div>
+            <!-- Prominent Special Memories Card with Improve Writing -->
+            <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-700 space-y-3">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <label class="block text-xs font-bold text-pink-300 uppercase">Special Memories, Inside Jokes or Context ✨</label>
+                  <p class="text-xs text-gray-400 mt-0.5">Write freely in English, Hindi, or Hinglish. We will weave this deeply into your wish.</p>
+                </div>
+                <button type="button" id="polishMemoryBtn" onclick="WishCreator.improveMemoryWriting()" class="text-xs text-indigo-300 hover:text-indigo-200 font-bold flex items-center gap-1.5 transition px-3 py-1.5 bg-indigo-950/70 hover:bg-indigo-900/80 rounded-xl border border-indigo-600/60 shadow-sm">
+                  <span id="polishMemorySpinner" class="hidden animate-spin">⏳</span>
+                  <span>✨ Improve Writing</span>
+                </button>
+              </div>
 
-            <div id="annivFieldWrapper">
-              <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Anniversary Years</label>
-              <input type="number" id="annivYearsInput" placeholder="e.g. 5" min="1" max="90"
-                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none">
-            </div>
-          </div>
+              <textarea id="memoriesInput" rows="3" placeholder="e.g. Remember that road trip to Goa when our car broke down, or how you always supported me when I had tough days..."
+                class="w-full bg-slate-950 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none resize-none"
+                style="background-color: #020617 !important; color: #f8fafc !important;"></textarea>
 
-          <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Relationship Duration (Optional)</label>
-            <input type="text" id="durationInput" placeholder="e.g. 8 years of friendship, or 3 months"
-              class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none">
-          </div>
+              <!-- Side-by-Side / Interactive Comparison Box -->
+              <div id="memoryComparisonBox" class="hidden p-4 rounded-xl bg-slate-950 border border-indigo-500/40 space-y-3 animate-fade-in">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-indigo-400 uppercase flex items-center gap-1">
+                    <span>✨</span> Writing Improvement Comparison
+                  </span>
+                  <span id="memoryExplanationBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-medium">Polished grammar while preserving your voice</span>
+                </div>
 
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="block text-xs font-bold text-gray-300 uppercase">Special Memories or Personal Context (Optional)</label>
-              <button type="button" id="polishMemoryBtn" onclick="WishCreator.polishMemoryGrammar()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition px-2.5 py-1 bg-indigo-950/50 hover:bg-indigo-900/60 rounded-lg border border-indigo-700/50">
-                <span>✨ Polish Grammar & Typos</span>
-              </button>
-            </div>
-            <textarea id="memoriesInput" rows="3" placeholder="e.g. We were friends from college and you always supported me when I was sad..."
-              class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-4 py-3 text-white text-sm outline-none resize-none"></textarea>
-            
-            <!-- Smart Grammar & Typo Polish Suggestion Box -->
-            <div id="memoryCorrectionBox" class="p-3 bg-slate-950 rounded-xl border border-indigo-500/40 mt-2 space-y-2 shadow-inner" style="display: none;">
-              <div class="flex items-center justify-between">
-                <span class="text-indigo-300 font-bold text-xs flex items-center gap-1.5">
-                  <span>✨</span> Suggested Polished Version
-                </span>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="WishCreator.dismissMemoryCorrection()" class="text-xs text-gray-400 hover:text-white px-2 py-0.5">Keep Original</button>
-                  <button type="button" onclick="WishCreator.applyCorrectedMemory()" class="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white rounded-lg font-bold text-xs shadow flex items-center gap-1">
-                    <span>Apply Improved Version</span> ✓
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div class="p-3 rounded-lg bg-rose-950/30 border border-rose-900/40 text-gray-300">
+                    <span class="block text-[10px] font-bold uppercase text-rose-400 mb-1">Original:</span>
+                    <p id="memoryDiffOriginal" class="italic whitespace-pre-line"></p>
+                  </div>
+                  <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-900/40 text-white">
+                    <span class="block text-[10px] font-bold uppercase text-emerald-400 mb-1">Improved Version:</span>
+                    <p id="memoryDiffImproved" class="font-medium whitespace-pre-line text-emerald-100"></p>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-1">
+                  <button type="button" onclick="WishCreator.keepOriginalMemory()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white bg-slate-800 transition">Keep Original</button>
+                  <button type="button" onclick="WishCreator.applyImprovedMemory()" class="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow transition flex items-center gap-1">
+                    <span>Use Improved Version ✓</span>
                   </button>
                 </div>
               </div>
-              <div class="space-y-1 text-xs">
-                <div class="text-gray-400 text-[11px]"><strong class="text-gray-500 uppercase">Original:</strong> <span id="memoryOriginalDisplay" class="line-through text-gray-400"></span></div>
-                <div class="text-emerald-400 text-xs"><strong class="text-emerald-500 uppercase text-[11px]">Improved:</strong> <span id="memoryImprovedDisplay" class="text-gray-100 font-medium"></span></div>
+            </div>
+          </div>
+
+          <div class="flex justify-between">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Choose Feeling →</button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- STEP 4: Choose the Feeling (Occasion-Aware)    -->
+        <!-- ============================================== -->
+        <section id="stepSection4" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Step 4 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Select the Feeling & Tone 🎭</h2>
+            <p class="text-gray-400 text-sm mt-1" id="step4Subtitle">How do you want your loved one to feel?</p>
+          </div>
+
+          <!-- Dynamic Tone Buttons (Rendered according to occasion) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8" id="dynamicTonesContainer">
+            <!-- Injected by JavaScript based on selected occasion -->
+          </div>
+
+          <div class="flex justify-between">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Select Language →</button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- STEP 5: Choose Language & Length               -->
+        <!-- ============================================== -->
+        <section id="stepSection5" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Step 5 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Choose Language & Depth 🌐</h2>
+            <p class="text-gray-400 text-sm mt-1">Select the dialect that sounds most natural to your relationship.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <button type="button" data-language="en" class="language-card ring-4 ring-emerald-500 bg-slate-800 p-5 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-32 hover:border-emerald-500">
+              <div class="flex items-center justify-between">
+                <span class="text-3xl">🇬🇧</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-semibold border border-emerald-700">English</span>
               </div>
+              <div>
+                <span class="font-bold text-base text-white block">English</span>
+                <span class="text-xs text-gray-400">Clear, expressive, and universally understood</span>
+              </div>
+            </button>
+
+            <button type="button" data-language="hi" class="language-card p-5 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-32 bg-slate-900 hover:border-emerald-500">
+              <div class="flex items-center justify-between">
+                <span class="text-3xl">🇮🇳</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-orange-950 text-orange-300 font-semibold border border-orange-700">हिंदी</span>
+              </div>
+              <div>
+                <span class="font-bold text-base text-white block">हिंदी (Hindi)</span>
+                <span class="text-xs text-gray-400">Devanagari script, deeply poetic and heartfelt</span>
+              </div>
+            </button>
+
+            <button type="button" data-language="hinglish" class="language-card p-5 rounded-2xl border border-slate-700 text-left transition flex flex-col justify-between h-32 bg-slate-900 hover:border-emerald-500">
+              <div class="flex items-center justify-between">
+                <span class="text-3xl">💬</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-semibold border border-purple-700">Hinglish</span>
+              </div>
+              <div>
+                <span class="font-bold text-base text-white block">Hinglish</span>
+                <span class="text-xs text-gray-400">Conversational Roman Hindi, casual & modern</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Message Length Preference -->
+          <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-700 mb-8">
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-3">Preferred Message Length</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button type="button" data-length="short" class="length-btn p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition hover:border-pink-500">
+                <span class="font-bold text-xs text-white block">⚡ Short & Punchy</span>
+                <span class="text-[10px] text-gray-400">1-2 impactful sentences</span>
+              </button>
+              <button type="button" data-length="medium" class="length-btn ring-4 ring-pink-500 bg-slate-800 p-3 rounded-xl border border-slate-700 text-center transition">
+                <span class="font-bold text-xs text-white block">💖 Standard Heartfelt</span>
+                <span class="text-[10px] text-gray-400">Balanced 3-4 warm sentences</span>
+              </button>
+              <button type="button" data-length="long" class="length-btn p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition hover:border-pink-500">
+                <span class="font-bold text-xs text-white block">📜 Long & Deeply Poetic</span>
+                <span class="text-[10px] text-gray-400">Full emotional love letter</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Choose Style →</button>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- STEP 6: Choose Visual Style & Typography       -->
+        <!-- ============================================== -->
+        <section id="stepSection6" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 6 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Lettering, Themes & Photos 🎨</h2>
+            <p class="text-gray-400 text-sm mt-1">Tailor the visual aesthetics, typeface, and attach memory polaroids.</p>
+          </div>
+
+          <!-- Typography & Lettering Style Selection -->
+          <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-purple-400">Lettering & Typography Style ✍️</label>
+                <p class="text-xs text-gray-400 mt-0.5">Choose the font for your greeting message and love letter.</p>
+              </div>
+              <span id="selectedFontBadge" class="text-xs font-semibold px-2.5 py-1 bg-slate-800 rounded-lg text-pink-300 border border-slate-700">Playfair Display</span>
             </div>
 
-            <p class="text-xs text-gray-400 mt-1">Mention real memories, nicknames, or inside jokes. Our AI will weave them in while strictly preserving all personal facts.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="fontSelectionGrid">
+              <button type="button" data-font="Playfair Display" class="font-btn ring-4 ring-pink-500 bg-slate-800 p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24">
+                <span class="text-xl font-playfair font-bold text-white">Classic Serif</span>
+                <span class="text-xs text-gray-400">Playfair Display</span>
+              </button>
+              <button type="button" data-font="Dancing Script" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+                <span class="text-2xl font-dancing font-bold text-pink-400">Calligraphy</span>
+                <span class="text-xs text-gray-400">Dancing Script</span>
+              </button>
+              <button type="button" data-font="Great Vibes" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+                <span class="text-2xl font-great-vibes text-amber-300">Romantic Cursive</span>
+                <span class="text-xs text-gray-400">Great Vibes</span>
+              </button>
+              <button type="button" data-font="Outfit" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+                <span class="text-lg font-outfit font-extrabold text-blue-400">Modern Sans</span>
+                <span class="text-xs text-gray-400">Outfit</span>
+              </button>
+              <button type="button" data-font="Pacifico" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+                <span class="text-lg font-pacifico text-teal-300">Playful Brush</span>
+                <span class="text-xs text-gray-400">Pacifico</span>
+              </button>
+              <button type="button" data-font="Cinzel" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
+                <span class="text-base font-cinzel font-bold text-purple-300 tracking-wider">Royal Roman</span>
+                <span class="text-xs text-gray-400">Cinzel</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="flex justify-between">
-          <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
-          <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Choose Style →</button>
-        </div>
-      </section>
+          <!-- Visual Theme Selection -->
+          <div class="mb-8 pt-6 border-t border-white/10">
+            <label class="block text-xs font-bold text-pink-400 uppercase tracking-wider mb-3">Visual Atmosphere & Particles 🎆</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <button type="button" data-theme="birthday_celebration" class="theme-btn ring-4 ring-pink-500 p-3.5 rounded-xl border border-slate-700 text-center transition bg-slate-900 flex flex-col items-center justify-center gap-1.5 h-24">
+                <span class="text-2xl">🎉</span>
+                <span class="font-bold text-xs text-white">Celebration</span>
+              </button>
+              <button type="button" data-theme="romantic_love" class="theme-btn p-3.5 rounded-xl border border-slate-700 text-center transition bg-slate-900 flex flex-col items-center justify-center gap-1.5 h-24">
+                <span class="text-2xl">💖</span>
+                <span class="font-bold text-xs text-white">Romantic Rose</span>
+              </button>
+              <button type="button" data-theme="warm_sunshine" class="theme-btn p-3.5 rounded-xl border border-slate-700 text-center transition bg-slate-900 flex flex-col items-center justify-center gap-1.5 h-24">
+                <span class="text-2xl">✨</span>
+                <span class="font-bold text-xs text-white">Warm Starlight</span>
+              </button>
+              <button type="button" data-theme="minimalist" class="theme-btn p-3.5 rounded-xl border border-slate-700 text-center transition bg-slate-900 flex flex-col items-center justify-center gap-1.5 h-24">
+                <span class="text-2xl">🕊️</span>
+                <span class="font-bold text-xs text-white">Serene Solace</span>
+              </button>
+            </div>
+          </div>
 
-      <!-- ============================================== -->
-      <!-- STEP 4: Choose Greeting Style                  -->
-      <!-- ============================================== -->
-      <section id="stepSection4" style="display: none;">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Step 4 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Select the Tone & Vibe 🎭</h2>
-          <p class="text-gray-400 text-sm mt-1">How do you want your loved one to feel?</p>
-        </div>
+          <!-- Photo Upload & Gallery Attachment -->
+          <div class="pt-6 border-t border-white/10 mb-8">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase">Attach Memory Photos (Optional up to 6)</label>
+                <p class="text-xs text-gray-400">Photos will render as interactive polaroids on the recipient's webpage.</p>
+              </div>
+              <label class="cursor-pointer px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-pink-400 transition">
+                <span>+ Upload Photos</span>
+                <input type="file" id="photoUploadInput" accept="image/*" multiple class="hidden">
+              </label>
+            </div>
+            <div id="photoPreviewReel" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+          </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          <button type="button" data-style="Heart-touching" class="style-btn ring-4 ring-indigo-500 bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24">
-            <span class="text-2xl">💖</span>
-            <span class="font-bold text-xs text-white">Heart-touching</span>
-          </button>
-          <button type="button" data-style="Romantic" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">🌹</span>
-            <span class="font-bold text-xs text-white">Romantic</span>
-          </button>
-          <button type="button" data-style="Funny" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">😂</span>
-            <span class="font-bold text-xs text-white">Funny & Roast</span>
-          </button>
-          <button type="button" data-style="Emotional" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">🥺</span>
-            <span class="font-bold text-xs text-white">Emotional</span>
-          </button>
-          <button type="button" data-style="Cute" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">🥰</span>
-            <span class="font-bold text-xs text-white">Cute</span>
-          </button>
-          <button type="button" data-style="Professional" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">👔</span>
-            <span class="font-bold text-xs text-white">Professional</span>
-          </button>
-          <button type="button" data-style="Creative" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">🎨</span>
-            <span class="font-bold text-xs text-white">Creative & Poetic</span>
-          </button>
-          <button type="button" data-style="Short and Sweet" class="style-btn p-4 rounded-2xl border border-slate-700 text-center transition flex flex-col items-center justify-center gap-2 h-24 bg-slate-900">
-            <span class="text-2xl">⚡</span>
-            <span class="font-bold text-xs text-white">Short & Sweet</span>
-          </button>
-        </div>
+          <div class="flex justify-between">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg flex items-center gap-2">
+              <span>Go to Studio & Generate ✨</span>
+            </button>
+          </div>
+        </section>
 
-                <!-- Typography & Lettering Style Selection -->
-        <div class="mt-8 pt-6 border-t border-white border-opacity-10">
-          <div class="flex items-center justify-between mb-4">
+        <!-- ============================================== -->
+        <!-- STEP 7: Generate Wish, Edit & Live Preview     -->
+        <!-- ============================================== -->
+        <section id="stepSection7" style="display: none;">
+          <div class="text-center mb-8">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 7 of 7</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Review & Publish Your Wish 🪄</h2>
+            <p class="text-gray-400 text-sm mt-1">Generate AI variations, refine your message, and test your live greeting preview.</p>
+          </div>
+
+          <!-- Generate Action Card -->
+          <div class="p-6 rounded-2xl bg-gradient-to-r from-pink-950/40 via-purple-950/40 to-slate-900 border border-pink-500/30 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-purple-400">Lettering & Typography Style ✍️</label>
-              <p class="text-xs text-gray-400 mt-0.5">Choose the font for your greeting message and love letter.</p>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>✨</span> Ready to craft your message?
+              </h3>
+              <p class="text-xs text-gray-300 mt-1">Gemini AI synthesizes your memories, relationship nuance, and chosen tone into 3 variations.</p>
             </div>
-            <span id="selectedFontBadge" class="text-xs font-semibold px-2.5 py-1 bg-slate-800 rounded-lg text-pink-300 border border-slate-700">Playfair Display</span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="fontSelectionGrid">
-            <button type="button" data-font="Playfair Display" class="font-btn ring-4 ring-pink-500 bg-slate-800 p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24">
-              <span class="text-xl font-playfair font-bold text-white">Classic Serif</span>
-              <span class="text-xs text-gray-400">Playfair Display</span>
-            </button>
-            <button type="button" data-font="Dancing Script" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
-              <span class="text-2xl font-dancing font-bold text-pink-400">Calligraphy</span>
-              <span class="text-xs text-gray-400">Dancing Script</span>
-            </button>
-            <button type="button" data-font="Great Vibes" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
-              <span class="text-2xl font-great-vibes text-amber-300">Romantic Cursive</span>
-              <span class="text-xs text-gray-400">Great Vibes</span>
-            </button>
-            <button type="button" data-font="Outfit" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
-              <span class="text-lg font-outfit font-extrabold text-blue-400">Modern Sans</span>
-              <span class="text-xs text-gray-400">Outfit</span>
-            </button>
-            <button type="button" data-font="Pacifico" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
-              <span class="text-lg font-pacifico text-teal-300">Playful Brush</span>
-              <span class="text-xs text-gray-400">Pacifico</span>
-            </button>
-            <button type="button" data-font="Cinzel" class="font-btn p-3.5 rounded-xl border border-slate-700 text-left transition flex flex-col justify-between h-24 bg-slate-900 hover:border-pink-500">
-              <span class="text-base font-cinzel font-bold text-purple-300 tracking-wider">Royal Roman</span>
-              <span class="text-xs text-gray-400">Cinzel</span>
+            <button type="button" id="triggerGenerateBtn" onclick="WishCreator.generateAIWishes()" class="btn-gradient px-6 py-3 rounded-xl font-bold text-sm text-white shadow-xl whitespace-nowrap flex items-center gap-2 transition hover:scale-105">
+              <span>Create My Wish ✨</span>
             </button>
           </div>
-        </div>
 
-        <div class="flex justify-between">
-          <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
-          <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Pick Design Theme →</button>
-        </div>
-      </section>
+          <!-- Multi-Stage AI Loading Progress Bar -->
+          <div id="aiLoadingState" class="py-10 text-center" style="display: none;">
+            <div class="inline-block animate-spin text-4xl mb-3">🪄</div>
+            <p id="aiProgressTitle" class="text-sm font-bold text-pink-400">Gemini AI is crafting 3 personalized greetings...</p>
+            <p id="aiProgressSubtitle" class="text-xs text-gray-400 mt-1">Analyzing personal memories and relationship dynamics...</p>
+            <div class="max-w-md mx-auto mt-4 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+              <div id="aiProgressBar" class="progress-shimmer h-full w-1/3 transition-all duration-500"></div>
+            </div>
+          </div>
 
-      <!-- ============================================== -->
-      <!-- STEP 5: Choose Design / Theme                  -->
-      <!-- ============================================== -->
-      <section id="stepSection5" style="display: none;">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 5 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Select Visual Theme 🎨</h2>
-          <p class="text-gray-400 text-sm mt-1">This configures the background effects, colors, and animations.</p>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <button type="button" data-theme="birthday_celebration" class="theme-btn ring-4 ring-pink-500 p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-pink-900 to-purple-950 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">🎂</span>
-            <span class="font-bold text-xs text-white">Birthday Party</span>
-          </button>
-          <button type="button" data-theme="romantic_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-rose-950 to-red-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">💌</span>
-            <span class="font-bold text-xs text-white">Romantic Love</span>
-          </button>
-          <button type="button" data-theme="friendship_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-teal-950 to-emerald-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">🌟</span>
-            <span class="font-bold text-xs text-white">Friendship Pop</span>
-          </button>
-          <button type="button" data-theme="luxury_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-yellow-950 to-amber-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">👑</span>
-            <span class="font-bold text-xs text-white">Luxury Gold</span>
-          </button>
-          <button type="button" data-theme="floral_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-purple-950 to-pink-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">🌸</span>
-            <span class="font-bold text-xs text-white">Floral Pastel</span>
-          </button>
-          <button type="button" data-theme="elegant_anniversary" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-indigo-950 to-blue-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">💍</span>
-            <span class="font-bold text-xs text-white">Elegant Anniv</span>
-          </button>
-          <button type="button" data-theme="cartoon_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-orange-950 to-amber-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">🚀</span>
-            <span class="font-bold text-xs text-white">Playful / Comic</span>
-          </button>
-          <button type="button" data-theme="minimalist_theme" class="theme-btn p-4 rounded-2xl border border-slate-700 text-center transition bg-gradient-to-br from-slate-900 to-gray-900 flex flex-col items-center justify-center gap-2 h-28">
-            <span class="text-3xl">✨</span>
-            <span class="font-bold text-xs text-white">Minimalist</span>
-          </button>
-        </div>
-
-        <div class="flex justify-between">
-          <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
-          <button type="button" onclick="WishCreator.nextStep()" class="btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-lg">Generate Wishes with AI ✨</button>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- STEP 6: Generate Wish with Gemini AI           -->
-      <!-- ============================================== -->
-      <section id="stepSection6" style="display: none;">
-        <div class="text-center mb-8">
-          <span class="text-xs font-bold uppercase tracking-wider text-pink-400">Step 6 of 6</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Craft & Perfect the Message 🪄</h2>
-          <p class="text-gray-400 text-sm mt-1">Review AI options, upload memories, and publish your greeting.</p>
-        </div>
-
-        <!-- Controls: Language, Length & Regenerate -->
-        <div class="glass p-4 rounded-2xl mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div class="flex items-center gap-4 flex-wrap">
-            <div>
-              <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Language</label>
-              <select id="languageSelect" onchange="WishCreator.generateAIWishes()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none">
-                <option value="en" selected>English</option>
-                <option value="hi">हिंदी (Hindi)</option>
-                <option value="hinglish">Hinglish (Conversational)</option>
-              </select>
+          <!-- AI Generated Variations List -->
+          <div id="aiResultsContainer" class="space-y-4 mb-8" style="display: none;">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-gray-300 uppercase">Select A Variation (Click to Load into Editor)</label>
+              <button type="button" onclick="WishCreator.generateAIWishes()" class="text-xs text-pink-400 hover:text-pink-300 font-semibold flex items-center gap-1">
+                <span>🔄 Regenerate</span>
+              </button>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Length</label>
-              <select id="lengthSelect" onchange="WishCreator.generateAIWishes()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none">
-                <option value="short">Short & Punchy</option>
-                <option value="medium" selected>Standard (Heartfelt)</option>
-                <option value="long">Long & Poetic</option>
-              </select>
+            <div class="grid grid-cols-1 gap-3" id="variationsList">
+              <!-- Variation cards dynamically injected -->
             </div>
 
-            <div id="aiSourceBadge" class="self-end mb-1"></div>
-          </div>
-
-          <button type="button" id="regenerateBtn" onclick="WishCreator.generateAIWishes()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-gray-200 flex items-center gap-1.5 transition">
-            <span>🔄 Regenerate AI Options</span>
-          </button>
-        </div>
-
-        <!-- AI Loading Spinner -->
-        <div id="aiLoadingState" class="py-12 text-center" style="display: none;">
-          <div class="inline-block animate-spin text-4xl mb-3">🪄</div>
-          <p class="text-sm font-semibold text-gray-300">Gemini AI is crafting 3 personalized greetings...</p>
-          <p class="text-xs text-gray-500 mt-1">Weaving your memories, relationship, and desired tone.</p>
-        </div>
-
-        <!-- AI Generated Variations List -->
-        <div id="aiResultsContainer" class="space-y-4 mb-8">
-          <label class="block text-xs font-bold text-gray-300 uppercase">Select A Message Variation</label>
-          <div class="grid grid-cols-1 gap-3" id="variationsList">
-            <!-- Variation cards loaded by JS -->
-          </div>
-
-          <!-- Active Editable Message Area -->
-          <div class="mt-6">
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex items-center gap-3">
-                <label class="block text-xs font-bold text-pink-400 uppercase">Edit & Finalize Message</label>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-xs text-gray-400">Font:</label>
-                  <select id="step6FontSelector" onchange="WishCreator.setFontFamily(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none">
-                    <option value="Playfair Display">Playfair Display (Serif)</option>
-                    <option value="Dancing Script">Dancing Script (Calligraphy)</option>
-                    <option value="Great Vibes">Great Vibes (Cursive)</option>
-                    <option value="Outfit">Outfit (Modern Sans)</option>
-                    <option value="Pacifico">Pacifico (Playful)</option>
-                    <option value="Cinzel">Cinzel (Royal Roman)</option>
-                  </select>
+            <!-- Active Editable Message Area -->
+            <div class="mt-6 pt-4 border-t border-white/10">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                  <label class="block text-xs font-bold text-pink-400 uppercase">Edit & Finalize Message</label>
+                  <div class="flex items-center gap-1.5">
+                    <label class="text-xs text-gray-400">Font:</label>
+                    <select id="step6FontSelector" onchange="WishCreator.setFontFamily(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none" style="background-color: #0f172a !important; color: #f8fafc !important;">
+                      <option value="Playfair Display">Playfair Display (Serif)</option>
+                      <option value="Dancing Script">Dancing Script (Calligraphy)</option>
+                      <option value="Great Vibes">Great Vibes (Cursive)</option>
+                      <option value="Outfit">Outfit (Modern Sans)</option>
+                      <option value="Pacifico">Pacifico (Playful)</option>
+                      <option value="Cinzel">Cinzel (Royal Roman)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button type="button" onclick="WishCreator.polishFinalMessage()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
+                    <span>✨ Polish Text</span>
+                  </button>
+                  <button type="button" onclick="WishShare.copyLink(document.getElementById('finalMessageInput').value)" class="text-xs text-gray-400 hover:text-white">Copy Text</button>
                 </div>
               </div>
-              <div class="flex items-center gap-3">
-                <button type="button" onclick="WishCreator.polishFinalMessage()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
-                  <span>✨ Polish Text</span>
-                </button>
-                <button type="button" onclick="WishShare.copyLink(document.getElementById('finalMessageInput').value)" class="text-xs text-gray-400 hover:text-white">Copy Text</button>
+              <textarea id="finalMessageInput" rows="4" 
+                class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl p-4 text-white text-sm outline-none resize-none leading-relaxed"
+                style="background-color: #0f172a !important; color: #f8fafc !important;"></textarea>
+            </div>
+          </div>
+
+          <!-- Live Greeting Webpage Preview Card -->
+          <div class="glass-card rounded-2xl p-6 mb-8 border border-white border-opacity-10 relative overflow-hidden" id="livePreviewContainer">
+            <div class="flex items-center justify-between mb-4 border-b border-white border-opacity-10 pb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center gap-1.5">
+                <span>👁️</span> Live Greeting Webpage Preview
+              </span>
+              <span id="previewOccasionBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700">Birthday</span>
+            </div>
+
+            <div class="text-center py-4">
+              <h3 class="text-2xl sm:text-3xl font-extrabold text-white mb-1">
+                Dearest <span id="previewRecipientName" class="text-gradient">Friend</span>
+              </h3>
+              <p id="previewSenderName" class="text-xs text-gray-400 italic mb-5">With love from Someone special</p>
+
+              <div class="bg-black bg-opacity-30 rounded-xl p-5 border border-white border-opacity-5 mb-4 max-w-xl mx-auto shadow-inner">
+                <p id="previewMessageText" class="text-base sm:text-lg text-gray-100 leading-relaxed font-playfair whitespace-pre-line">
+                  Select or write a greeting message above to preview it here...
+                </p>
+              </div>
+
+              <div id="previewMemoriesBlock" class="text-xs italic text-pink-300 max-w-lg mx-auto bg-pink-950 bg-opacity-30 border-l-2 border-pink-500 p-3 rounded text-left" style="display: none;">
+                <span class="font-bold text-gray-300 block mb-0.5">Special Memory:</span>
+                <span id="previewMemoriesText"></span>
               </div>
             </div>
-            <textarea id="finalMessageInput" rows="4" 
-              class="w-full bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl p-4 text-white text-sm outline-none resize-none leading-relaxed"></textarea>
-          </div>
-        </div>
-
-                <!-- Live Greeting Webpage Preview Card -->
-        <div class="glass-card rounded-2xl p-6 mb-8 border border-white border-opacity-10 relative overflow-hidden" id="livePreviewContainer">
-          <div class="flex items-center justify-between mb-4 border-b border-white border-opacity-10 pb-3">
-            <span class="text-xs font-bold uppercase tracking-wider text-pink-400 flex items-center gap-1.5">
-              <span>👁️</span> Live Greeting Webpage Preview
-            </span>
-            <span id="previewOccasionBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-pink-900 bg-opacity-40 text-pink-300 border border-pink-700">Birthday</span>
           </div>
 
-          <div class="text-center py-4">
-            <h3 class="text-2xl sm:text-3xl font-extrabold text-white mb-1">
-              Dearest <span id="previewRecipientName" class="text-gradient">Friend</span>
-            </h3>
-            <p id="previewSenderName" class="text-xs text-gray-400 italic mb-5">With love from Someone special</p>
-
-            <div class="bg-black bg-opacity-30 rounded-xl p-5 border border-white border-opacity-5 mb-4 max-w-xl mx-auto shadow-inner">
-              <p id="previewMessageText" class="text-base sm:text-lg text-gray-100 leading-relaxed font-playfair whitespace-pre-line">
-                Select or write a greeting message above to preview it here...
-              </p>
-            </div>
-
-            <div id="previewMemoriesBlock" class="text-xs italic text-pink-300 max-w-lg mx-auto bg-pink-950 bg-opacity-30 border-l-2 border-pink-500 p-3 rounded text-left" style="display: none;">
-              <span class="font-bold text-gray-300 block mb-0.5">Special Memory:</span>
-              <span id="previewMemoriesText"></span>
+          <!-- Action Buttons: Send Now vs Schedule for Later -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+            <button type="button" onclick="WishCreator.prevStep()" class="px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white">← Back</button>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <button type="button" id="scheduleForLaterBtn" onclick="WishCreator.openScheduleModal()" class="flex-1 sm:flex-none px-6 py-3.5 rounded-xl border border-pink-500/50 bg-slate-900 hover:bg-slate-800 text-pink-400 font-bold text-sm shadow transition flex items-center justify-center gap-2">
+                <span>⏰ Schedule for Later</span>
+              </button>
+              <button type="button" id="publishGreetingBtn" onclick="WishCreator.publishGreeting()" class="flex-1 sm:flex-none btn-gradient px-8 py-3.5 rounded-xl font-bold text-sm text-white shadow-xl flex items-center justify-center gap-2">
+                <span>Send Now 🚀</span>
+              </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Photo Upload & Gallery Attachment -->
-        <div class="glass p-5 rounded-2xl mb-8 border border-white border-opacity-10">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
-                <span>📸</span> Attach Personal Photos (Up to 6)
-              </h4>
-              <p class="text-xs text-gray-400">Add cherished memories to appear in the recipient's polaroid reel.</p>
-            </div>
-            <label class="cursor-pointer px-3.5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-pink-400 transition">
-              <span>+ Upload Photos</span>
-              <input type="file" id="photoUploadInput" accept="image/*" multiple class="hidden">
-            </label>
-          </div>
+      </div>
+    </main>
+  </div>
 
-          <div id="uploadedPhotosList" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <p class="text-xs text-gray-500 italic col-span-full">No photos attached yet. Click "+ Upload Photos" above to add memories!</p>
-          </div>
-        </div>
-
-        <!-- Bottom Action Buttons: Send Now vs Schedule for Later -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white border-opacity-10">
-          <button type="button" onclick="WishCreator.prevStep()" class="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm text-gray-400 hover:text-white order-2 sm:order-1">← Back</button>
-          <div class="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
-            <button type="button" id="scheduleWishBtn" onclick="WishCreator.openScheduleModal()" class="flex-1 sm:flex-none px-6 py-3.5 rounded-xl font-bold text-sm text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 shadow-lg flex items-center justify-center gap-2 transition">
-              <span>⏰ Schedule for Later</span>
-            </button>
-            <button type="button" id="publishWishBtn" onclick="WishCreator.publishGreeting()" class="flex-1 sm:flex-none btn-gradient px-8 py-3.5 rounded-xl font-extrabold text-sm text-white shadow-2xl flex items-center justify-center gap-2">
-              <span>Send Now ✨</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
+  <!-- Global Developer Attribution Footer -->
+  <footer class="w-full py-6 px-4 text-center border-t border-white/10 bg-slate-950/80 text-xs text-gray-400">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>© 2026 Wish Yours. All rights reserved.</p>
+      <div id="developerAttributionCredit" class="text-xs text-gray-400">
+        WishCraft AI • Developed by <a href="/developer" class="text-pink-400 hover:text-pink-300 font-bold underline transition">MD RAZA</a>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <a href="/developer" class="text-gray-400 hover:text-white transition">About Developer</a>
+        <a href="/dashboard" class="text-gray-400 hover:text-white transition">Dashboard</a>
+      </div>
     </div>
-    <div class="developer-credit-container text-center py-8"></div>
-  </main>
+  </footer>
 
-  <!-- Share Modal (Opens after generating wish) -->
+  <!-- ============================================== -->
+  <!-- Share / Success Modal                          -->
+  <!-- ============================================== -->
   <div id="shareModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4">
-    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative">
-      <button onclick="document.getElementById('shareModal').classList.add('hidden')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-xl font-bold">✕</button>
+    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative text-center border border-white border-opacity-10 shadow-2xl">
+      <button type="button" onclick="WishCreator.closeShareModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
 
       <div class="text-center mb-6">
         <div class="text-5xl mb-2">🎉✨</div>
@@ -647,148 +781,102 @@
       </div>
 
       <!-- Share Link Copy Box -->
-      <div class="bg-slate-900 border border-slate-700 p-2 rounded-xl flex items-center gap-2 mb-6">
-        <input type="text" id="shareLinkInput" readonly class="bg-transparent text-xs text-gray-300 flex-1 outline-none px-2 font-mono">
-        <button id="copyShareLinkBtn" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg text-xs font-bold text-white hover:opacity-90">Copy</button>
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3 flex items-center justify-between mb-6">
+        <span id="shareUrlText" class="text-xs text-gray-300 truncate max-w-xs font-mono">https://wishcraft.ai/wish/...</span>
+        <button type="button" id="copyShareUrlBtn" onclick="WishCreator.copyShareLink()" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-xl text-xs font-bold text-white whitespace-nowrap transition">
+          Copy Link
+        </button>
       </div>
 
-      <!-- Instant Channels Grid -->
+      <!-- Instant Delivery Channels -->
       <div class="grid grid-cols-2 gap-3 mb-6">
-        <button id="shareWhatsAppBtn" class="p-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow transition">
-          <span>💬</span> Share on WhatsApp
+        <button type="button" onclick="WishCreator.shareToWhatsApp()" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-2 transition shadow-lg">
+          <span>📱</span> WhatsApp
         </button>
-        <button id="shareSmsBtn" class="p-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow transition">
-          <span>📱</span> Send via SMS
+        <button type="button" onclick="WishCreator.shareViaSMS()" class="py-3 px-4 bg-sky-600 hover:bg-sky-500 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-2 transition shadow-lg">
+          <span>💬</span> SMS Text
         </button>
       </div>
 
-      <!-- Send via Email Backend Form -->
+      <!-- Send via Email Section -->
       <form id="sendEmailForm" class="glass p-4 rounded-2xl mb-6">
         <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Deliver Directly via Email 💌</label>
         <div class="flex items-center gap-2">
           <input type="email" id="recipientEmailInput" placeholder="recipient@example.com" required
-            class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white flex-1 outline-none">
+            class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white flex-1 outline-none"
+            style="background-color: #0f172a !important; color: #f8fafc !important;">
           <button type="submit" id="sendEmailBtn" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl text-xs font-bold text-white whitespace-nowrap">
             Send Email
           </button>
         </div>
+        <p id="emailStatusMsg" class="text-[11px] text-gray-400 mt-2 text-left"></p>
       </form>
 
-      <!-- Schedule from Share Modal -->
-      <div class="text-center pt-2 pb-3 border-t border-white border-opacity-10">
-        <button type="button" onclick="WishCreator.openScheduleModalFromShare()" class="text-xs text-pink-400 hover:text-pink-300 font-bold flex items-center justify-center gap-1.5 mx-auto">
-          <span>⏰ Want automatic delivery at a future date & time? Schedule here →</span>
-        </button>
-      </div>
-
-      <!-- View Webpage Link -->
-      <div class="flex items-center justify-between text-xs">
-        <button id="shareNativeBtn" class="text-gray-400 hover:text-white flex items-center gap-1">
-          <span>🔗</span> More Share Options
-        </button>
-        <a id="viewWishDirectLink" href="#" target="_blank" class="text-pink-400 font-bold hover:underline flex items-center gap-1">
-          <span>Open Webpage</span> ↗
-        </a>
-      </div>
+      <!-- View Greeting Webpage Button -->
+      <a id="viewLiveWishBtn" href="#" target="_blank" class="w-full btn-gradient py-3.5 rounded-xl font-bold text-sm text-white shadow-xl block text-center">
+        Open Live Greeting Webpage ↗
+      </a>
     </div>
   </div>
 
   <!-- ============================================== -->
-  <!-- Schedule Wish Modal                            -->
+  <!-- Schedule for Later Modal                       -->
   <!-- ============================================== -->
-  <div id="scheduleModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative my-8 border border-white border-opacity-10 shadow-2xl">
-      <button onclick="WishCreator.closeScheduleModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-xl font-bold transition">✕</button>
+  <div id="scheduleWishModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative border border-white border-opacity-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+      <button type="button" onclick="WishCreator.closeScheduleModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
 
       <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-900 bg-opacity-40 text-2xl mb-2 border border-pink-700 border-opacity-40">
-          ⏰
-        </div>
-        <h3 class="text-2xl font-extrabold text-white">Schedule Celebration Delivery</h3>
-        <p class="text-xs text-gray-400 mt-1">We'll automatically deliver your wish at the exact moment — no need to keep your browser open!</p>
+        <div class="text-4xl mb-2">⏰💌</div>
+        <h3 class="text-2xl font-extrabold text-white">Schedule Wish Delivery</h3>
+        <p class="text-xs text-gray-300 mt-1">Wish Yours will automatically dispatch your greeting at the exact scheduled moment.</p>
       </div>
 
-      <form id="scheduleWishForm" onsubmit="event.preventDefault(); WishCreator.confirmSchedule();" class="space-y-4">
-        <!-- Occasion & Recipient Readout -->
-        <div class="p-3 bg-slate-900 bg-opacity-80 rounded-xl border border-slate-700 flex items-center justify-between text-xs">
-          <div>
-            <span class="text-gray-400">Recipient:</span>
-            <strong id="schedModalRecipientDisplay" class="text-white ml-1">Friend</strong>
-          </div>
-          <div>
-            <span class="text-gray-400">Occasion:</span>
-            <span id="schedModalOccasionBadge" class="ml-1 px-2 py-0.5 rounded-full text-pink-300 bg-pink-900 bg-opacity-50 text-xs font-bold">Birthday</span>
-          </div>
-        </div>
-
-        <!-- Delivery Channel Selection -->
+      <form id="scheduleWishForm" onsubmit="WishCreator.submitScheduledWish(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Select Delivery Method <span class="text-rose-400">*</span></label>
-          <div class="grid grid-cols-3 gap-2">
-            <label class="cursor-pointer">
-              <input type="radio" name="schedDeliveryMethod" value="email" checked class="hidden peer" onchange="WishCreator.onScheduleMethodChange('email')">
-              <div class="peer-checked:border-pink-500 peer-checked:bg-pink-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-pink-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
-                <span class="text-xl">💌</span>
-                <span class="text-xs font-bold text-white">Email</span>
-                <span class="text-[10px] text-emerald-400 font-medium">Free & Auto</span>
-              </div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Channel <span class="text-pink-400">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/30">
+              <input type="radio" name="schedChannel" value="email" checked onchange="WishCreator.toggleScheduleFields()" class="text-pink-500 focus:ring-0">
+              <span class="text-xs font-bold text-white">Email 💌</span>
             </label>
-
-            <label class="cursor-pointer">
-              <input type="radio" name="schedDeliveryMethod" value="sms" class="hidden peer" onchange="WishCreator.onScheduleMethodChange('sms')">
-              <div class="peer-checked:border-purple-500 peer-checked:bg-purple-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-purple-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
-                <span class="text-xl">📱</span>
-                <span class="text-xs font-bold text-white">SMS</span>
-                <span class="text-[10px] text-yellow-400 font-medium">Provider / Link</span>
-              </div>
-            </label>
-
-            <label class="cursor-pointer">
-              <input type="radio" name="schedDeliveryMethod" value="call" class="hidden peer" onchange="WishCreator.onScheduleMethodChange('call')">
-              <div class="peer-checked:border-indigo-500 peer-checked:bg-indigo-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-indigo-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
-                <span class="text-xl">📞</span>
-                <span class="text-xs font-bold text-white">Voice Call</span>
-                <span class="text-[10px] text-cyan-400 font-medium">AI TTS (Preview)</span>
-              </div>
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-950/30">
+              <input type="radio" name="schedChannel" value="sms" onchange="WishCreator.toggleScheduleFields()" class="text-pink-500 focus:ring-0">
+              <span class="text-xs font-bold text-white">SMS 📱</span>
             </label>
           </div>
         </div>
 
-        <!-- Recipient Contact Input (Switches dynamically) -->
-        <div id="schedEmailGroup">
-          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Email Address <span class="text-rose-400">*</span></label>
-          <input type="email" id="schedRecipientEmail" placeholder="e.g. friend@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+        <div id="schedEmailWrapper">
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient Email <span class="text-pink-400">*</span></label>
+          <input type="email" id="schedRecipientEmail" placeholder="recipient@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition" style="background-color: #0f172a !important; color: #f8fafc !important;">
         </div>
 
-        <div id="schedPhoneGroup" style="display: none;">
-          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Phone Number <span class="text-rose-400">*</span></label>
-          <input type="tel" id="schedRecipientPhone" placeholder="e.g. +91 9876543210 (with country code)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-purple-500 transition">
-          <p class="text-[10px] text-gray-400 mt-1" id="schedPhoneHint">Includes country code (e.g. +91 for India, +1 for US/Canada).</p>
+        <div id="schedPhoneWrapper" style="display: none;">
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient Phone (with Country Code) <span class="text-pink-400">*</span></label>
+          <input type="tel" id="schedRecipientPhone" placeholder="+91 9876543210" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition" style="background-color: #0f172a !important; color: #f8fafc !important;">
         </div>
 
-        <!-- Date & Time Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Date <span class="text-rose-400">*</span></label>
-            <input type="date" id="schedDateInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Date <span class="text-pink-400">*</span></label>
+            <input type="date" id="schedDeliveryDate" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500 transition" style="background-color: #0f172a !important; color: #f8fafc !important; color-scheme: dark !important;">
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Time <span class="text-rose-400">*</span></label>
-            <input type="time" id="schedTimeInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Time <span class="text-pink-400">*</span></label>
+            <input type="time" id="schedDeliveryTime" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500 transition" style="background-color: #0f172a !important; color: #f8fafc !important; color-scheme: dark !important;">
           </div>
         </div>
 
-        <!-- Timezone Selector & Indicator -->
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs font-bold text-gray-300 uppercase">Sender's Timezone</label>
             <span id="schedTimezoneBadge" class="text-[10px] text-pink-400 font-mono">Auto-detected</span>
           </div>
-          <select id="schedTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500 transition">
+          <select id="schedTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500 transition" style="background-color: #0f172a !important; color: #f8fafc !important; color-scheme: dark !important;">
             <option value="Asia/Kolkata">Asia/Kolkata (IST - India Standard Time)</option>
             <option value="America/New_York">America/New_York (EST/EDT)</option>
             <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
-            <option value="America/Chicago">America/Chicago (CST/CDT)</option>
             <option value="Europe/London">Europe/London (GMT/BST)</option>
             <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
             <option value="Asia/Dubai">Asia/Dubai (GST)</option>
@@ -798,10 +886,9 @@
           </select>
         </div>
 
-        <!-- Optional Personal Message Note -->
         <div>
           <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Personal Delivery Note (Optional)</label>
-          <textarea id="schedPersonalMessage" rows="2" placeholder="e.g. Can't wait to celebrate tonight! Here is something special for you." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-pink-500 transition resize-none"></textarea>
+          <textarea id="schedPersonalMessage" rows="2" placeholder="e.g. Can't wait to celebrate tonight! Here is something special for you." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-pink-500 transition resize-none" style="background-color: #0f172a !important; color: #f8fafc !important;"></textarea>
         </div>
 
         <!-- Live Formatted Confirmation Summary Banner -->
@@ -814,7 +901,6 @@
           </p>
         </div>
 
-        <!-- Submit & Cancel Buttons -->
         <div class="flex items-center justify-end gap-3 pt-2">
           <button type="button" onclick="WishCreator.closeScheduleModal()" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition">Cancel</button>
           <button type="submit" id="confirmScheduleBtn" class="btn-gradient px-6 py-3 rounded-xl text-xs font-bold text-white shadow-xl flex items-center gap-2">
@@ -825,9 +911,7 @@
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- Scheduling Success Confirmation Modal          -->
-  <!-- ============================================== -->
+  <!-- Scheduling Success Confirmation Modal -->
   <div id="scheduleSuccessModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4">
     <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-3xl relative text-center border border-white border-opacity-10 shadow-2xl">
       <div class="text-5xl mb-3 animate-bounce">🎉⏰</div>
@@ -836,7 +920,7 @@
       </span>
       <h3 class="text-2xl font-extrabold text-white mb-2">Wish Scheduled Successfully!</h3>
       <p class="text-xs text-gray-300 mb-6">
-        Sit back and relax! Wish Yours will dispatch your personalized celebration automatically at your scheduled moment.
+        Sit back and relax! Wish Yours will dispatch your personalized greeting automatically at your scheduled moment.
       </p>
 
       <div class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-left text-xs space-y-2.5 mb-6">
