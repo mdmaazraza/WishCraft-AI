@@ -4,6 +4,260 @@
  */
 
 const GreetingPage = {
+
+  // Scheduling handlers on Greeting Page
+  getIsoUtcForTimezone(dateStr, timeStr, timeZone) {
+    try {
+      const localGuess = new Date(dateStr + 'T' + timeStr + ':00Z');
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timeZone || 'UTC',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+      const parts = {};
+      formatter.formatToParts(localGuess).forEach(p => { parts[p.type] = p.value; });
+      let th = parseInt(parts.hour, 10);
+      if (th === 24) th = 0;
+      const formattedAsUtcMs = Date.UTC(parseInt(parts.year, 10), parseInt(parts.month, 10) - 1, parseInt(parts.day, 10), th, parseInt(parts.minute, 10));
+      const diffMs = formattedAsUtcMs - localGuess.getTime();
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const [h, min] = timeStr.split(':').map(Number);
+      const desiredUtcMs = Date.UTC(y, m - 1, d, h, min) - diffMs;
+      return new Date(desiredUtcMs).toISOString();
+    } catch (e) {
+      return new Date(dateStr + 'T' + timeStr).toISOString();
+    }
+  },
+
+  openScheduleModal() {
+    if (!this.wish) return;
+
+    const recipDisplay = document.getElementById('schedModalRecipientDisplay');
+    if (recipDisplay) recipDisplay.innerText = this.wish.recipient_name;
+
+    const occBadge = document.getElementById('schedModalOccasionBadge');
+    if (occBadge) occBadge.innerText = this.wish.occasion;
+
+    const tzSelect = document.getElementById('schedTimezoneSelect');
+    const tzBadge = document.getElementById('schedTimezoneBadge');
+    const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+
+    if (tzSelect) {
+      let hasOption = false;
+      for (let i = 0; i < tzSelect.options.length; i++) {
+        if (tzSelect.options[i].value === detectedTz) {
+          tzSelect.selectedIndex = i;
+          hasOption = true;
+          break;
+        }
+      }
+      if (!hasOption) {
+        const opt = document.createElement('option');
+        opt.value = detectedTz;
+        opt.text = `${detectedTz} (Detected)`;
+        opt.selected = true;
+        tzSelect.prepend(opt);
+      }
+    }
+    if (tzBadge) tzBadge.innerText = detectedTz;
+
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const dd = String(tomorrow.getDate()).padStart(2, '0');
+
+    const dateInput = document.getElementById('schedDateInput');
+    const timeInput = document.getElementById('schedTimeInput');
+
+    if (dateInput) {
+      dateInput.min = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      if (!dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+    if (timeInput && !timeInput.value) timeInput.value = '09:00';
+
+    ['schedDateInput', 'schedTimeInput', 'schedTimezoneSelect'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.oninput = () => GreetingPage.updateScheduleSummary();
+        el.onchange = () => GreetingPage.updateScheduleSummary();
+      }
+    });
+
+    this.updateScheduleSummary();
+
+    const modal = document.getElementById('scheduleModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  },
+
+  closeScheduleModal() {
+    const modal = document.getElementById('scheduleModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  },
+
+  onScheduleMethodChange(method) {
+    const emailGroup = document.getElementById('schedEmailGroup');
+    const phoneGroup = document.getElementById('schedPhoneGroup');
+    if (method === 'email') {
+      if (emailGroup) emailGroup.style.display = 'block';
+      if (phoneGroup) phoneGroup.style.display = 'none';
+    } else {
+      if (emailGroup) emailGroup.style.display = 'none';
+      if (phoneGroup) phoneGroup.style.display = 'block';
+    }
+    this.updateScheduleSummary();
+  },
+
+  updateScheduleSummary() {
+    const summaryEl = document.getElementById('schedConfirmationSummary');
+    if (!summaryEl || !this.wish) return;
+
+    const recip = this.wish.recipient_name || 'Friend';
+    const occ = this.wish.occasion || 'Celebration';
+
+    const methodRadio = document.querySelector('input[name="schedDeliveryMethod"]:checked');
+    const method = methodRadio ? methodRadio.value : 'email';
+    const methodLabel = method === 'email' ? 'Email 💌' : (method === 'sms' ? 'SMS 📱' : 'Voice Call 📞');
+
+    const dateVal = document.getElementById('schedDateInput')?.value;
+    const timeVal = document.getElementById('schedTimeInput')?.value;
+    const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
+
+    if (!dateVal || !timeVal) {
+      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel}.`;
+      return;
+    }
+
+    try {
+      const [y, m, d] = dateVal.split('-').map(Number);
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const readableDate = `${d} ${monthNames[m - 1]} ${y}`;
+      const [h, min] = timeVal.split(':').map(Number);
+      const period = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      const readableTime = `${String(h12).padStart(2, '0')}:${String(min).padStart(2, '0')} ${period}`;
+      const tzShort = tzVal.split('/').pop().replace(/_/g, ' ');
+
+      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel} on ${readableDate} at ${readableTime} (${tzShort}).`;
+    } catch (e) {
+      summaryEl.innerText = `Your ${occ} wish for ${recip} will be sent via ${methodLabel} on ${dateVal} at ${timeVal}.`;
+    }
+  },
+
+  async confirmSchedule() {
+    if (!this.wish) return;
+
+    const methodRadio = document.querySelector('input[name="schedDeliveryMethod"]:checked');
+    const deliveryMethod = methodRadio ? methodRadio.value : 'email';
+
+    const email = document.getElementById('schedRecipientEmail')?.value.trim();
+    const phone = document.getElementById('schedRecipientPhone')?.value.trim();
+    const dateVal = document.getElementById('schedDateInput')?.value;
+    const timeVal = document.getElementById('schedTimeInput')?.value;
+    const tzVal = document.getElementById('schedTimezoneSelect')?.value || 'UTC';
+    const personalNote = document.getElementById('schedPersonalMessage')?.value.trim();
+
+    if (deliveryMethod === 'email') {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('Please enter a valid recipient email address.', 'error');
+        return;
+      }
+    } else {
+      if (!phone || phone.replace(/[\s\-\(\)]/g, '').length < 7) {
+        showToast('Please enter a valid recipient phone number with country code (e.g. +91 9876543210).', 'error');
+        return;
+      }
+    }
+
+    if (!dateVal || !timeVal) {
+      showToast('Please choose both a delivery date and time.', 'error');
+      return;
+    }
+
+    const scheduledAtUtc = this.getIsoUtcForTimezone(dateVal, timeVal, tzVal);
+    const scheduleDate = new Date(scheduledAtUtc);
+
+    if (scheduleDate.getTime() < Date.now() - 10000) {
+      showToast('Scheduled delivery time must be in the future.', 'error');
+      return;
+    }
+
+    const confirmBtn = document.getElementById('confirmScheduleBtn');
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<span>⏳ Scheduling...</span>';
+    }
+
+    try {
+      const user = typeof AuthManager !== 'undefined' ? AuthManager.getUser() : null;
+
+      const payload = {
+        greeting_id: this.wish.slug,
+        recipient_name: this.wish.recipient_name,
+        recipient_email: deliveryMethod === 'email' ? email : undefined,
+        recipient_phone: deliveryMethod !== 'email' ? phone : undefined,
+        delivery_method: deliveryMethod,
+        scheduled_at: scheduledAtUtc,
+        timezone: tzVal,
+        personal_message: personalNote || undefined,
+        user_id: user?.id || null
+      };
+
+      const res = await fetch('/api/scheduled-wishes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Scheduling failed');
+
+      this.closeScheduleModal();
+
+      const sched = json.scheduled_wish;
+      document.getElementById('successRecipientName').innerText = sched.recipient_name;
+      document.getElementById('successDeliveryChannel').innerText = 
+        sched.delivery_method === 'email' ? 'Email 💌' : (sched.delivery_method === 'sms' ? 'SMS 📱' : 'Voice Call 📞');
+      document.getElementById('successDeliverTo').innerText = 
+        sched.recipient_email || sched.recipient_phone || 'Recipient';
+
+      try {
+        const localFormatted = new Date(sched.scheduled_at).toLocaleString('en-US', {
+          timeZone: sched.timezone,
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        });
+        document.getElementById('successScheduledTime').innerText = `${localFormatted} (${sched.timezone.split('/').pop()})`;
+      } catch (e) {
+        document.getElementById('successScheduledTime').innerText = sched.scheduled_at;
+      }
+
+      const successModal = document.getElementById('scheduleSuccessModal');
+      if (successModal) {
+        successModal.classList.remove('hidden');
+        successModal.classList.add('flex');
+      }
+
+      showToast('🎉 Celebration wish scheduled successfully!', 'success');
+
+    } catch (err) {
+      console.error('Schedule error:', err);
+      showToast(err.message || 'Could not schedule greeting', 'error');
+    } finally {
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<span>Confirm & Schedule Wish ⏰</span>';
+      }
+    }
+  },
+
   wish: null,
   slug: '',
   candlesBlown: false,

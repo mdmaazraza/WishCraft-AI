@@ -112,7 +112,10 @@
             Create Your Own Wish ✨
           </a>
           <button onclick="WishShare.copyLink(window.location.href)" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-gray-200">
-            Share This Page 🔗
+            Share Link 🔗
+          </button>
+          <button id="scheduleThisWishBtn" onclick="GreetingPage.openScheduleModal()" class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 rounded-xl text-xs font-bold text-white shadow flex items-center justify-center gap-1.5 transition">
+            <span>⏰ Schedule Delivery</span>
           </button>
         </div>
       </div>
@@ -126,6 +129,180 @@
       <img id="lightboxImage" src="" class="max-h-96 rounded-xl shadow-2xl object-contain mb-3">
       <p id="lightboxCaption" class="text-sm text-gray-200 font-script text-center text-lg"></p>
       <button onclick="GreetingPage.closeLightbox()" class="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-bold text-white">Close ✕</button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- Schedule Wish Modal                            -->
+  <!-- ============================================== -->
+  <div id="scheduleModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative my-8 border border-white border-opacity-10 shadow-2xl">
+      <button onclick="GreetingPage.closeScheduleModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-xl font-bold transition">✕</button>
+
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-900 bg-opacity-40 text-2xl mb-2 border border-pink-700 border-opacity-40">
+          ⏰
+        </div>
+        <h3 class="text-2xl font-extrabold text-white">Schedule Celebration Delivery</h3>
+        <p class="text-xs text-gray-400 mt-1">Wish Yours delivers automatically at the exact scheduled time — no open browser required!</p>
+      </div>
+
+      <form id="scheduleWishForm" onsubmit="event.preventDefault(); GreetingPage.confirmSchedule();" class="space-y-4">
+        <!-- Occasion & Recipient Readout -->
+        <div class="p-3 bg-slate-900 bg-opacity-80 rounded-xl border border-slate-700 flex items-center justify-between text-xs">
+          <div>
+            <span class="text-gray-400">Recipient:</span>
+            <strong id="schedModalRecipientDisplay" class="text-white ml-1">Friend</strong>
+          </div>
+          <div>
+            <span class="text-gray-400">Occasion:</span>
+            <span id="schedModalOccasionBadge" class="ml-1 px-2 py-0.5 rounded-full text-pink-300 bg-pink-900 bg-opacity-50 text-xs font-bold">Celebration</span>
+          </div>
+        </div>
+
+        <!-- Delivery Channel Selection -->
+        <div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-2">Select Delivery Method <span class="text-rose-400">*</span></label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="schedDeliveryMethod" value="email" checked class="hidden peer" onchange="GreetingPage.onScheduleMethodChange('email')">
+              <div class="peer-checked:border-pink-500 peer-checked:bg-pink-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-pink-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
+                <span class="text-xl">💌</span>
+                <span class="text-xs font-bold text-white">Email</span>
+                <span class="text-[10px] text-emerald-400 font-medium">Free & Auto</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer">
+              <input type="radio" name="schedDeliveryMethod" value="sms" class="hidden peer" onchange="GreetingPage.onScheduleMethodChange('sms')">
+              <div class="peer-checked:border-purple-500 peer-checked:bg-purple-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-purple-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
+                <span class="text-xl">📱</span>
+                <span class="text-xs font-bold text-white">SMS</span>
+                <span class="text-[10px] text-yellow-400 font-medium">Provider / Link</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer">
+              <input type="radio" name="schedDeliveryMethod" value="call" class="hidden peer" onchange="GreetingPage.onScheduleMethodChange('call')">
+              <div class="peer-checked:border-indigo-500 peer-checked:bg-indigo-950 peer-checked:bg-opacity-40 peer-checked:ring-2 peer-checked:ring-indigo-500 p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition flex flex-col items-center justify-center gap-1 h-20">
+                <span class="text-xl">📞</span>
+                <span class="text-xs font-bold text-white">Voice Call</span>
+                <span class="text-[10px] text-cyan-400 font-medium">AI TTS (Preview)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Recipient Contact Input -->
+        <div id="schedEmailGroup">
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Email Address <span class="text-rose-400">*</span></label>
+          <input type="email" id="schedRecipientEmail" placeholder="friend@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+        </div>
+
+        <div id="schedPhoneGroup" style="display: none;">
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Recipient's Phone Number <span class="text-rose-400">*</span></label>
+          <input type="tel" id="schedRecipientPhone" placeholder="e.g. +91 9876543210 (with country code)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-purple-500 transition">
+          <p class="text-[10px] text-gray-400 mt-1" id="schedPhoneHint">Includes country code (e.g. +91 for India, +1 for US).</p>
+        </div>
+
+        <!-- Date & Time Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Date <span class="text-rose-400">*</span></label>
+            <input type="date" id="schedDateInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Delivery Time <span class="text-rose-400">*</span></label>
+            <input type="time" id="schedTimeInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
+          </div>
+        </div>
+
+        <!-- Timezone Selector -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-gray-300 uppercase">Sender's Timezone</label>
+            <span id="schedTimezoneBadge" class="text-[10px] text-pink-400 font-mono">Auto-detected</span>
+          </div>
+          <select id="schedTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-pink-500 transition">
+            <option value="Asia/Kolkata">Asia/Kolkata (IST - India Standard Time)</option>
+            <option value="America/New_York">America/New_York (EST/EDT)</option>
+            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+            <option value="America/Chicago">America/Chicago (CST/CDT)</option>
+            <option value="Europe/London">Europe/London (GMT/BST)</option>
+            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
+            <option value="Asia/Dubai">Asia/Dubai (GST)</option>
+            <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+            <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+            <option value="UTC">Coordinated Universal Time (UTC)</option>
+          </select>
+        </div>
+
+        <!-- Optional Personal Message Note -->
+        <div>
+          <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Personal Delivery Note (Optional)</label>
+          <textarea id="schedPersonalMessage" rows="2" placeholder="e.g. Can't wait to celebrate! Here is your special surprise." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-pink-500 transition resize-none"></textarea>
+        </div>
+
+        <!-- Live Formatted Confirmation Summary Banner -->
+        <div class="p-3.5 bg-gradient-to-r from-pink-950 via-purple-950 to-slate-900 border border-pink-500 border-opacity-30 rounded-xl text-xs text-gray-200">
+          <div class="flex items-center gap-2 font-bold text-pink-400 uppercase text-[10px] tracking-wider mb-1">
+            <span>✨</span> Schedule Confirmation Preview
+          </div>
+          <p id="schedConfirmationSummary" class="text-xs text-gray-200 font-medium leading-relaxed">
+            Your celebration wish will be delivered...
+          </p>
+        </div>
+
+        <!-- Submit & Cancel Buttons -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="GreetingPage.closeScheduleModal()" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition">Cancel</button>
+          <button type="submit" id="confirmScheduleBtn" class="btn-gradient px-6 py-3 rounded-xl text-xs font-bold text-white shadow-xl flex items-center gap-2">
+            <span>Confirm & Schedule Wish ⏰</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scheduling Success Confirmation Modal -->
+  <div id="scheduleSuccessModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-3xl relative text-center border border-white border-opacity-10 shadow-2xl">
+      <div class="text-5xl mb-3 animate-bounce">🎉⏰</div>
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-900 bg-opacity-50 text-emerald-300 border border-emerald-600 mb-2">
+        Delivery Scheduled
+      </span>
+      <h3 class="text-2xl font-extrabold text-white mb-2">Wish Scheduled Successfully!</h3>
+      <p class="text-xs text-gray-300 mb-6">
+        Sit back and relax! Wish Yours will dispatch your personalized celebration automatically at your scheduled moment.
+      </p>
+
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-left text-xs space-y-2.5 mb-6">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Recipient:</span>
+          <strong id="successRecipientName" class="text-white">Sarah</strong>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Delivery Channel:</span>
+          <span id="successDeliveryChannel" class="font-bold text-pink-400">Email 💌</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Deliver To:</span>
+          <span id="successDeliverTo" class="font-mono text-gray-200">sarah@example.com</span>
+        </div>
+        <div class="flex items-center justify-between border-t border-slate-800 pt-2">
+          <span class="text-gray-400">Scheduled Time:</span>
+          <span id="successScheduledTime" class="font-semibold text-emerald-400">15 March 2026, 09:00 AM IST</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <button onclick="document.getElementById('scheduleSuccessModal').classList.add('hidden'); document.getElementById('scheduleSuccessModal').classList.remove('flex');" class="w-full sm:flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-white transition text-center">
+          Close Window ✕
+        </button>
+        <a href="/dashboard.html#scheduled" class="w-full sm:flex-1 btn-gradient py-3 rounded-xl text-xs font-bold text-white shadow text-center">
+          View in Dashboard 📊
+        </a>
+      </div>
     </div>
   </div>
 

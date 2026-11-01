@@ -102,6 +102,50 @@ node tests/test_resend_live.js your-account-email@example.com
 
 ---
 
+### D. Scheduled Wishes & Scheduler Engine Test Suite
+Tests past date rejection, email/phone format validation, future scheduling in UTC, list enrichment, reschedule updates, cancellation, scheduler engine execution, idempotency locking, cron authentication, and deletion.
+
+```bash
+cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
+node tests/test_scheduler.js
+```
+
+**Expected Result**:
+```
+======================================================
+🧪 Wish Yours: Scheduled Wishes Test Suite Starting...
+======================================================
+
+  ✅ PASS: Reject scheduling in the past (< Date.now())
+  ✅ PASS: Reject invalid email format when delivery_method is email
+  ✅ PASS: Reject missing/invalid phone number when delivery_method is sms or call
+  ✅ PASS: Successfully create scheduled wish for future date in UTC
+  ✅ PASS: Retrieve scheduled wish by ID with greeting context
+  ✅ PASS: List scheduled wishes and verify enrichment
+  ✅ PASS: Reschedule wish to new future time and personal note
+  ✅ PASS: Reject update if new scheduled_at is in the past
+  ✅ PASS: Cancel scheduled wish marks status as cancelled
+  ✅ PASS: Scheduler Engine locks, processes due wish, and enforces idempotency
+  ✅ PASS: Reject cron trigger without valid x-cron-key
+  ✅ PASS: Accept cron trigger with valid x-cron-key
+  ✅ PASS: Delete scheduled wish permanently
+
+======================================================
+🎉 TEST RUN COMPLETE: 13 Passed, 0 Failed
+======================================================
+```
+
+---
+
+### E. End-to-End Creation Trace Test (`test_flow.js`)
+Validates the full pipeline from form entry, to AI message generation, storage, slug creation, and public webpage retrieval.
+
+```bash
+node tests/test_flow.js
+```
+
+---
+
 ## 2. End-to-End Manual Testing Workflow
 
 ### Step 1: Start the Local Development Server

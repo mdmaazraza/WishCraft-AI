@@ -71,6 +71,16 @@ const { handleSendEmail } = require('./api/email');
 const { handlePrepareSMS } = require('./api/sms');
 const { handleGetVisualAssets } = require('./api/generate-image');
 const { handleGetAdminStats, handleModerateWish } = require('./api/admin');
+const {
+  handleCreateScheduledWish,
+  handleListScheduledWishes,
+  handleGetScheduledWish,
+  handleUpdateScheduledWish,
+  handleCancelScheduledWish,
+  handleDeleteScheduledWish,
+  handleTriggerCron
+} = require('./api/scheduled');
+const { startSchedulerLoop } = require('./scheduler/engine');
 
 // MIME types dictionary
 const MIME_TYPES = {
@@ -309,6 +319,51 @@ async function requestHandler(req, res) {
     if (pathname === '/api/admin/moderate' && method === 'POST') {
       const body = await parseBody(req);
       const result = await handleModerateWish(body, req.headers);
+      return sendJSON(res, 200, result);
+    }
+
+    // ==========================================
+    // SCHEDULED WISHES API ROUTES
+    // ==========================================
+    if (pathname === '/api/scheduled-wishes' && method === 'GET') {
+      const result = await handleListScheduledWishes(queryParams);
+      return sendJSON(res, 200, result);
+    }
+
+    if (pathname === '/api/scheduled-wishes' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = await handleCreateScheduledWish(body);
+      return sendJSON(res, 201, result);
+    }
+
+    const schedMatch = pathname.match(/^\/api\/scheduled-wishes\/([^/]+)\/?$/);
+    if (schedMatch) {
+      const schedId = decodeURIComponent(schedMatch[1]);
+      if (method === 'GET') {
+        const result = await handleGetScheduledWish(schedId);
+        return sendJSON(res, 200, result);
+      }
+      if (method === 'PUT') {
+        const body = await parseBody(req);
+        const result = await handleUpdateScheduledWish(schedId, body);
+        return sendJSON(res, 200, result);
+      }
+      if (method === 'DELETE') {
+        const result = await handleDeleteScheduledWish(schedId);
+        return sendJSON(res, 200, result);
+      }
+    }
+
+    const cancelMatch = pathname.match(/^\/api\/scheduled-wishes\/([^/]+)\/cancel\/?$/);
+    if (cancelMatch && method === 'POST') {
+      const schedId = decodeURIComponent(cancelMatch[1]);
+      const result = await handleCancelScheduledWish(schedId);
+      return sendJSON(res, 200, result);
+    }
+
+    // Cron Trigger Endpoint (can be invoked by external cron service e.g. cron-job.org)
+    if (pathname === '/api/cron/process-scheduled' && method === 'POST') {
+      const result = await handleTriggerCron(req.headers, BASE_URL);
       return sendJSON(res, 200, result);
     }
 

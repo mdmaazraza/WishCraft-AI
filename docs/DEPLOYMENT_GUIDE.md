@@ -1,0 +1,62 @@
+# 🚀 Wish Yours — Render Deployment & Scheduler Production Guide
+
+> **Platform**: Wish Yours (formerly WishCraft AI)  
+> **Deployment Target**: Render Web Service (`render.yaml`)  
+> **Last Updated**: March 2026
+
+---
+
+## 1. Quick Deploy via Render Blueprint
+
+Wish Yours is designed with **zero external npm dependencies** and uses pure native Node.js (`http`, `https`, `crypto`, `fs`). It builds in under 10 seconds and boots instantly on Render.
+
+1. Connect your GitHub repository `https://github.com/mdmaazraza/WishCraft-AI` to Render.
+2. In the Render Dashboard, click **New +** -> **Blueprint**.
+3. Select your repository. Render will automatically detect and parse `render.yaml`.
+4. Configure the environment variables (detailed below) and click **Apply**.
+
+---
+
+## 2. Environment Variables Configuration
+
+| Variable | Required? | Recommended Default / Description |
+| :--- | :--- | :--- |
+| `NODE_ENV` | Yes | `production` |
+| `PORT` | Auto | Render sets this automatically (usually `10000`). |
+| `GEMINI_API_KEY` | Optional | Google Gemini API key for AI message synthesis. (If absent, built-in template synthesizer activates). |
+| `RESEND_API_KEY` | Recommended | Your Resend API key (`re_...`) for automated email delivery. |
+| `RESEND_FROM_EMAIL` | Recommended | `Wish Yours <onboarding@resend.dev>` (or your verified domain sender, e.g. `wishes@yourdomain.com`). |
+| `CRON_SECRET_KEY` | Recommended | Secret token to authorize external cron triggers to execute scheduled dispatches (e.g. `wishyours_cron_secret_2026`). |
+| `TWILIO_ACCOUNT_SID` | Optional | Twilio account SID if automated cellular SMS or Voice calls are desired. |
+| `TWILIO_AUTH_TOKEN` | Optional | Twilio auth token. |
+| `TWILIO_PHONE_NUMBER`| Optional | Twilio provisioned phone number. |
+| `FAST2SMS_API_KEY` | Optional | Fast2SMS Indian gateway API key. |
+| `SUPABASE_URL` | Optional | Supabase project URL for PostgreSQL cloud synchronization. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional | Supabase service role key. |
+
+---
+
+## 3. High-Reliability Scheduler on Render Free Tier
+
+### The Problem
+Render Free Web Services spin down (enter sleep mode) after 15 minutes of zero inbound traffic. If an instance is asleep, an in-process `setInterval` ticker in `scheduler/engine.js` will pause, delaying scheduled deliveries until someone visits the website.
+
+### The Zero-Cost Solution: External Cron Webhook
+Wish Yours includes a secured webhook endpoint specifically designed to keep the scheduler running on time for free:
+`GET /api/cron/process-scheduled`
+
+#### Setting Up Free Cron Execution (via cron-job.org)
+1. Go to [https://cron-job.org](https://cron-job.org) (100% free cron service).
+2. Create a new cron job:
+   - **URL**: `https://<your-app-name>.onrender.com/api/cron/process-scheduled`
+   - **Schedule**: Every 5 minutes or 10 minutes (`*/5 * * * *`).
+   - **HTTP Headers**: Add header:
+     - `x-cron-key`: `your_cron_secret_key_here`
+3. Save the job.
+
+**Result**:
+- Every 5 minutes, cron-job.org pings your Render endpoint.
+- If the Render instance is asleep, the HTTP ping **wakes it immediately**.
+- `handleTriggerCron` verifies the `x-cron-key` header and calls `processDueWishes()`.
+- All due celebration wishes are dispatched immediately.
+- This gives you enterprise-grade, on-time scheduled delivery on Render's free tier without paying $7/month for a background worker.

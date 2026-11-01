@@ -104,40 +104,90 @@ WishCraft-AI/
 │   ├── email.js             # Resend & Brevo native HTTPS delivery service
 │   ├── gemini.js            # Google Gemini 1.5 Flash AI synthesis
 │   ├── generate-message.js  # Multi-language variation generator endpoint
+│   ├── scheduled.js         # Scheduled wishes CRUD & cron trigger handlers
 │   ├── sms.js               # SMS deep-link generator
-│   └── wishes.js            # Wish CRUD, sanitization, and candle persistence
+│   ├── wishes.js            # Wish CRUD, sanitization, and candle persistence
+│   └── providers/
+│       ├── email_provider.js # Resend automated email delivery with template styling
+│       ├── sms_provider.js   # Twilio, Fast2SMS & simulated SMS abstraction
+│       └── voice_provider.js # Twilio Voice / TwiML AI spoken call abstraction
 ├── data/
-│   ├── db.js                # Atomic JSON database manager
+│   ├── db.js                # Atomic JSON database manager (wishes & scheduled wishes)
 │   ├── email_logs.json      # Audit trail for email deliveries
+│   ├── scheduled_wishes.json# Persistent store for scheduled deliveries
+│   ├── supabase_schema.sql  # Supabase PostgreSQL schema with RLS policies
 │   ├── users.json           # User database
 │   └── wishes.json          # Wishes and greeting records
 ├── docs/
+│   ├── DEPLOYMENT_GUIDE.md  # Render deployment & environment variable instructions
 │   ├── DEVELOPMENT_LOG.md   # Chronological log of fixes and enhancements
 │   ├── NEXT_STEPS.md        # Deployment and domain verification guide
 │   ├── PROJECT_CONTEXT.md   # Architecture, data flows, and specifications
+│   ├── SETUP_GUIDE.md       # Local installation and configuration guide
+│   ├── SMS_VOICE_RESEARCH.md# TRAI DLT regulations & Indian telecom evaluation
 │   └── TESTING_GUIDE.md     # Verification procedures and test runner docs
 ├── public/
 │   ├── admin.html           # Admin dashboard
-│   ├── create.html          # 6-step Wish Creation Studio with typography selector
-│   ├── dashboard.html       # User dashboard
+│   ├── create.html          # 6-step Wish Studio with Schedule Modal & Live Preview
+│   ├── dashboard.html       # User dashboard with Celebrations & Scheduled Wishes tabs
 │   ├── index.html           # Homepage & landing showcase
 │   ├── login.html           # Authentication portal
 │   ├── wish.html            # Interactive recipient celebration webpage
 │   ├── css/
-│   │   └── styles.css       # Unified stylesheet, font classes & animations
+│   │   └── styles.css       # Unified stylesheet, dark inputs, font classes & animations
 │   └── js/
 │       ├── app.js           # Core UI helpers, toasts, particles & confetti
 │       ├── audio.js         # Web Audio API sound effects and music
-│       ├── creator.js       # Studio wizard & live typography preview controller
+│       ├── creator.js       # Studio wizard, live preview & scheduling controller
+│       ├── dashboard.js     # Multi-tab dashboard controller (reschedule/cancel/delete)
 │       ├── greeting.js      # Interactive candle, envelope & font renderer
 │       └── share.js         # WhatsApp, SMS, Web Share & email dispatch
+├── scheduler/
+│   └── engine.js            # In-process idempotent background scheduler & atomic lock
 ├── tests/
 │   ├── test_ai.js           # AI prompt synthesis test suite
 │   ├── test_api.js          # API, typography & database test suite (15 tests)
-│   └── test_resend_live.js  # Live Resend diagnostic and connectivity tool
+│   ├── test_flow.js         # End-to-end creation to rendering verification test
+│   ├── test_resend_live.js  # Live Resend diagnostic and connectivity tool
+│   └── test_scheduler.js    # Comprehensive scheduled wishes test suite (13 tests)
 ├── .env                     # Local environment variables
 ├── .env.example             # Environment template with documented requirements
 ├── package.json             # Project metadata and npm scripts
 ├── render.yaml              # Render blueprint deployment specification
 └── server.js                # Zero-dependency native Node.js HTTP server & router
 ```
+
+---
+
+## 6. Scheduled Wishes Architecture & Render Deployment
+
+### A. Lifecycle of a Scheduled Wish
+1. **Creation**:
+   - In `public/create.html` (Step 6) or on `/wish/:slug`, user clicks **"⏰ Schedule for Later"**.
+   - Client automatically detects user's local timezone via `Intl.DateTimeFormat().resolvedOptions().timeZone`.
+   - User selects delivery channel (Email 💌, SMS 📱, Voice Call 📞), date, and time.
+   - Form renders a live confirmation preview banner:  
+     `"Your Birthday wish for Priya will be sent via Email on 15 March 2026 at 09:00 AM IST"`
+   - Submits `POST /api/scheduled-wishes` with date converted to UTC ISO (`scheduled_at`).
+2. **Persistence & Idempotency Locking**:
+   - Saved with status `'scheduled'` and attempts count `0`.
+   - `scheduler/engine.js` runs every 30 seconds while the Node.js server is active.
+   - For every due wish (`scheduled_at <= now` and status `scheduled`), `engine.js` performs an **atomic lock**:
+     - Transitions status to `'processing'` and increments `attempts`.
+     - Concurrent ticks or external cron triggers cannot claim the same record.
+3. **Dispatch & Provider Resolution**:
+   - **Email**: Dispatches beautiful HTML email via Resend (`api/providers/email_provider.js`).
+   - **SMS**: Dispatches via Twilio or Fast2SMS if configured, or simulates safely if in development.
+   - **Voice Call**: Initiates outbound call with TwiML spoken greeting if Twilio Voice is configured.
+   - On success: transitions to `'sent'`, records `provider_response`.
+   - On failure: increments attempts; if retries < 3, backs off by 2 minutes; otherwise marks `'failed'`.
+
+### B. Render Free Web Service Limitations & Zero-Cost Solution
+- **The Challenge**: Render's free tier web services spin down after 15 minutes of inactivity (sleep mode). An internal `setInterval` timer would pause while the instance is sleeping.
+- **The Solution**: Dual-Mode Hybrid Scheduling:
+  1. **Internal Engine (`scheduler/engine.js`)**: Runs whenever the server is awake, processing due wishes every 30 seconds.
+  2. **External Cron Webhook (`GET /api/cron/process-scheduled`)**:
+     - Secured with `x-cron-key` header (backed by `CRON_SECRET_KEY` in Render environment).
+     - Allows free cron providers (such as [cron-job.org](https://cron-job.org) or GitHub Actions scheduled workflows) to ping `/api/cron/process-scheduled` every 5-10 minutes.
+     - Pinging this endpoint wakes the Render free service and triggers immediate batch processing of all due wishes with zero server cost!
+

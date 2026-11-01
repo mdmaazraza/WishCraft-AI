@@ -60,6 +60,7 @@ Under **Environment Variables** in the Render service settings, configure:
 | `BASE_URL` | `https://your-service-name.onrender.com` | Your live Render URL (used for links in emails & WhatsApp) |
 | `RESEND_API_KEY` | `re_...` | Your secret API key from Resend |
 | `RESEND_FROM_EMAIL` | `Wish Yours <onboarding@resend.dev>` | Or your custom domain if verified |
+| `CRON_SECRET_KEY` | `wishyours_cron_secret_2026` | Protects `/api/cron/process-scheduled` |
 | `GEMINI_API_KEY` | `AIzaSy...` | From [Google AI Studio](https://aistudio.google.com) |
 | `GEMINI_MODEL` | `gemini-1.5-flash` | Ultra-fast, cost-effective multimodal model |
 | `ADMIN_SECRET_KEY` | `(auto-generated secret)` | Used to protect `/admin` dashboard |
@@ -73,6 +74,9 @@ Under **Environment Variables** in the Render service settings, configure:
 - [ ] Create a test birthday greeting using "Dancing Script" or "Cinzel".
 - [ ] Tap the cake candles and confirm audio + confetti play on mobile devices.
 - [ ] Create a test anniversary greeting and test breaking the wax seal.
+- [ ] Schedule a test greeting 3 minutes in the future; verify automated dispatch via Resend or simulator.
+- [ ] Ping `/api/cron/process-scheduled` with `x-cron-key` and verify HTTP 200 response.
+- [ ] Open `/dashboard.html#scheduled` and verify view, reschedule, and cancel actions.
 - [ ] Dispatch a test email to your registered account email and verify receipt.
 - [ ] Test the WhatsApp share button on a mobile smartphone.
 - [ ] Log in to `/admin` with `ADMIN_SECRET_KEY` and verify KPI charts and moderation controls.
@@ -83,7 +87,8 @@ Under **Environment Variables** in the Render service settings, configure:
 
 1. **User Voice Notes**:
    - Allow senders to record a 30-second audio note directly in the browser via MediaRecorder API and embed it in the greeting page.
-2. **Scheduled Email Delivery**:
-   - Allow senders to pick a date & time (e.g. midnight on their friend's birthday) for automated email dispatch.
+2. **Scheduled Delivery Extensions**:
+   - Automated Indian SMS via Fast2SMS DLT registration when user procures DLT Principal Entity ID.
+   - Outbound IVR telephone call wishes using Twilio Voice or Exotel when paid credits are configured.
 3. **Database Migration to Supabase**:
-   - The data model in `data/db.js` is 100% relational and schema-aligned with PostgreSQL / Supabase. If user traffic exceeds 100,000 greetings, activate the Supabase configuration in `.env` for zero-maintenance cloud database hosting.
+   - Run `data/supabase_schema.sql` on Supabase to enable PostgreSQL cloud persistence with Row Level Security (RLS).

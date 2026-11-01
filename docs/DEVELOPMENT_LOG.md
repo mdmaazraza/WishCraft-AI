@@ -127,3 +127,51 @@
   - Implemented case-insensitive lookup in `getWishBySlug()` and `getWishById()`.
 - **`tests/test_flow.js`**:
   - Added an automated end-to-end trace runner validating data flow from user entry to AI generation, storage, slug creation, and retrieval.
+
+---
+
+### Issue 4: Phase 3 — Scheduled Wishes Feature & Indian Telecom Architecture
+
+#### 1. Architecture & Design Requirements
+1. **User Flow**:
+   - Provide "Send Now" and "Schedule for Later" buttons in Step 6 of Creation Studio, on `/wish/:slug`, and in the Share Modal.
+   - Dedicated scheduling modal with recipient name, recipient email / phone with country code, date, time, timezone selector (auto-detecting user timezone), delivery method (Email, SMS, Voice Call), and optional personal delivery note.
+   - Dynamic confirmation preview banner updating live: *"Your Birthday wish for Priya will be sent via Email on 15 March 2026 at 09:00 AM IST"*.
+   - Success confirmation screen displaying scheduled time in recipient local time with UTC timestamps.
+2. **Server-Side Scheduler Engine**:
+   - Must run continuously without requiring the sender's browser to remain open.
+   - Zero-dependency in-process ticker (`scheduler/engine.js`) coupled with an atomic idempotency lock (`db.lockScheduledWish()`).
+   - Support for external cron webhook (`/api/cron/process-scheduled`) with `x-cron-key` security header to wake Render free tier instances and trigger batch dispatches.
+3. **Delivery Provider Abstraction**:
+   - **Email**: Resend API integration (`api/providers/email_provider.js`) with responsive celebration styling, typography, and unwrap button.
+   - **SMS**: Provider abstraction (`api/providers/sms_provider.js`) supporting Twilio, Fast2SMS (India), and simulated development fallback.
+   - **Voice Call**: Programmable voice abstraction (`api/providers/voice_provider.js`) supporting Twilio Voice with TwiML Text-To-Speech (TTS).
+4. **Dashboard Management**:
+   - Multi-tab navigation in `public/dashboard.html` ("All Celebrations 💌" vs "Scheduled Wishes ⏰").
+   - Detailed status badges (`scheduled`, `processing`, `sent`, `failed`, `cancelled`).
+   - Actions to view celebration webpage, reschedule/edit date & time, cancel schedule, and delete records.
+
+#### 2. Implementation Summary
+- **Data & Schema**:
+  - Created `data/supabase_schema.sql` with table `scheduled_wishes`, check constraints, indexes, triggers, and Row Level Security (RLS) policies.
+  - Implemented 10 persistent scheduled wish methods in `data/db.js` (`data/scheduled_wishes.json`).
+- **REST Endpoints (`api/scheduled.js` & `server.js`)**:
+  - `POST /api/scheduled-wishes`: Create with future date and email/phone validation.
+  - `GET /api/scheduled-wishes`: Filterable list with celebration metadata enrichment.
+  - `GET /api/scheduled-wishes/:id`: Single record retrieval with authorization.
+  - `PUT /api/scheduled-wishes/:id`: Reschedule date/time, update contact, and personal note.
+  - `POST /api/scheduled-wishes/:id/cancel`: Cancellation handler.
+  - `DELETE /api/scheduled-wishes/:id`: Hard deletion handler.
+  - `GET /api/cron/process-scheduled`: Secured cron trigger endpoint.
+- **Background Scheduler (`scheduler/engine.js`)**:
+  - Batch size 25 with 30-second polling interval.
+  - Atomic idempotency locking preventing duplicate dispatches.
+  - Automatic retry with 2-minute backoff for transient failures (up to 3 attempts).
+- **Frontend & Modals**:
+  - `public/create.html`: Added Schedule Modal and Success Modal; updated Step 6 action buttons.
+  - `public/js/creator.js`: Added timezone detection, live preview updates, and submission controller.
+  - `public/wish.html` & `public/js/greeting.js`: Added "Schedule Delivery" action and modal bindings.
+  - `public/dashboard.html` & `public/js/dashboard.js`: Added Scheduled Wishes tab, stats cards, table view, and Reschedule Modal.
+- **Verification**:
+  - Created and ran `tests/test_scheduler.js`: 13/13 automated tests passed.
+  - Generated comprehensive research document `docs/SMS_VOICE_RESEARCH.md`.

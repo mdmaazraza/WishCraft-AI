@@ -11,6 +11,7 @@ const DATA_DIR = __dirname;
 const WISHES_FILE = path.join(DATA_DIR, 'wishes.json');
 const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');
 const EMAIL_LOGS_FILE = path.join(DATA_DIR, 'email_logs.json');
+const SCHEDULED_WISHES_FILE = path.join(DATA_DIR, 'scheduled_wishes.json');
 
 // Initialize files if not existing
 function ensureDataFiles() {
@@ -104,6 +105,10 @@ function ensureDataFiles() {
 
   if (!fs.existsSync(EMAIL_LOGS_FILE)) {
     fs.writeFileSync(EMAIL_LOGS_FILE, JSON.stringify([], null, 2), 'utf-8');
+  }
+
+  if (!fs.existsSync(SCHEDULED_WISHES_FILE)) {
+    fs.writeFileSync(SCHEDULED_WISHES_FILE, JSON.stringify([], null, 2), 'utf-8');
   }
 }
 
@@ -371,6 +376,212 @@ const db = {
       themeBreakdown,
       recentWishes: wishes.slice(0, 10)
     };
+  },
+
+  // ==========================================
+  // Scheduled Wishes Management
+  // ==========================================
+
+  createScheduledWish(data) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const id = `sched_${crypto.randomBytes(8).toString('hex')}`;
+    const newRecord = {
+      id,
+      user_id: data.user_id || null,
+      greeting_id: data.greeting_id || data.slug || data.wish_id,
+      recipient_name: (data.recipient_name || 'Friend').trim(),
+      recipient_email: (data.recipient_email || '').trim().toLowerCase(),
+      recipient_phone: (data.recipient_phone || '').trim(),
+      delivery_method: data.delivery_method || 'email',
+      scheduled_at: new Date(data.scheduled_at).toISOString(),
+      timezone: data.timezone || 'UTC',
+      personal_message: (data.personal_message || '').trim(),
+      status: 'scheduled',
+      attempts: 0,
+      sent_at: null,
+      failed_at: null,
+      error_message: null,
+      provider_response: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    records.unshift(newRecord);
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return newRecord;
+  },
+
+  getScheduledWishById(id) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    return records.find(r => r.id === id) || null;
+  },
+
+  listScheduledWishes(filters = {}) {
+    let records = readJSON(SCHEDULED_WISHES_FILE);
+
+    if (filters.user_id !== undefined && filters.user_id !== null) {
+      records = records.filter(r => r.user_id === filters.user_id);
+    }
+    if (filters.greeting_id) {
+      records = records.filter(r => r.greeting_id === filters.greeting_id);
+    }
+    if (filters.status) {
+      records = records.filter(r => r.status.toLowerCase() === filters.status.toLowerCase());
+    }
+
+    // Sort by scheduled_at ascending
+    records.sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+
+    const total = records.length;
+    const limit = filters.limit ? parseInt(filters.limit, 10) : 50;
+    const offset = filters.offset ? parseInt(filters.offset, 10) : 0;
+
+    return {
+      total,
+      scheduled_wishes: records.slice(offset, offset + limit)
+    };
+  },
+
+  updateScheduledWish(id, updates, userId = null) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    const current = records[index];
+    if (current.user_id && userId && current.user_id !== userId) {
+      throw new Error("Unauthorized to modify this scheduled greeting");
+    }
+
+    if (current.status === 'sent') {
+      throw new Error("Cannot modify a wish that has already been sent");
+    }
+
+    const allowedUpdates = [
+      'recipient_name', 'recipient_email', 'recipient_phone',
+      'delivery_method', 'scheduled_at', 'timezone', 'personal_message'
+    ];
+
+    allowedUpdates.forEach(field => {
+      if (updates[field] !== undefined) {
+        if (field === 'scheduled_at') {
+          current.scheduled_at = new Date(updates[field]).toISOString();
+        } else if (field === 'recipient_email') {
+          current.recipient_email = (updates[field] || '').trim().toLowerCase();
+        } else {
+          current[field] = updates[field];
+        }
+      }
+    });
+
+    // If rescheduling, reset failed/cancelled status back to scheduled
+    if (updates.scheduled_at && (current.status === 'failed' || current.status === 'cancelled')) {
+      current.status = 'scheduled';
+      current.error_message = null;
+    }
+
+    current.updated_at = new Date().toISOString();
+    records[index] = current;
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return current;
+  },
+
+  cancelScheduledWish(id, userId = null) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    const current = records[index];
+    if (current.user_id && userId && current.user_id !== userId) {
+      throw new Error("Unauthorized to cancel this scheduled greeting");
+    }
+
+    if (current.status === 'sent') {
+      throw new Error("Cannot cancel a wish that has already been delivered");
+    }
+
+    current.status = 'cancelled';
+    current.updated_at = new Date().toISOString();
+    records[index] = current;
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return current;
+  },
+
+  deleteScheduledWish(id, userId = null) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return false;
+
+    const current = records[index];
+    if (current.user_id && userId && current.user_id !== userId) {
+      throw new Error("Unauthorized to delete this scheduled greeting");
+    }
+
+    records.splice(index, 1);
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return true;
+  },
+
+  getDueScheduledWishes(maxLimit = 25) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const now = new Date();
+
+    return records
+      .filter(r => r.status === 'scheduled' && new Date(r.scheduled_at) <= now)
+      .slice(0, maxLimit);
+  },
+
+  lockScheduledWish(id) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    // Idempotency lock: only lock if status is currently 'scheduled'
+    if (records[index].status !== 'scheduled') {
+      return null;
+    }
+
+    records[index].status = 'processing';
+    records[index].updated_at = new Date().toISOString();
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return records[index];
+  },
+
+  markScheduledWishSent(id, providerResponse = {}) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    records[index].status = 'sent';
+    records[index].sent_at = new Date().toISOString();
+    records[index].attempts = (records[index].attempts || 0) + 1;
+    records[index].provider_response = providerResponse;
+    records[index].error_message = null;
+    records[index].updated_at = new Date().toISOString();
+
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return records[index];
+  },
+
+  markScheduledWishFailed(id, errorMessage, retryable = true) {
+    const records = readJSON(SCHEDULED_WISHES_FILE);
+    const index = records.findIndex(r => r.id === id);
+    if (index === -1) return null;
+
+    const attempts = (records[index].attempts || 0) + 1;
+    records[index].attempts = attempts;
+    records[index].error_message = errorMessage;
+    records[index].updated_at = new Date().toISOString();
+
+    if (retryable && attempts < 3) {
+      records[index].status = 'scheduled';
+      records[index].scheduled_at = new Date(Date.now() + 120000).toISOString();
+    } else {
+      records[index].status = 'failed';
+      records[index].failed_at = new Date().toISOString();
+    }
+
+    writeJSON(SCHEDULED_WISHES_FILE, records);
+    return records[index];
   }
 };
 

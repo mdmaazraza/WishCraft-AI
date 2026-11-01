@@ -49,26 +49,69 @@
       </div>
     </div>
 
-    <!-- Quick Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-      <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
-        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Greetings</div>
-        <div id="statTotalWishes" class="text-3xl font-extrabold text-white">0</div>
-      </div>
-      <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
-        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Views / Opens</div>
-        <div id="statTotalViews" class="text-3xl font-extrabold text-pink-400">0</div>
-      </div>
-      <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
-        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Active Public Links</div>
-        <div id="statActiveLinks" class="text-3xl font-extrabold text-emerald-400">0</div>
-      </div>
+    <!-- Dashboard Tab Switcher -->
+    <div class="flex items-center gap-2 border-b border-white border-opacity-10 mb-8 pb-2">
+      <button id="tabBtnCelebrations" onclick="UserDashboard.switchTab('celebrations')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-slate-800 border border-slate-700 flex items-center gap-2 transition">
+        <span>💌 All Celebrations</span>
+        <span id="tabCountCelebrations" class="bg-pink-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+      <button id="tabBtnScheduled" onclick="UserDashboard.switchTab('scheduled')" class="px-5 py-2.5 rounded-xl font-bold text-xs text-gray-400 hover:text-white hover:bg-slate-900 border border-transparent flex items-center gap-2 transition">
+        <span>⏰ Scheduled Wishes</span>
+        <span id="tabCountScheduled" class="bg-purple-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
     </div>
 
-    <!-- Wishes Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="userWishesList">
-      <!-- Loaded dynamically via dashboard.js -->
-    </div>
+    <!-- Tab 1: Celebrations -->
+    <section id="tabCelebrationsContent">
+      <!-- Quick Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Greetings</div>
+          <div id="statTotalWishes" class="text-3xl font-extrabold text-white">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Views / Opens</div>
+          <div id="statTotalViews" class="text-3xl font-extrabold text-pink-400">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Active Public Links</div>
+          <div id="statActiveLinks" class="text-3xl font-extrabold text-emerald-400">0</div>
+        </div>
+      </div>
+
+      <!-- Wishes Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="userWishesList">
+        <!-- Loaded dynamically via dashboard.js -->
+      </div>
+    </section>
+
+    <!-- Tab 2: Scheduled Wishes -->
+    <section id="tabScheduledContent" style="display: none;">
+      <!-- Scheduled Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Pending Delivery</div>
+          <div id="statSchedPending" class="text-3xl font-extrabold text-amber-300">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Delivered Successfully</div>
+          <div id="statSchedSent" class="text-3xl font-extrabold text-emerald-300">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Cancelled</div>
+          <div id="statSchedCancelled" class="text-3xl font-extrabold text-gray-400">0</div>
+        </div>
+        <div class="glass p-5 rounded-2xl border border-white border-opacity-10">
+          <div class="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Total Scheduled</div>
+          <div id="statSchedTotal" class="text-3xl font-extrabold text-white">0</div>
+        </div>
+      </div>
+
+      <!-- Scheduled Wishes Table / Cards Container -->
+      <div class="space-y-4" id="scheduledWishesList">
+        <!-- Loaded dynamically via dashboard.js -->
+      </div>
+    </section>
 
   </main>
 
@@ -125,6 +168,64 @@
     </div>
   </div>
 
+  <!-- Reschedule / Edit Scheduled Wish Modal -->
+  <div id="rescheduleModal" class="fixed inset-0 z-50 bg-black bg-opacity-80 hidden items-center justify-center p-4">
+    <div class="glass-card max-w-lg w-full p-6 sm:p-8 rounded-3xl relative border border-white border-opacity-10 shadow-2xl">
+      <button onclick="document.getElementById('rescheduleModal').classList.add('hidden'); document.getElementById('rescheduleModal').classList.remove('flex');" class="absolute top-5 right-5 text-gray-400 hover:text-white text-xl font-bold">✕</button>
+
+      <div class="text-center mb-6">
+        <div class="text-3xl mb-1">⏰✏️</div>
+        <h3 class="text-xl font-bold text-white">Reschedule Celebration Delivery</h3>
+        <p class="text-xs text-gray-400 mt-1">Update the delivery date, time, recipient contact, or personal note.</p>
+      </div>
+
+      <input type="hidden" id="reschedWishId">
+
+      <form id="rescheduleForm" onsubmit="event.preventDefault(); UserDashboard.saveReschedule();" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">New Delivery Date <span class="text-rose-400">*</span></label>
+            <input type="date" id="reschedDateInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-pink-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">New Delivery Time <span class="text-rose-400">*</span></label>
+            <input type="time" id="reschedTimeInput" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-pink-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Timezone</label>
+          <select id="reschedTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+            <option value="Asia/Kolkata">Asia/Kolkata (IST - India)</option>
+            <option value="America/New_York">America/New_York (EST/EDT)</option>
+            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+            <option value="Europe/London">Europe/London (GMT/BST)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+
+        <div id="reschedEmailContainer">
+          <label class="block font-bold text-gray-300 uppercase mb-1">Recipient Email</label>
+          <input type="email" id="reschedEmailInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+        </div>
+
+        <div id="reschedPhoneContainer">
+          <label class="block font-bold text-gray-300 uppercase mb-1">Recipient Phone Number</label>
+          <input type="tel" id="reschedPhoneInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Personal Note</label>
+          <textarea id="reschedPersonalNote" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white outline-none resize-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="document.getElementById('rescheduleModal').classList.add('hidden'); document.getElementById('rescheduleModal').classList.remove('flex');" class="px-4 py-2 font-semibold text-gray-400 hover:text-white">Cancel</button>
+          <button type="submit" id="saveRescheduleBtn" class="btn-gradient px-6 py-2.5 rounded-xl font-bold text-white shadow">Save Changes ⏰</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <!-- Scripts -->
   <script src="/js/audio.js"></script>
   <script src="/js/share.js"></script>
