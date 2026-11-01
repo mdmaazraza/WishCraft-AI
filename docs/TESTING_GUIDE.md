@@ -94,6 +94,33 @@ node tests/test_scheduler.js
 
 ---
 
+
+---
+
+### F. Developer Attribution & MD RAZA Sender Signature Test Suite
+Tests whitespace-tolerant, case-insensitive MD RAZA detection, relationship-aware signature synthesis (`Your [Relationship], MD RAZA`), strict isolation preventing attribution leak to other senders (Rahul, Priya), email signature templates, and `/developer` page routing/SEO.
+
+```bash
+cd C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI
+node tests/test_developer_attribution.js
+```
+
+**Expected Result**:
+```
+🧪 Starting WishCraft AI Developer Attribution & Sender Signature Tests...
+
+✅ Test 1: Whitespace-tolerant and case-insensitive MD RAZA detection verified
+✅ Test 2: Relationship-aware MD RAZA signatures match required "Your [Relationship], MD RAZA" format
+✅ Test 3: Strict isolation guarantees unrelated senders retain their own identities
+✅ Test 4: Message body signature processor cleanly upgrades MD RAZA signoffs without duplication
+✅ Test 5: Email templates correctly differentiate between greeting sender and platform developer
+✅ Test 6: Fallback template synthesizer respects sender attribution rules across users
+✅ Test 7: Wishes API layer normalizes MD RAZA senders while keeping other senders unchanged
+✅ Test 8: Developer page structure, SEO metadata, and required biographical copy verified
+
+🎉 All 8/8 Developer Attribution & MD RAZA Signature Tests Passed Successfully!
+```
+
 ### E. Resend Live Diagnostic & Verification Tool
 Use this diagnostic script to test Resend configuration and email dispatch.
 

@@ -4,6 +4,7 @@
 
 const https = require('https');
 const db = require('../data/db');
+const { isMdRazaSender, getSenderSignatureInline } = require('../data/attribution');
 
 // Mask recipient email for safe server-side audit logs (never expose full emails in public logs)
 function maskEmail(email) {
@@ -204,7 +205,9 @@ function getFontCssStack(fontFamilyName) {
 }
 
 // Generate beautiful HTML template for the email with consistent typography
-function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messageExcerpt, fontFamily }) {
+function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messageExcerpt, fontFamily, relationship }) {
+  const displaySender = isMdRazaSender(senderName) ? getSenderSignatureInline(senderName, relationship) : (senderName || "Someone special");
+  const developerLink = wishUrl ? wishUrl.split("/wish/")[0] + "/developer" : "/developer";
   const fontStack = getFontCssStack(fontFamily);
 
   return `<!DOCTYPE html>
@@ -231,10 +234,11 @@ function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messa
   <div class="card">
     <div class="badge">✨ Special Celebration Greeting</div>
     <h1>${recipientName}, you have a heartfelt wish waiting! 🎉</h1>
-    <p><strong>${senderName}</strong> has created an interactive digital ${occasion} celebration experience just for you on <strong>Wish Yours</strong>.</p>
+    <p><strong>${displaySender}</strong> has created an interactive digital ${occasion} celebration experience just for you on <strong>WishCraft AI (Wish Yours)</strong>.</p>
     
     <div class="excerpt-box">
       "${messageExcerpt || 'Open the link below to experience your musical candles, memories, and animated greeting!'}"
+      ${isMdRazaSender(senderName) ? `<div style="margin-top: 12px; font-weight: 700; color: #f472b6; font-size: 15px;">— ${displaySender}</div>` : ""}
     </div>
 
     <div>
@@ -247,7 +251,7 @@ function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messa
     </p>
 
     <div class="footer">
-      Sent with love via <a href="https://wishyours.com" style="color: #f472b6; text-decoration: none; font-weight: 600;">Wish Yours</a> — Creating unforgettable digital celebrations.
+      WishCraft AI (Wish Yours) • Developed by <a href="${developerLink}" style="color: #f472b6; text-decoration: none; font-weight: 600;">MD RAZA</a> — Creating unforgettable digital celebrations.
     </div>
   </div>
 </body>
@@ -265,12 +269,15 @@ async function handleSendEmail(body, baseUrl = 'http://localhost:3000') {
   const wishRecord = (slug || wishId) ? db.getWishBySlug(slug || wishId) : null;
   const chosenFont = fontFamily || wishRecord?.font_family || 'Playfair Display';
 
+  const chosenRel = body?.relationship || wishRecord?.relationship || 'Friend';
+  const effectiveSender = isMdRazaSender(senderName) ? getSenderSignatureInline(senderName, chosenRel) : (senderName || 'Someone special');
   const wishUrl = `${baseUrl}/wish/${slug || wishId}`;
-  const subject = `✨ ${senderName || 'Someone special'} sent you a personalized ${occasion || 'celebration'} wish!`;
+  const subject = `✨ ${effectiveSender} sent you a personalized ${occasion || 'celebration'} wish!`;
   const htmlContent = generateEmailHTML({
     senderName: senderName || 'Someone special',
     recipientName: recipientName || 'Friend',
     occasion: occasion || 'Celebration',
+    relationship: chosenRel,
     wishUrl,
     messageExcerpt,
     fontFamily: chosenFont

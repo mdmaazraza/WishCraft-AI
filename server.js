@@ -404,6 +404,10 @@ async function requestHandler(req, res) {
       return serveStaticFile(req, res, path.join(__dirname, 'public', 'admin.html'), 'text/html; charset=utf-8');
     }
 
+    if ((pathname === '/developer' || pathname === '/about-developer' || pathname === '/author') && method === 'GET') {
+      return serveStaticFile(req, res, path.join(__dirname, 'public', 'developer.html'), 'text/html; charset=utf-8');
+    }
+
     if ((pathname === '/' || pathname === '/index.html') && method === 'GET') {
       return serveStaticFile(req, res, path.join(__dirname, 'public', 'index.html'), 'text/html; charset=utf-8');
     }

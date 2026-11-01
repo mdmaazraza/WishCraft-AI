@@ -231,3 +231,35 @@ The platform organizes all greeting experiences into emotional categories, each 
   - Custom SVG arrow indicator and dark dropdown option styling for native `<select>`.
   - Date and time picker icon inversion filters for crisp contrast.
 
+
+---
+
+## 8. Developer Attribution & MD RAZA Sender Signature System
+
+### A. Developer Attribution Architecture
+- **Creator & Developer**: **MD RAZA**
+- **Dedicated Profile Route**: `/developer` (served via `public/developer.html`)
+- **Global Developer Credit Component**:
+  - Reusable module: `public/js/attribution.js` and `data/attribution.js`
+  - Format: `WishCraft AI • Developed by MD RAZA` with `MD RAZA` linking to `/developer`.
+  - Mounted automatically across all public pages: Homepage, Creation Studio, Dashboard, Admin, and Greeting pages.
+  - Subtle, accessible, and designed to never dominate or distract from the recipient's greeting experience.
+
+### B. Special Relationship-Aware MD RAZA Sender Signatures
+When a user creates a greeting and enters **MD RAZA** as the sender/from name:
+1. **Normalization & Case-Insensitive Matching**:
+   - Trims whitespace and normalizes case: `"MD RAZA"`, `"Md Raza"`, `"md raza"`, `"  MD RAZA  "`.
+2. **Dynamic Relationship Signatures**:
+   - Friend $\rightarrow$ `Your Friend, MD RAZA`
+   - Best Friend $\rightarrow$ `Your Best Friend, MD RAZA`
+   - Brother $\rightarrow$ `Your Brother, MD RAZA`
+   - Colleague $\rightarrow$ `Your Colleague, MD RAZA`
+   - Boyfriend $\rightarrow$ `Your Boyfriend, MD RAZA`
+   - Husband $\rightarrow$ `Your Husband, MD RAZA`
+   - Dynamic formula: `Your [Relationship], MD RAZA`.
+3. **Strict Attribution Isolation**:
+   - The special signature triggers **ONLY** when the sender is verified as MD RAZA.
+   - For all other senders (e.g. Rahul, Priya, Alex), their raw names are preserved without modification.
+4. **Gemini AI Hallucination Guard**:
+   - Gemini prompts explicitly restrict sender attribution so that AI never hallucinates `MD RAZA` into greetings created by other individuals.
+   - The application layer deterministically controls signature rendering across previews, wax-sealed letters, emails, and shared links.

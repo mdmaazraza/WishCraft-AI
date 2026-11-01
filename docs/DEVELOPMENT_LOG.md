@@ -227,3 +227,60 @@
   - `tests/test_flow.js`: Passed end-to-end data tracing.
   - `tests/test_scheduler.js`: 13/13 passed.
 
+
+---
+
+### Issue 6: Developer Attribution System & Relationship-Aware MD RAZA Sender Logic
+
+#### 1. Core Objectives & Architectural Requirements
+1. **Platform Developer Credit vs. Greeting Sender Identity**:
+   - Establish transparent developer attribution for **MD RAZA** (`Creator & Developer of WishCraft AI`) across all public application pages without dominating or obscuring user celebration experiences.
+   - Strictly separate the two identities:
+     - **Platform Developer**: Always credited as `WishCraft AI • Developed by MD RAZA`.
+     - **Greeting Sender**: Controlled by the user creating the wish (e.g. Rahul, Priya, Alex).
+2. **Special Relationship-Aware MD RAZA Sender Logic**:
+   - When a greeting's sender name, after trimming whitespace and normalizing case, matches `"MD RAZA"` (`"md raza"`, `"Md Raza"`, `"  MD RAZA  "`), format the sender signoff dynamically based on the selected relationship:
+     - Friend $\rightarrow$ `Your Friend, MD RAZA`
+     - Best Friend $\rightarrow$ `Your Best Friend, MD RAZA`
+     - Brother $\rightarrow$ `Your Brother, MD RAZA`
+     - Colleague $\rightarrow$ `Your Colleague, MD RAZA`
+     - Boyfriend $\rightarrow$ `Your Boyfriend, MD RAZA`
+     - Husband $\rightarrow$ `Your Husband, MD RAZA`
+     - Dynamic support for all relationships: `Your [Relationship], MD RAZA`.
+   - For all other senders (e.g. Rahul, Priya), the sender name must remain completely unmodified, strictly preventing `MD RAZA` from ever leaking into other users' messages.
+3. **Dedicated Author / Developer Showcase Page**:
+   - Standalone `/developer` route featuring developer profile, project mission, architecture & technologies used, and safe configurable contact/social links.
+
+#### 2. Implementation Summary
+- **Attribution & Signature Engine (`data/attribution.js` & `public/js/attribution.js`)**:
+  - `isMdRazaSender(senderName)`: Case-insensitive, whitespace-tolerant regex matching.
+  - `formatRelationship(rel)`: Normalizes relationship title casing (`"best friend"` $\rightarrow$ `"Best Friend"`).
+  - `getSenderSignature(senderName, relationship)`: Returns multiline `Your [Relationship],\nMD RAZA` when sender is MD RAZA; otherwise returns raw sender name.
+  - `getSenderSignatureInline(senderName, relationship)`: Single-line inline counterpart (`Your [Relationship], MD RAZA`).
+  - `applySignatureToMessage(message, senderName, relationship)`: Upgrades message signoffs cleanly without duplicating names.
+  - `getDeveloperCreditHTML()` & `mountDeveloperCredits()`: Reusable, accessible badge auto-mounted into designated containers and footers.
+- **Dedicated Author Page (`public/developer.html` & `server.js`)**:
+  - Created `/developer` (and `/about-developer`, `/author`) route.
+  - Full responsive profile featuring:
+    - **MD RAZA** — *Creator & Developer of WishCraft AI*
+    - Canonical mission statement: *"WishCraft AI was created and developed by MD RAZA to make digital wishes more personal, meaningful, and interactive through artificial intelligence and modern web experiences."*
+    - About the Developer, About WishCraft AI, Technologies Used, and Purpose & Vision sections.
+    - Verified repository link to `https://github.com/mdmaazraza/WishCraft-AI` and configurable social placeholders.
+    - SEO metadata (`<title>MD RAZA – Creator & Developer of WishCraft AI</title>`), meta description, and Open Graph tags.
+- **Global Developer Attribution across Public Pages**:
+  - Mounted reusable `WishCraft AI • Developed by MD RAZA` credit across:
+    - `public/index.html`
+    - `public/create.html`
+    - `public/dashboard.html`
+    - `public/admin.html`
+    - `public/wish.html`
+- **Signature Integration across Application Flow**:
+  - **Studio Live Preview (`public/js/creator.js`)**: Real-time `#previewSenderName` rendering `With love from Your [Relationship], MD RAZA`.
+  - **Greeting Page (`public/js/greeting.js`)**: Header sender line, wax love letter signoff, and sincere letter module all render relationship-aware signatures when sender is MD RAZA.
+  - **Gemini Prompt Guard (`api/generate-message.js` & `api/gemini.js`)**: Injects strict negative instruction when sender is not MD RAZA to prevent hallucinating MD RAZA; injects relationship-specific signoff directive when sender is MD RAZA.
+  - **Wishes API Layer (`api/wishes.js`)**: Normalizes sender name to `MD RAZA` and applies relationship signature formatting to persisted message.
+  - **Email Templates (`api/email.js`)**: Renders `Your [Relationship], MD RAZA` in email header and quote box; footer displays `WishCraft AI • Developed by MD RAZA`.
+
+#### 3. Verification & Testing
+- Created dedicated test runner `tests/test_developer_attribution.js`: **8/8 tests passed**.
+- Full regression suite across all 6 test runners: **48/48 checks passed**.

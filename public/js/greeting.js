@@ -422,7 +422,10 @@ const GreetingPage = {
 
     if (prefixEl) prefixEl.innerText = occMeta?.headlinePrefix || 'Dearest';
     if (recNameEl) recNameEl.innerText = recipientName;
-    if (senderNameEl) senderNameEl.innerText = `${occMeta?.senderPrefix || 'With love from'} ${senderName}`;
+    const effectiveSig = (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(senderName))
+      ? WishAttribution.getSenderSignatureInline(senderName, wish.relationship)
+      : senderName;
+    if (senderNameEl) senderNameEl.innerText = `${occMeta?.senderPrefix || 'With love from'} ${effectiveSig}`;
     if (badgeEl) {
       badgeEl.innerText = occMeta?.cardBadge || `${wish.occasion || 'Celebration'}`;
       if (occMeta && !occMeta.isCelebration) {
@@ -509,7 +512,7 @@ const GreetingPage = {
           <h2 class="text-xl sm:text-2xl font-extrabold text-white mb-1">
             ${occMeta?.headlinePrefix || 'A Sincere Message For'} <span class="text-indigo-300">${recipient}</span>
           </h2>
-          <p class="text-xs text-gray-300 italic mb-4">${occMeta?.senderPrefix || 'Sincerely from'} ${sender}</p>
+          <p class="text-xs text-gray-300 italic mb-4">${occMeta?.senderPrefix || 'Sincerely from'} ${(typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(sender)) ? WishAttribution.getSenderSignatureInline(sender, this.wish?.relationship) : sender}</p>
           <div class="inline-block px-3.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-gray-300 text-xs font-medium">
             ${isSorry ? 'A sincere, heartfelt message straight from the heart.' : 'A personal note written especially for you.'}
           </div>
@@ -654,7 +657,7 @@ const GreetingPage = {
             <div class="text-xl font-script text-rose-900 mb-2">My Dearest ${this.wish?.recipient_name || 'Loved One'},</div>
             <p class="text-base text-gray-800 ${fontClass} leading-relaxed mb-4" style="font-family: ${fontStack};">${this.wish?.message || ''}</p>
             ${this.wish?.memories ? `<div class="bg-rose-50 border-l-2 border-rose-400 p-3 my-3 text-xs italic text-rose-900 ${fontClass}" style="font-family: ${fontStack};">"${this.wish.memories}"</div>` : ''}
-            <div class="text-right text-lg ${fontClass} text-rose-900 mt-4" style="font-family: ${fontStack};">— ${this.wish?.sender_name || 'Someone special'}</div>
+            <div class="text-right text-lg ${fontClass} text-rose-900 mt-4" style="font-family: ${fontStack};">— ${(typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(this.wish?.sender_name)) ? WishAttribution.getSenderSignatureInline(this.wish?.sender_name, this.wish?.relationship) : (this.wish?.sender_name || 'Someone special')}</div>
           </div>
         `;
       }

@@ -3,6 +3,7 @@
  */
 
 const db = require('../data/db');
+const { isMdRazaSender, applySignatureToMessage } = require('../data/attribution');
 
 const ALLOWED_FONTS = [
   'Playfair Display',
@@ -80,7 +81,7 @@ async function handleCreateWish(body, userId = null) {
   const sanitizedBody = {
     ...body,
     sender_id: userId || body.sender_id || null,
-    sender_name: sanitize(body.sender_name || 'A loved one'),
+    sender_name: isMdRazaSender(body.sender_name) ? 'MD RAZA' : sanitize(body.sender_name || 'A loved one'),
     recipient_name: sanitize(body.recipient_name),
     occasion: sanitize(body.occasion || 'Birthday'),
     relationship: sanitize(body.relationship || 'Friend'),
@@ -88,7 +89,9 @@ async function handleCreateWish(body, userId = null) {
     theme: sanitize(body.theme || 'birthday_celebration'),
     font_family: sanitizeFontFamily(body.font_family),
     language: sanitize(body.language || 'en'),
-    message: body.message.trim(), // Keep formatting intact but clean
+    message: isMdRazaSender(body.sender_name) 
+      ? applySignatureToMessage(body.message.trim(), 'MD RAZA', body.relationship || 'Friend')
+      : body.message.trim(),
     memories: sanitize(body.memories || ''),
     relationship_duration: sanitize(body.relationship_duration || ''),
     age: body.age ? parseInt(body.age, 10) : null,

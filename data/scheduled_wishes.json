@@ -1,5 +1,113 @@
 [
   {
+    "id": "sched_c168dbfafb0d9171",
+    "user_id": "engine_test_user",
+    "greeting_id": "priya-sharma-8e2b56",
+    "recipient_name": "Rohan Verma",
+    "recipient_email": "rohan.test@example.com",
+    "recipient_phone": "",
+    "delivery_method": "email",
+    "scheduled_at": "2026-11-01T08:02:48.730Z",
+    "timezone": "Asia/Kolkata",
+    "personal_message": "Happy celebration!",
+    "status": "sent",
+    "attempts": 1,
+    "sent_at": "2026-11-01T08:03:48.807Z",
+    "failed_at": null,
+    "error_message": null,
+    "provider_response": {
+      "provider": "simulator",
+      "messageId": "sim_1793520228783",
+      "delivered": false,
+      "raw": {
+        "status": "simulated",
+        "delivered": false,
+        "provider": "simulator",
+        "messageId": "sim_1793520228783",
+        "message": "Preview generated for rohan.test@example.com. To dispatch real emails over the internet, add your RESEND_API_KEY in .env or Render Dashboard.",
+        "emailPreview": {
+          "to": "rohan.test@example.com",
+          "subject": "✨ Maaz sent you a personalized Birthday wish!",
+          "url": "http://localhost:3000/wish/priya-sharma-8e2b56"
+        }
+      }
+    },
+    "created_at": "2026-11-01T08:03:48.732Z",
+    "updated_at": "2026-11-01T08:03:48.807Z"
+  },
+  {
+    "id": "sched_ca1b8c59234ee498",
+    "user_id": "engine_test_user",
+    "greeting_id": "priya-sharma-9899c4",
+    "recipient_name": "Rohan Verma",
+    "recipient_email": "rohan.test@example.com",
+    "recipient_phone": "",
+    "delivery_method": "email",
+    "scheduled_at": "2026-11-01T08:01:03.447Z",
+    "timezone": "Asia/Kolkata",
+    "personal_message": "Happy celebration!",
+    "status": "sent",
+    "attempts": 1,
+    "sent_at": "2026-11-01T08:02:03.501Z",
+    "failed_at": null,
+    "error_message": null,
+    "provider_response": {
+      "provider": "simulator",
+      "messageId": "sim_1793520123483",
+      "delivered": false,
+      "raw": {
+        "status": "simulated",
+        "delivered": false,
+        "provider": "simulator",
+        "messageId": "sim_1793520123483",
+        "message": "Preview generated for rohan.test@example.com. To dispatch real emails over the internet, add your RESEND_API_KEY in .env or Render Dashboard.",
+        "emailPreview": {
+          "to": "rohan.test@example.com",
+          "subject": "✨ Maaz sent you a personalized Birthday wish!",
+          "url": "http://localhost:3000/wish/priya-sharma-9899c4"
+        }
+      }
+    },
+    "created_at": "2026-11-01T08:02:03.449Z",
+    "updated_at": "2026-11-01T08:02:03.501Z"
+  },
+  {
+    "id": "sched_8da87e3bdee37c0a",
+    "user_id": "engine_test_user",
+    "greeting_id": "priya-sharma-c68f9a",
+    "recipient_name": "Rohan Verma",
+    "recipient_email": "rohan.test@example.com",
+    "recipient_phone": "",
+    "delivery_method": "email",
+    "scheduled_at": "2026-11-01T08:00:18.938Z",
+    "timezone": "Asia/Kolkata",
+    "personal_message": "Happy celebration!",
+    "status": "sent",
+    "attempts": 1,
+    "sent_at": "2026-11-01T08:01:18.992Z",
+    "failed_at": null,
+    "error_message": null,
+    "provider_response": {
+      "provider": "simulator",
+      "messageId": "sim_1793520078972",
+      "delivered": false,
+      "raw": {
+        "status": "simulated",
+        "delivered": false,
+        "provider": "simulator",
+        "messageId": "sim_1793520078972",
+        "message": "Preview generated for rohan.test@example.com. To dispatch real emails over the internet, add your RESEND_API_KEY in .env or Render Dashboard.",
+        "emailPreview": {
+          "to": "rohan.test@example.com",
+          "subject": "✨ Maaz sent you a personalized Birthday wish!",
+          "url": "http://localhost:3000/wish/priya-sharma-c68f9a"
+        }
+      }
+    },
+    "created_at": "2026-11-01T08:01:18.940Z",
+    "updated_at": "2026-11-01T08:01:18.992Z"
+  },
+  {
     "id": "sched_e35fb0f5ae72b475",
     "user_id": "engine_test_user",
     "greeting_id": "priya-sharma-d90716",

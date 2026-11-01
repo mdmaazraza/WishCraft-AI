@@ -6,6 +6,7 @@
 const { callGeminiAPI, generateFallbackVariations } = require('./gemini');
 const { resolveOccasion } = require('../data/occasions');
 const { cleanText } = require('../data/text_cleaner');
+const { isMdRazaSender, formatRelationship, applySignatureToMessage } = require('../data/attribution');
 
 // In-memory rate limiting map (IP -> timestamps)
 const rateLimits = new Map();
@@ -128,6 +129,10 @@ Always return responses strictly in valid JSON matching this schema:
 - FORBIDDEN KEYWORDS (DO NOT USE ANY OF THESE): ${occ.forbiddenKeywords.join(', ') || 'None'}
 - Recipient Name: ${recipientName}
 - Sender Name: ${senderName}
+${isMdRazaSender(senderName)
+  ? `- SPECIAL SENDER SIGNATURE: The sender is MD RAZA. At the end of every variation, sign specifically as: "— Your ${formatRelationship(relationship)}, MD RAZA"`
+  : `- SENDER ATTRIBUTION RESTRICTION: The sender is strictly "${senderName}". You MUST conclude with "— ${senderName}". Under NO circumstances sign as "MD RAZA" or mention MD RAZA. MD RAZA is the developer, NOT the greeting sender.`
+}
 - Relationship: ${relationship}
 - Relationship Nuance: ${relNuance}
 - Desired Style / Tone: ${style}

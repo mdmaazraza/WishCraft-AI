@@ -1,5 +1,71 @@
 [
   {
+    "id": "elog_4d4923016ee6",
+    "wish_id": "w_4b535c606ee99912",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520228783",
+    "error_message": null,
+    "created_at": "2026-11-01T08:03:48.784Z"
+  },
+  {
+    "id": "elog_a8f20eda9813",
+    "wish_id": "w_218c103119898341",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520228065",
+    "error_message": null,
+    "created_at": "2026-11-01T08:03:48.067Z"
+  },
+  {
+    "id": "elog_7c8bc5e65663",
+    "wish_id": "w_806fa92d319d3835",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520123483",
+    "error_message": null,
+    "created_at": "2026-11-01T08:02:03.484Z"
+  },
+  {
+    "id": "elog_e8488f603ea4",
+    "wish_id": "w_6d3df5482b909246",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520122840",
+    "error_message": null,
+    "created_at": "2026-11-01T08:02:02.841Z"
+  },
+  {
+    "id": "elog_a7295015d159",
+    "wish_id": "w_9f80dd83e2ff4763",
+    "recipient_email": "rohan.test@example.com",
+    "sender_name": "Maaz",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520078972",
+    "error_message": null,
+    "created_at": "2026-11-01T08:01:18.973Z"
+  },
+  {
+    "id": "elog_97bad65b3f9f",
+    "wish_id": "w_944001f53321c668",
+    "recipient_email": "emily.test@example.com",
+    "sender_name": "Jordan",
+    "status": "simulated",
+    "provider": "local_simulator",
+    "message_id": "sim_1793520066086",
+    "error_message": null,
+    "created_at": "2026-11-01T08:01:06.109Z"
+  },
+  {
     "id": "elog_10b76ea0f04f",
     "wish_id": "w_02caedb530c55511",
     "recipient_email": "rohan.test@example.com",

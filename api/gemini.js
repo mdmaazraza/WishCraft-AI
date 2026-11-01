@@ -112,7 +112,8 @@ function callGeminiAPI(apiKey, model, systemInstruction, userPrompt) {
 function generateFallbackVariations({ occasion, relationship, recipientName, senderName, style, memories, language, length }) {
   const occ = resolveOccasion(occasion);
   const name = recipientName || "my friend";
-  const sender = senderName || "With warmth";
+  const { isMdRazaSender, getSenderSignatureInline } = require('../data/attribution');
+  const sender = isMdRazaSender(senderName) ? getSenderSignatureInline(senderName, relationship) : (senderName || "With warmth");
   const rel = relationship || "friend";
   const cleanedMem = memories ? cleanText(memories).improved : "";
   const mem = cleanedMem ? ` ${cleanedMem}` : "";

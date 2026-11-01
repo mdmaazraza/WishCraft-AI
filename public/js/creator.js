@@ -604,7 +604,14 @@ const WishCreator = {
     const selected = this.aiVariations[index];
     if (!selected) return;
 
-    this.data.message = selected.text;
+    let varText = selected.text;
+    if (typeof WishAttribution !== 'undefined' && WishAttribution.isMdRazaSender(this.data.sender_name)) {
+      const sig = WishAttribution.getSenderSignatureInline(this.data.sender_name, this.data.relationship);
+      if (!varText.includes(sig)) {
+        varText = varText.replace(/—\s*(?:with love,\s*)?(?:your\s+[\w\s]+,\s*)?md raza\s*$/i, `— ${sig}`);
+      }
+    }
+    this.data.message = varText;
 
     // Highlight active card
     document.querySelectorAll('.variation-card').forEach((c, idx) => {
