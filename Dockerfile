@@ -1,4 +1,4 @@
-# WishCraft AI — Dockerfile for Containerized Deployment
+# Wish Yours — Dockerfile for Containerized Deployment
 FROM node:20-alpine
 
 WORKDIR /app

@@ -1,4 +1,4 @@
-# 🪄 WishCraft AI — Master Agent Orientation & Workflow Protocol
+# 🪄 Wish Yours — Master Agent Orientation & Workflow Protocol
 
 > **Project Root**: `C:\Users\mdmaa\OneDrive\Desktop\AntigravityDev\WishCraft-AI`  
 > **Status**: Production-ready, fully tested, Render-ready.
@@ -6,7 +6,7 @@
 ---
 
 ## 🎯 Project Overview & Mission
-WishCraft AI is a personalized digital celebration and greeting platform powered by Google Gemini AI. Users generate bespoke interactive celebration webpages (with interactive 3D birthday cakes with candle blow-out, vintage wax-sealed love envelopes, polaroid reels, and royalty-free Web Audio music) and share them via WhatsApp, Email, and SMS.
+Wish Yours is a personalized digital celebration and greeting platform powered by Google Gemini AI. Users generate bespoke interactive celebration webpages (with interactive 3D birthday cakes with candle blow-out, vintage wax-sealed love envelopes, polaroid reels, and royalty-free Web Audio music) and share them via WhatsApp, Email, and SMS.
 
 ---
 

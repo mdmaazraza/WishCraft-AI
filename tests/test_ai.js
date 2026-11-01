@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Test Suite: AI Message Generation & Multi-Language Variations
+ * Wish Yours — Test Suite: AI Message Generation & Multi-Language Variations
  */
 
 const assert = require('assert');
@@ -7,7 +7,7 @@ const { handleGenerateMessage } = require('../api/generate-message');
 const { generateFallbackVariations } = require('../api/gemini');
 
 async function runAITests() {
-  console.log('🧪 Starting WishCraft AI Message Generation Tests...\n');
+  console.log('🧪 Starting Wish Yours Message Generation Tests...\n');
   let passed = 0;
 
   // 1. English Variations Test

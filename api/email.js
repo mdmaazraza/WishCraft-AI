@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Email Delivery Service (Resend / Brevo with native HTTPS)
+ * Wish Yours — Email Delivery Service (Resend / Brevo with native HTTPS)
  */
 
 const https = require('https');
@@ -8,7 +8,7 @@ const db = require('../data/db');
 function sendViaResend(apiKey, fromEmail, toEmail, subject, htmlContent) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      from: fromEmail || 'WishCraft <wishes@resend.dev>',
+      from: fromEmail || 'Wish Yours <wishes@resend.dev>',
       to: [toEmail],
       subject: subject,
       html: htmlContent
@@ -58,7 +58,7 @@ function sendViaResend(apiKey, fromEmail, toEmail, subject, htmlContent) {
 function sendViaBrevo(apiKey, fromEmail, toEmail, subject, htmlContent) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      sender: { name: "WishCraft AI", email: fromEmail || "no-reply@wishcraft.ai" },
+      sender: { name: "Wish Yours", email: fromEmail || "no-reply@wishyours.com" },
       to: [{ email: toEmail }],
       subject: subject,
       htmlContent: htmlContent
@@ -129,7 +129,7 @@ function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messa
   <div class="card">
     <div class="badge">Special Greeting</div>
     <h1>${recipientName}, you have a heartfelt wish waiting! ✨</h1>
-    <p><strong>${senderName}</strong> has created a personalized digital ${occasion} celebration experience just for you on WishCraft AI.</p>
+    <p><strong>${senderName}</strong> has created a personalized digital ${occasion} celebration experience just for you on Wish Yours.</p>
     
     <div class="excerpt-box">
       "${messageExcerpt || 'Open the link below to experience your musical candles, memories, and animated greeting!'}"
@@ -143,7 +143,7 @@ function generateEmailHTML({ senderName, recipientName, occasion, wishUrl, messa
     </p>
 
     <div class="footer">
-      Sent with love via <a href="https://wishcraft.ai" style="color: #cbd5e1; text-decoration: none;">WishCraft AI</a> — Creating unforgettable digital celebrations.
+      Sent with love via <a href="https://wishyours.com" style="color: #cbd5e1; text-decoration: none;">Wish Yours</a> — Creating unforgettable digital celebrations.
     </div>
   </div>
 </body>

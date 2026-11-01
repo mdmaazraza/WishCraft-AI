@@ -1,4 +1,4 @@
-# WishCraft AI — Architecture Decision Records (ADRs)
+# Wish Yours — Architecture Decision Records (ADRs)
 
 ---
 

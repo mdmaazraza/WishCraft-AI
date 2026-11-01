@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Test Suite: API Handlers & Database Layer
+ * Wish Yours — Test Suite: API Handlers & Database Layer
  */
 
 const assert = require('assert');
@@ -17,7 +17,7 @@ const { handlePrepareSMS } = require('../api/sms');
 const { handleGetAdminStats, handleModerateWish } = require('../api/admin');
 
 async function runTests() {
-  console.log('🧪 Starting WishCraft AI API Test Suite...\n');
+  console.log('🧪 Starting Wish Yours API Test Suite...\n');
   let passed = 0;
 
   // 1. Database & Wishes Creation

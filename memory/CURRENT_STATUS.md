@@ -1,7 +1,8 @@
-# WishCraft AI — Current Project Status
+# Wish Yours — Current Project Status
 
 **Date**: November 1, 2026  
 **Status**: Feature Complete, Tested, Live on GitHub, Deployment-Ready  
+**Brand Name**: Wish Yours  
 **GitHub Repository**: [https://github.com/mdmaazraza/WishCraft-AI](https://github.com/mdmaazraza/WishCraft-AI)  
 **Active Branch**: `main`  
 **Test Suite**: 14/14 Tests Passing (10 API/DB + 4 AI/Language)

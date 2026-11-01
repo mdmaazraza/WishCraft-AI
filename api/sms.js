@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — SMS Share & Delivery Service
+ * Wish Yours — SMS Share & Delivery Service
  */
 
 const https = require('https');
@@ -8,7 +8,7 @@ async function handlePrepareSMS(body, baseUrl = 'http://localhost:3000') {
   const { recipientPhone, recipientName, senderName, occasion, slug } = body || {};
 
   const wishUrl = `${baseUrl}/wish/${slug}`;
-  const smsBody = `Hi ${recipientName || 'there'}! ✨ ${senderName || 'A friend'} sent you a personalized ${occasion || 'celebration'} greeting on WishCraft AI: ${wishUrl}`;
+  const smsBody = `Hi ${recipientName || 'there'}! ✨ ${senderName || 'A friend'} sent you a personalized ${occasion || 'celebration'} greeting on Wish Yours: ${wishUrl}`;
 
   // Build clean sms: URI for mobile browsers
   // On iOS: sms:1234567890&body=... or sms:?&body=...

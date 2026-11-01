@@ -1,5 +1,5 @@
 -- ====================================================================
--- WishCraft AI — Supabase Database Schema & Row Level Security (RLS)
+-- Wish Yours — Supabase Database Schema & Row Level Security (RLS)
 -- ====================================================================
 
 -- 1. Enable UUID Extension

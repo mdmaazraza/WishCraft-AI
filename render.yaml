@@ -1,11 +1,11 @@
 # ====================================================================
-# WishCraft AI — Render Blueprint Deployment Specification
+# Wish Yours — Render Blueprint Deployment Specification
 # Deploy on Render: https://render.com
 # ====================================================================
 
 services:
   - type: web
-    name: wishcraft-ai
+    name: wish-yours
     runtime: node
     plan: free
     region: oregon
@@ -24,7 +24,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM_EMAIL
-        value: WishCraft <wishes@resend.dev>
+        value: Wish Yours <wishes@resend.dev>
       - key: ADMIN_SECRET_KEY
         generateValue: true
       - key: BASE_URL

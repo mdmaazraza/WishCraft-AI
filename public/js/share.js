@@ -1,11 +1,11 @@
 /**
- * WishCraft AI — Sharing & Communication Controller
+ * Wish Yours — Sharing & Communication Controller
  */
 
 const WishShare = {
   // Generate WhatsApp Share Link
   getWhatsAppUrl(wish, currentUrl) {
-    const text = `✨ Hey ${wish.recipient_name}! ${wish.sender_name} made you an unforgettable personalized celebration greeting: ${currentUrl}`;
+    const text = `✨ Hey ${wish.recipient_name}! ${wish.sender_name} made you an unforgettable personalized celebration greeting on Wish Yours: ${currentUrl}`;
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   },
 
@@ -18,7 +18,7 @@ const WishShare = {
 
   // Generate SMS link for mobile
   getSmsUrl(wish, currentUrl) {
-    const text = `Hi ${wish.recipient_name}! ${wish.sender_name} sent you a personalized digital greeting: ${currentUrl}`;
+    const text = `Hi ${wish.recipient_name}! ${wish.sender_name} sent you a personalized digital greeting on Wish Yours: ${currentUrl}`;
     return `sms:?body=${encodeURIComponent(text)}`;
   },
 

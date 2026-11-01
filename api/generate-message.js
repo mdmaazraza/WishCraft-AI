@@ -50,7 +50,7 @@ async function handleGenerateMessage(reqData, clientIp = '127.0.0.1') {
   // 3. If API key exists, call Gemini AI
   if (apiKey && apiKey.trim().length > 10) {
     try {
-      const systemInstruction = `You are WishCraft AI, an empathetic world-class greeting card copywriter and poet.
+      const systemInstruction = `You are Wish Yours, an empathetic world-class greeting card copywriter and poet.
 Your mission is to craft deeply touching, personalized, and memorable celebration messages that make people smile, tear up with joy, or laugh happily.
 Always return responses strictly in valid JSON matching this schema:
 {

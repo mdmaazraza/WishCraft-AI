@@ -1,4 +1,4 @@
-# ✨ WishCraft AI — Personalized Birthday & Anniversary Wishes Website
+# ✨ Wish Yours — Personalized Birthday & Anniversary Wishes Website
 
 > **Make Every Special Moment Unforgettable.**  
 > A complete, production-ready web application where users generate beautiful, interactive, personalized celebration greeting experiences powered by **Google Gemini AI**.
@@ -7,10 +7,10 @@
 
 ## 🌟 Overview & Key Features
 
-WishCraft AI allows anyone to craft bespoke digital celebrations for birthdays, anniversaries, friendships, romantic milestones, and special moments in minutes.
+Wish Yours allows anyone to craft bespoke digital celebrations for birthdays, anniversaries, friendships, romantic milestones, and special moments in minutes.
 
 ### 🎂 Interactive Personalized Greeting Webpages
-When the recipient opens their unique URL (e.g. `wishcraft.com/wish/sarah-25th-bday`):
+When the recipient opens their unique URL (e.g. `wishyours.com/wish/sarah-25th-bday`):
 - **Birthday Cake with Interactive Candle Blow-Out**: Tap or click the candles to blow them out. Realistic flickering flames vanish, smoke particles rise, joyful chimes ring out, and an explosive confetti shower rains down!
 - **Wax-Sealed Romantic Love Letters**: Tap a vintage 3D wax seal to break the seal, unfold the handwritten letterhead, and reveal romantic messages surrounded by floating heart particles.
 - **Photo Polaroid Reel & Lightbox**: Interactive polaroids with captions and full-screen lightbox preview.
@@ -65,7 +65,7 @@ GEMINI_MODEL=gemini-1.5-flash
 
 # Email Delivery (Get free key at https://resend.com)
 RESEND_API_KEY=your_resend_api_key_here
-RESEND_FROM_EMAIL=WishCraft <wishes@resend.dev>
+RESEND_FROM_EMAIL=Wish Yours <wishes@resend.dev>
 
 # Supabase (Optional for local dev, persistent JSON storage is used if left blank)
 SUPABASE_URL=https://your-project.supabase.co
@@ -73,7 +73,7 @@ SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 
 # Admin Portal Password
-ADMIN_SECRET_KEY=admin_wishcraft_secret_2026
+ADMIN_SECRET_KEY=admin_wishyours_secret_2026
 ```
 
 ### 3. Run the Server
@@ -96,7 +96,7 @@ node tests/test_ai.js
 
 ## 🗄️ Database & Supabase Setup
 
-WishCraft AI is equipped with a dual storage engine:
+Wish Yours is equipped with a dual storage engine:
 1. **Zero-Config Persistent Storage**: Uses atomic JSON transactions in `data/wishes.json` out of the box.
 2. **Supabase Database & Storage**: Ready for cloud scale with PostgreSQL, Row Level Security, and Storage Buckets.
 

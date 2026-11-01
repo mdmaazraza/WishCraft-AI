@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Production Web & API Server
+ * Wish Yours — Production Web & API Server
  * Zero-dependency, ultra-fast Node.js server with Open Graph tag injection.
  */
 
@@ -334,7 +334,7 @@ async function requestHandler(req, res) {
       <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>404 - Page Not Found | WishCraft AI</title>
+        <title>404 - Page Not Found | Wish Yours</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
       </head>
@@ -365,7 +365,7 @@ const server = http.createServer(requestHandler);
 if (require.main === module) {
   server.listen(PORT, () => {
     console.log(`\n======================================================`);
-    console.log(`✨ WishCraft AI Server running at http://localhost:${PORT}`);
+    console.log(`✨ Wish Yours Server running at http://localhost:${PORT}`);
     console.log(`   Occasions: Birthday, Anniversary, Friendship, Romantic`);
     console.log(`   AI Integration: Google Gemini (${process.env.GEMINI_API_KEY ? 'API Key Active' : 'Fallback Synthesizer Active'})`);
     console.log(`======================================================\n`);

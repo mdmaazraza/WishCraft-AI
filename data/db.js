@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Universal Database Layer
+ * Wish Yours — Universal Database Layer
  * Supports seamless persistent JSON storage with automated Supabase sync
  */
 
@@ -315,7 +315,7 @@ const db = {
       id: `elog_${crypto.randomBytes(6).toString('hex')}`,
       wish_id: logData.wish_id || null,
       recipient_email: logData.recipient_email,
-      sender_name: logData.sender_name || 'WishCraft',
+      sender_name: logData.sender_name || 'Wish Yours',
       status: logData.status || 'sent',
       provider: logData.provider || 'resend',
       message_id: logData.message_id || null,

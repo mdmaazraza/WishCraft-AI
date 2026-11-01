@@ -1,7 +1,7 @@
 {
-  "name": "wishcraft-ai",
+  "name": "wish-yours",
   "version": "1.0.0",
-  "description": "Personalized Birthday & Anniversary Wishes Website powered by Gemini AI",
+  "description": "Wish Yours — Personalized Birthday & Anniversary Wishes Website powered by Gemini AI",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,6 +17,6 @@
     "interactive-webpage",
     "celebrations"
   ],
-  "author": "WishCraft AI Team",
+  "author": "Wish Yours Team",
   "license": "MIT"
 }
