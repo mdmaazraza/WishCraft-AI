@@ -7,6 +7,7 @@ const db = require('../data/db');
 const { deliverEmail } = require('../api/providers/email_provider');
 const { deliverSMS } = require('../api/providers/sms_provider');
 const { triggerVoiceCall } = require('../api/providers/voice_provider');
+const { deliverWhatsAppMessage } = require('../api/providers/whatsapp_provider');
 
 let schedulerTimer = null;
 let isProcessing = false;
@@ -79,6 +80,14 @@ async function processDueWishes(baseUrl = 'http://localhost:3000') {
             senderName: greeting?.sender_name || 'Someone special',
             occasion: greeting?.occasion || 'Celebration',
             personalMessage: scheduledWish.personal_message || greeting?.message
+          });
+        } else if (method === 'whatsapp') {
+          deliveryResult = await deliverWhatsAppMessage({
+            recipientPhone: scheduledWish.recipient_phone,
+            recipientName: scheduledWish.recipient_name,
+            senderName: greeting?.sender_name || 'Someone special',
+            occasion: greeting?.occasion || 'Celebration',
+            wishUrl
           });
         } else {
           throw new Error(`Unsupported delivery method: ${method}`);

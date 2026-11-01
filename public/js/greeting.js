@@ -367,20 +367,29 @@ const GreetingPage = {
     const banner = document.createElement('div');
     banner.id = 'creatorSuccessBanner';
     banner.className = 'glass-card border border-pink-500 rounded-2xl p-4 sm:p-5 mb-8 shadow-2xl animate-fade-in flex flex-col sm:flex-row items-center justify-between gap-4';
+    const isCelebration = occMeta?.isCelebration !== false && !occ.includes('sorry') && !occ.includes('sympathy');
+    const bannerIcon = isCelebration ? '🎉' : '🕊️';
+    const bannerTitle = isCelebration
+      ? `Your Greeting for <span class="text-pink-400">${recipientName}</span> is Live!`
+      : `Your Heartfelt Message for <span class="text-indigo-400">${recipientName}</span> is Ready`;
+    const bannerSub = isCelebration
+      ? 'Share this celebration page using the quick actions below.'
+      : 'Share this meaningful message using the quick actions below.';
+
     banner.innerHTML = `
       <div class="flex items-center gap-3">
-        <span class="text-3xl">🎉</span>
+        <span class="text-3xl">${bannerIcon}</span>
         <div>
-          <h3 class="text-sm sm:text-base font-extrabold text-white">Your Greeting for <span class="text-pink-400">${recipientName}</span> is Live!</h3>
-          <p class="text-xs text-gray-300 mt-0.5">Share this celebration page using the quick actions below.</p>
+          <h3 class="text-sm sm:text-base font-extrabold text-white">${bannerTitle}</h3>
+          <p class="text-xs text-gray-300 mt-0.5">${bannerSub}</p>
         </div>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="WishShare.copyLink(window.location.href.split('?')[0])" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl text-xs font-bold text-white shadow hover:opacity-90">
-          📋 Copy Link
+        <button onclick="WishShare.openWhatsApp(GreetingPage.wish, window.location.href.split('?')[0])" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white shadow flex items-center gap-1.5 transition">
+          <span>💬</span> WhatsApp
         </button>
-        <button onclick="WishShare.openWhatsApp(GreetingPage.wish, window.location.href.split('?')[0])" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white shadow">
-          💬 WhatsApp
+        <button onclick="WishShare.copyLink(window.location.href.split('?')[0])" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-white shadow hover:opacity-90 flex items-center gap-1.5">
+          <span>📋</span> Copy Link
         </button>
       </div>
     `;

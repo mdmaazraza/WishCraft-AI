@@ -345,3 +345,33 @@ node tests/test_all_creation_controls.js
    - Validates multi-photo ingestion, MIME types, file size limits (5MB), max 6 photos, thumbnail reel rendering, remove button, and Supabase Storage / base64 fallback.
 7. **End-to-End Section 26 Flow**:
    - Runs full flow: `Sorry` → `Best Friend` → `Aisha` / `MD RAZA` → Memory with Improve Writing → `Deeply Apologetic` / `Deep` → `Hinglish` / `Medium` → `sincere_letter` / `Playfair Display` → Photo attached → Wish created → Slug verified.
+
+
+---
+
+## 7. WhatsApp Context-Aware Share & Phone Normalization Test Suite
+
+To verify the context-aware WhatsApp share texts, international phone number formatting (`wa.me`), and automated WhatsApp provider architecture:
+
+```bash
+cd WishCraft-AI
+node tests/test_whatsapp_and_photos.js
+```
+
+### What This Suite Validates:
+1. **Context-Aware Share Wording**:
+   - Birthday: Celebratory copy with cake emoji (`Happy Birthday, Aisha! 🎂 I made something special for you.`).
+   - Sorry / Apology: Sincere copy without celebration words (`Aisha, I made something I really want you to see.`).
+   - Strict negative constraint: Guarantees that Sorry text does **NOT** contain "celebrate", "Happy Sorry", or "congratulations".
+   - Anniversary, Thank You, and Farewell copy.
+2. **International Phone Normalization**:
+   - Strips symbols and leading `+` (`+91 98765 43210` → `919876543210`).
+   - Auto-prefixes 10-digit Indian numbers (`9876543210` → `919876543210`).
+   - Direct `wa.me/<NUMBER>?text=...` generation with valid phone.
+   - Generic `api.whatsapp.com/send?text=...` when phone number is omitted.
+3. **URL Encoding & Multi-Script**:
+   - Handles Hindi, Hinglish, emojis, quotes, and spaces.
+4. **Photo Persistence Across Saved Greetings**:
+   - Asserts that greetings retrieved from DB contain normalized photo objects without relying on temporary `blob:` URLs.
+5. **Meta WhatsApp Cloud API Provider**:
+   - Validates `deliverWhatsAppMessage` with phone number masking in server logs (`919****210`).

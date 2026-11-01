@@ -947,6 +947,29 @@ const WishCreator = {
           memBlock.style.display = 'none';
         }
       }
+
+      // Photos preview in live card and modal
+      const photosBlock = document.getElementById(`${prefix}PhotosBlock`);
+      const photosGrid = document.getElementById(`${prefix}PhotosGrid`);
+      if (photosBlock && photosGrid) {
+        const photos = this.draft.photos || [];
+        if (photos.length > 0) {
+          photosBlock.classList.remove('hidden');
+          photosBlock.style.display = 'block';
+          photosGrid.innerHTML = photos.map((p, idx) => {
+            const src = typeof p === 'string' ? p : (p.url || '');
+            return `
+              <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shadow shrink-0">
+                <img src="${src}" class="w-full h-full object-cover">
+              </div>
+            `;
+          }).join('');
+        } else {
+          photosBlock.classList.add('hidden');
+          photosBlock.style.display = 'none';
+          photosGrid.innerHTML = '';
+        }
+      }
     };
 
     // Apply to Step 7 inline card
@@ -1651,8 +1674,28 @@ const WishCreator = {
   shareToWhatsApp() {
     if (!this.createdWish) return;
     const url = `${window.location.origin}/wish/${this.createdWish.slug}`;
-    const text = encodeURIComponent(`✨ I created a personalized ${this.createdWish.occasion || 'greeting'} for you: ${url}`);
-    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    const phoneInput = document.getElementById('whatsappPhoneInput');
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+
+    if (typeof WishShare !== 'undefined' && WishShare.openWhatsApp) {
+      WishShare.openWhatsApp(this.createdWish, url, phone);
+    } else {
+      const text = encodeURIComponent(`Hey ${this.createdWish.recipient_name || 'Friend'}! I created something special for you: ${url}`);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+      if (typeof showToast === 'function') {
+        showToast('Opening WhatsApp... Tap Send in WhatsApp to share your greeting.', 'info');
+      }
+    }
+  },
+
+  shareViaNative() {
+    if (!this.createdWish) return;
+    const url = `${window.location.origin}/wish/${this.createdWish.slug}`;
+    if (typeof WishShare !== 'undefined' && WishShare.nativeShare) {
+      WishShare.nativeShare(this.createdWish, url);
+    } else {
+      this.copyShareLink();
+    }
   },
 
   shareViaSMS() {

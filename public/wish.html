@@ -116,8 +116,11 @@
           <a id="reShareCtaBtn" href="/create" class="btn-gradient w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-xs text-white shadow-lg">
             Create Your Own Wish ✨
           </a>
-          <button onclick="WishShare.copyLink(window.location.href)" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-gray-200">
-            Share Link 🔗
+          <button onclick="WishShare.openWhatsApp(GreetingPage.wish, window.location.href.split('?')[0])" class="w-full sm:w-auto px-5 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white shadow flex items-center justify-center gap-1.5 transition">
+            <span>💬 Share on WhatsApp</span>
+          </button>
+          <button onclick="WishShare.copyLink(window.location.href.split('?')[0])" class="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-gray-200 flex items-center justify-center gap-1.5">
+            <span>🔗 Copy Link</span>
           </button>
           <button id="scheduleThisWishBtn" onclick="GreetingPage.openScheduleModal()" class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 rounded-xl text-xs font-bold text-white shadow flex items-center justify-center gap-1.5 transition">
             <span>⏰ Schedule Delivery</span>

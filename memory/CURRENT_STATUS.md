@@ -1,30 +1,34 @@
 # Wish Yours — Current Project Status
 
 **Date**: November 1, 2026  
-**Status**: Critical Functional Debugging Complete — Creation Controls, Improve Writing, Typography, Templates & Photos Fully Operational  
+**Status**: Feature Complete, WhatsApp Integration Live, Photo Trace Verified, 63/63 Tests Passing  
 **Brand Name**: Wish Yours (WishCraft AI)  
 **Developer**: MD RAZA  
 **GitHub Repository**: [https://github.com/mdmaazraza/WishCraft-AI](https://github.com/mdmaazraza/WishCraft-AI)  
 **Active Branch**: `feature/creation-controls-and-photos-debug`  
-**Test Suite**: 48/48 Critical Tests Passing (30 Creation Controls & Photo Tests + 15 API & Typography Tests + 3 Step 4-7 Interaction Tests)
+**Test Suite**: 63/63 Tests Passing Across 4 Test Runners (15 API & Typography + 3 Step 4-7 Controls + 30 Creation Controls & Photos + 15 WhatsApp & Photo Regression)
 
 ---
 
-## 🚀 Live Capabilities & Bug Fix Architecture
+## 🚀 Live Capabilities & Architecture Status
 
-| Area | Status | Technical Implementation & Fix Notes |
+| Feature | Status | Technical Implementation & Fix Notes |
 |---|---|---|
-| **1. Improve Writing ✨** | ✅ Repaired & Verified | Direct read from `#memoriesInput`, animated loading spinner (`display: inline-block`), side-by-side comparison box (`#memoryComparisonBox`, `display: block`), "Use Improved" updates textarea, `draft.memory`, `#sumValMemory`, Gemini generation payload, and DB. Error safely preserves user text without blanking. |
-| **2. Emotion Intensity 🎚️** | ✅ Verified & Operational | 4 intensity cards (`Light`, `Balanced`, `Deep`, `Very Emotional`) in Step 4. Clicking each updates active state ring (`ring-4 ring-indigo-500 bg-slate-800 border-indigo-500`), `#selectedIntensityBadge`, `draft.emotionIntensity`, `#sumValIntensity` pill, and reaches Gemini prompt. |
-| **3. Language & Message Length 🌐** | ✅ Clarified & Audited | Step 5 heading renamed to **Choose Language & Message Length 🌐** to avoid depth/intensity confusion. Clear word count ranges: Short (25–45 words), Medium (50–80 words, recommended default), Long (90–130 words). Languages: English, Hindi, Hinglish. |
-| **4. Interactive Greeting Template 🎁** | ✅ Verified & Operational | 4 templates (`Interactive Cake`, `Wax-Sealed Letter`, `Sincere Letter`, `Shield & Card`). Dynamic active ring (`ring-4 ring-pink-500`), `#selectedTemplateBadge`, live preview badge, Draft Summary pill `#sumValTemplate`, and DB persistence. |
-| **5. Lettering & Typography Style ✍️** | ✅ Verified & Operational | 6 Google Fonts (`Playfair Display`, `Dancing Script`, `Great Vibes`, `Outfit`, `Pacifico`, `Cinzel`). `selectFont()` alias, active ring, `#selectedFontBadge`, Draft Summary `#sumValFont`, live preview and greeting polaroids render with computed `fontFamily`. |
-| **6. Photo Upload & Gallery 📸** | ✅ Built & Robust | `+ Upload Photos` opens file picker. Strict validation (JPEG, PNG, WebP; max 5MB; max 6 photos). Client-side canvas compression (1280px max, 0.85 quality) prevents localStorage quota overflow and payload errors. Thumbnail reel with remove button (✕), photo counter badge (`0/6 photos`), Draft Summary pill `#sumPillPhotos`, Supabase Storage integration (`POST /api/upload-photo`), and safe polaroid display in `greeting.js`. |
-| **7. Render Deployment Sync** | ✅ Diagnosed & Documented | Complete diagnostic checklist created for Render dashboard: Watched Branch (`main`), Auto-Deploy toggle, GitHub App permissions, Root Directory (must be empty/blank), and 50–90s cold boot spin-down on free tier. |
+| **Context-Aware WhatsApp Share** | ✅ Complete | Short, personalized WhatsApp text (Birthday with 🎂, Sorry with strictly non-celebratory tone, Anniversary with ❤️, Thank You with 🙏, Farewell with 🌟). Dynamic signature (`— MD RAZA` or `— Sender`). |
+| **WhatsApp Direct Click-to-Chat (`wa.me`)** | ✅ Complete | Normalizes international phone formats (`+91 98765 43210` → `919876543210`, `+1 (555) 234-5678` → `15552345678`). Direct `wa.me/<NUMBER>?text=...` when phone provided; fallback to `api.whatsapp.com/send?text=...` when phone omitted. |
+| **No False Delivery Claims** | ✅ Complete | Opening WhatsApp toasts `"Opening WhatsApp... Tap Send in WhatsApp to share your greeting."` (never claims "Message sent"). |
+| **Photo Upload Complete Trace** | ✅ Complete | Click upload → file picker → MIME (JPEG, PNG, WebP) & size (5MB) validation → canvas compression (1280px, 0.85) → `/api/upload-photo` (Supabase Storage or inline fallback) → thumbnail reel with `#1` index, `✕` remove button, status badge (`☁️ Cloud` / `💾 Ready`), counter badge (`N/6`), draft summary pill `#sumPillPhotos`, Step 7 live preview block (`#previewPhotosBlock`), Modal preview (`#modalPreviewPhotosBlock`), DB persistence, and public polaroid gallery in `wish.html`. |
+| **Photo Persistence Across Navigation & Reload** | ✅ Complete | Back/Next navigation retains photos in `draft.photos` and re-renders thumbnail reel; saved greetings retrieve photos from DB without using temporary `blob:` URLs. |
+| **Supabase Storage Integration** | ✅ Complete | Server endpoint `POST /api/upload-photo` uploads to `wish-photos` bucket when configured in `.env`; service role key is strictly hidden on server; fallback to data URLs keeps app 100% functional locally and offline. |
+| **Official Automated WhatsApp Research** | ✅ Complete | Level 2 official Meta WhatsApp Business Cloud API provider created (`api/providers/whatsapp_provider.js`) with Graph API v21.0 payload, template formatting, phone normalization, phone masking in logs, and simulated fallback. Wired into scheduler engine. |
+| **Mobile & Responsive Polish** | ✅ Complete | Clean mobile layout, touch-friendly buttons, Web Share API (`navigator.share`) support on mobile, high contrast dark inputs, no white-on-white text, no overflowing elements. |
+| **GitHub → Render Synchronization** | ✅ Diagnosed | Clarified branch topology: Render is configured to deploy `main`; commits on `feature/...` will not trigger builds until merged into `main`. Full diagnostic checklist provided. |
 
 ---
 
 ## 📌 Test Suite Summary:
-- `tests/test_all_creation_controls.js`: **30/30 passed** (Improve Writing, Emotion Intensity, Language, Length, Templates, Typography, Photos, End-to-End Section 26 scenario).
 - `tests/test_api.js`: **15/15 passed** (API CRUD, fonts, Resend sender rules, HTML emails, admin KPIs).
 - `tests/test_step4_controls.js`: **3/3 passed** (Overlay protection, Occasion resolution, Section 24 flow).
+- `tests/test_all_creation_controls.js`: **30/30 passed** (Improve Writing, Emotion Intensity, Language, Length, Templates, Typography, Photos, Section 26 flow).
+- `tests/test_whatsapp_and_photos.js`: **15/15 passed** (Context-aware share wording, phone normalization, wa.me routing, negative constraint on Sorry, photo persistence, automated WhatsApp provider).
+- **Total Tests Passing**: **63/63 (100% Pass Rate)**.
