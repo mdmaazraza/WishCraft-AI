@@ -194,8 +194,10 @@ function serveWishPageWithOpenGraph(res, slug) {
 
 // Master HTTP Request Handler
 async function requestHandler(req, res) {
-  const parsedUrl = url.parse(req.url, true);
+  const host = req.headers.host || `localhost:${PORT}`;
+  const parsedUrl = new URL(req.url, `http://${host}`);
   const pathname = parsedUrl.pathname;
+  const queryParams = Object.fromEntries(parsedUrl.searchParams.entries());
   const method = req.method.toUpperCase();
 
   // Handle CORS preflight
@@ -233,7 +235,7 @@ async function requestHandler(req, res) {
 
     // Wishes CRUD
     if (pathname === '/api/wishes' && method === 'GET') {
-      const result = await handleListWishes(parsedUrl.query);
+      const result = await handleListWishes(queryParams);
       return sendJSON(res, 200, result);
     }
 
@@ -244,7 +246,7 @@ async function requestHandler(req, res) {
     }
 
     // Specific wish endpoints: /api/wishes/:slug
-    const wishMatch = pathname.match(/^\/api\/wishes\/([^/]+)$/);
+    const wishMatch = pathname.match(/^\/api\/wishes\/([^/]+)\/?$/);
     if (wishMatch) {
       const slug = decodeURIComponent(wishMatch[1]);
 
@@ -264,7 +266,7 @@ async function requestHandler(req, res) {
     }
 
     // Candle blow-out interaction: /api/wishes/:slug/candles
-    const candleMatch = pathname.match(/^\/api\/wishes\/([^/]+)\/candles$/);
+    const candleMatch = pathname.match(/^\/api\/wishes\/([^/]+)\/candles\/?$/);
     if (candleMatch && method === 'POST') {
       const slug = decodeURIComponent(candleMatch[1]);
       const body = await parseBody(req);
@@ -294,7 +296,7 @@ async function requestHandler(req, res) {
 
     // Visual assets & presets
     if (pathname === '/api/visual-assets' && method === 'GET') {
-      const assets = await handleGetVisualAssets(parsedUrl.query);
+      const assets = await handleGetVisualAssets(queryParams);
       return sendJSON(res, 200, assets);
     }
 
@@ -315,7 +317,7 @@ async function requestHandler(req, res) {
     // ==========================================
 
     // Dynamic greeting page: /wish/:slug
-    const pageWishMatch = pathname.match(/^\/wish\/([^/]+)$/);
+    const pageWishMatch = pathname.match(/^\/wish\/([^/]+)\/?$/);
     if (pageWishMatch && method === 'GET') {
       const slug = decodeURIComponent(pageWishMatch[1]);
       return serveWishPageWithOpenGraph(res, slug);

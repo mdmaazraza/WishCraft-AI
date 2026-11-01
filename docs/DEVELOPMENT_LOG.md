@@ -90,3 +90,40 @@
 - **Unit & Integration Tests**: 15/15 tests passing in `tests/test_api.js`.
 - **AI Multi-Language Generation**: 4/4 tests passing in `tests/test_ai.js`.
 - **Resend Diagnostic**: Tested via `tests/test_resend_live.js` (clean simulation mode and network error recovery).
+
+---
+
+### Issue 3: Phase 1 — Blank Page Bug & Form Input Contrast Fix
+
+#### 1. Root Cause Diagnosis
+1. **Invisible Text & White Background on Form Controls**:
+   - The application was referencing Tailwind v3 classes (`bg-slate-900`, `bg-slate-800`, `border-slate-700`, `bg-gray-950`), while loading the legacy Tailwind 2.2.19 CDN.
+   - Because `slate-*` classes did not exist in Tailwind 2, browser user-agent defaults applied a white (`#ffffff`) background to `<input>`, `<select>`, and `<textarea>`.
+   - Combined with `class="text-white"` (`#ffffff`), this created **white text on a white background** — making inputs and generated messages in `#finalMessageInput` completely invisible to the user.
+2. **Greeting Page (`/wish/:slug`) Blank Screen on Errors**:
+   - `public/wish.html` initialized `<div id="greetingMainContent" style="display: none;">`.
+   - In `public/js/greeting.js`, `renderNotFound(msg)` updated the inner HTML of `mainEl` but never unhid it (`mainEl.style.display = 'block'`). Since `loadingEl` was hidden in `finally`, the page stayed 100% blank without even displaying an error.
+   - In `renderPage()`, `wish.theme.includes('romantic')` and `this.wish.relationship.toLowerCase()` threw uncaught TypeErrors whenever `theme` or `relationship` were null or undefined. This crashed JS execution before reaching `mainEl.style.display = 'block'`, leaving the page blank forever.
+3. **Missing Studio Live Preview & Direct Navigation**:
+   - Step 6 had no real-time visual greeting card preview to confirm the entered names, selected font, theme, and generated message.
+   - After creation, users were kept on the wizard step behind a modal instead of smoothly redirecting to the live celebration page.
+
+#### 2. Implementation & Fixes
+- **`public/css/styles.css`**:
+  - Added global form control rules guaranteeing dark slate (`#0f172a`) backgrounds, crisp white (`#f8fafc`) text, and slate (`#334155`) borders on all inputs, selects, and textareas.
+  - Added palette polyfill for `.bg-slate-950`, `.bg-slate-900`, `.bg-slate-800`, `.bg-slate-700`, `.border-slate-700`, and `.bg-gray-950`.
+- **HTML Files**:
+  - Upgraded Tailwind CDN across all HTML files to Tailwind v3 (`https://cdn.tailwindcss.com`).
+- **`public/js/greeting.js`**:
+  - Bulletproofed `renderNotFound(msg)` to guarantee `mainEl.style.display = 'block'`.
+  - Added defensive null/undefined checks across all fields (`occasion`, `theme`, `relationship`, `recipient_name`, `sender_name`, `message`).
+  - Added `renderCreatedBanner()` that displays a celebratory top banner with quick share/copy actions when accessed with `?created=1`.
+- **`public/create.html` & `public/js/creator.js`**:
+  - Added an interactive **Live Greeting Webpage Preview Card** directly in Step 6, updating in real time as the user types or selects fonts.
+  - Configured `publishGreeting()` to smoothly redirect users to `/wish/:slug?created=1` on creation.
+- **`server.js` & `data/db.js`**:
+  - Modernized `requestHandler` to use the WHATWG `URL` API (eliminating deprecation warnings).
+  - Enhanced route regexes to handle optional trailing slashes (`/wish/:slug/`).
+  - Implemented case-insensitive lookup in `getWishBySlug()` and `getWishById()`.
+- **`tests/test_flow.js`**:
+  - Added an automated end-to-end trace runner validating data flow from user entry to AI generation, storage, slug creation, and retrieval.

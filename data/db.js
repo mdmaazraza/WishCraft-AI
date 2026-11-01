@@ -136,16 +136,23 @@ function generateSlug(recipientName = 'celebrate') {
 }
 
 const db = {
-  // Retrieve wish by slug
+  // Retrieve wish by slug (case-insensitive)
   getWishBySlug(slug) {
+    if (!slug) return null;
+    const clean = String(slug).trim().toLowerCase();
     const wishes = readJSON(WISHES_FILE);
-    return wishes.find(w => w.slug === slug || w.id === slug) || null;
+    return wishes.find(w => 
+      (w.slug && w.slug.toLowerCase() === clean) || 
+      (w.id && w.id.toLowerCase() === clean)
+    ) || null;
   },
 
-  // Retrieve wish by ID
+  // Retrieve wish by ID (case-insensitive)
   getWishById(id) {
+    if (!id) return null;
+    const clean = String(id).trim().toLowerCase();
     const wishes = readJSON(WISHES_FILE);
-    return wishes.find(w => w.id === id) || null;
+    return wishes.find(w => w.id && w.id.toLowerCase() === clean) || null;
   },
 
   // List all wishes with optional filtering

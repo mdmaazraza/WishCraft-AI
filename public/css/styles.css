@@ -13,6 +13,58 @@
   --card-border: rgba(255, 255, 255, 0.08);
 }
 
+/* ====================================================================
+   Global Dark Form Controls & Palette Polyfill (Guarantees Visible Text)
+   ==================================================================== */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input,
+select,
+textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #ec4899 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.25) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Fallback utilities for modern dark palettes */
+.bg-slate-950 { background-color: #020617 !important; }
+.bg-slate-900 { background-color: #0f172a !important; }
+.bg-slate-800 { background-color: #1e293b !important; }
+.bg-slate-700 { background-color: #334155 !important; }
+.border-slate-800 { border-color: #1e293b !important; }
+.border-slate-700 { border-color: #334155 !important; }
+.border-slate-600 { border-color: #475569 !important; }
+.bg-gray-950 { background-color: #030712 !important; }
+.bg-pink-950 { background-color: #500724 !important; }
+.bg-rose-950 { background-color: #4c0519 !important; }
+.bg-teal-950 { background-color: #042f2e !important; }
+.bg-indigo-950 { background-color: #1e1b4b !important; }
+.bg-amber-950 { background-color: #451a03 !important; }
+.bg-yellow-950 { background-color: #422006 !important; }
+.bg-emerald-950 { background-color: #022c22 !important; }
+.bg-orange-950 { background-color: #431407 !important; }
+
 * {
   box-sizing: border-box;
 }

@@ -92,6 +92,15 @@ const WishCreator = {
       });
     });
 
+    // Live message input listener
+    const finalInput = document.getElementById('finalMessageInput');
+    if (finalInput) {
+      finalInput.addEventListener('input', (e) => {
+        this.data.message = e.target.value;
+        this.updateLivePreview();
+      });
+    }
+
     // Photo file input listener
     const photoInput = document.getElementById('photoUploadInput');
     if (photoInput) {
@@ -129,6 +138,7 @@ const WishCreator = {
     if (messageInput) {
       messageInput.style.fontFamily = this.getFontStack(fontName);
     }
+    this.updateLivePreview();
   },
 
   getFontStack(fontName) {
@@ -141,6 +151,46 @@ const WishCreator = {
       'Cinzel': "'Cinzel', Georgia, 'Times New Roman', serif"
     };
     return fontMap[fontName] || fontMap['Playfair Display'];
+  },
+
+  getFontClass(fontName) {
+    if (!fontName) return 'font-playfair';
+    const f = fontName.toLowerCase();
+    if (f.includes('dancing')) return 'font-dancing';
+    if (f.includes('vibes')) return 'font-great-vibes';
+    if (f.includes('outfit')) return 'font-outfit';
+    if (f.includes('pacifico')) return 'font-pacifico';
+    if (f.includes('cinzel')) return 'font-cinzel';
+    return 'font-playfair';
+  },
+
+  updateLivePreview() {
+    const recEl = document.getElementById('previewRecipientName');
+    const senderEl = document.getElementById('previewSenderName');
+    const badgeEl = document.getElementById('previewOccasionBadge');
+    const messageEl = document.getElementById('previewMessageText');
+    const memoriesBlock = document.getElementById('previewMemoriesBlock');
+    const memoriesText = document.getElementById('previewMemoriesText');
+
+    if (recEl) recEl.innerText = this.data.recipient_name || 'Friend';
+    if (senderEl) senderEl.innerText = `With love from ${this.data.sender_name || 'Someone special'}`;
+    if (badgeEl) badgeEl.innerText = `${this.data.occasion || 'Celebration'}`;
+
+    if (messageEl) {
+      messageEl.innerText = this.data.message || 'Select or write a greeting message above to preview it here...';
+      messageEl.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
+      messageEl.classList.add(this.getFontClass(this.data.font_family));
+      messageEl.style.fontFamily = this.getFontStack(this.data.font_family);
+    }
+
+    if (memoriesBlock && memoriesText) {
+      if (this.data.memories && this.data.memories.trim()) {
+        memoriesText.innerText = `"${this.data.memories}"`;
+        memoriesBlock.style.display = 'block';
+      } else {
+        memoriesBlock.style.display = 'none';
+      }
+    }
   },
 
   adjustContextualFields() {
@@ -179,8 +229,11 @@ const WishCreator = {
     this.updateStepView();
 
     // If entering Step 6, generate AI wishes automatically if message is empty
-    if (this.currentStep === 6 && !this.data.message) {
-      this.generateAIWishes();
+    if (this.currentStep === 6) {
+      this.updateLivePreview();
+      if (!this.data.message) {
+        this.generateAIWishes();
+      }
     }
   },
 
@@ -434,7 +487,9 @@ const WishCreator = {
       }
 
       showToast('🎉 Your celebration greeting is live!', 'success');
-      this.showShareModal(json.wish);
+      setTimeout(() => {
+        window.location.href = `/wish/${json.wish.slug}?created=1`;
+      }, 600);
 
     } catch (err) {
       console.error('Publish error:', err);

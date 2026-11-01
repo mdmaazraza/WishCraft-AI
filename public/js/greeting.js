@@ -1,5 +1,5 @@
 /**
- * WishCraft AI — Interactive Greeting Experience Controller
+ * Wish Yours — Interactive Greeting Experience Controller
  * Powers dynamic occasions, cake candle blow-out, love letter unfold, and audio playback.
  */
 
@@ -35,21 +35,28 @@ const GreetingPage = {
   async init() {
     this.extractSlug();
     if (!this.slug) {
-      this.renderNotFound('No greeting specified');
+      this.renderNotFound('No celebration greeting specified in the link.');
       return;
     }
 
     await this.loadWishData();
     if (this.wish) {
-      this.renderPage();
-      this.initAmbientEffects();
-      this.setupAudioPlayer();
+      try {
+        this.renderPage();
+        this.initAmbientEffects();
+        this.setupAudioPlayer();
+      } catch (err) {
+        console.error('Error rendering greeting page:', err);
+        // Ensure main content is displayed even if a non-fatal feature fails
+        const mainEl = document.getElementById('greetingMainContent');
+        if (mainEl) mainEl.style.display = 'block';
+      }
     }
   },
 
   extractSlug() {
     // Check path /wish/:slug or query param ?id=... / ?slug=...
-    const pathParts = window.location.pathname.split('/');
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
     const wishIndex = pathParts.indexOf('wish');
     if (wishIndex !== -1 && pathParts[wishIndex + 1]) {
       this.slug = decodeURIComponent(pathParts[wishIndex + 1]);
@@ -66,7 +73,7 @@ const GreetingPage = {
       const data = await res.json();
 
       if (!res.ok || !data.wish) {
-        throw new Error(data.message || 'Greeting not found');
+        throw new Error(data.message || 'Greeting not found or has expired.');
       }
 
       this.wish = data.wish;
@@ -80,43 +87,89 @@ const GreetingPage = {
   },
 
   renderNotFound(msg) {
+    const loadingEl = document.getElementById('greetingLoading');
+    if (loadingEl) loadingEl.style.display = 'none';
+
     const mainEl = document.getElementById('greetingMainContent');
     if (mainEl) {
+      mainEl.style.display = 'block';
       mainEl.innerHTML = `
         <div class="min-h-screen flex items-center justify-center p-6 text-center">
-          <div class="glass-card max-w-md p-8 rounded-2xl">
-            <div class="text-6xl mb-4">✨🎁</div>
-            <h1 class="text-2xl font-bold mb-2">Greeting Not Found</h1>
-            <p class="text-gray-400 mb-6">${msg || 'The celebration page you are looking for does not exist or has expired.'}</p>
-            <a href="/create" class="btn-gradient px-6 py-3 rounded-xl font-bold inline-block text-white">Create a New Wish</a>
+          <div class="glass-card max-w-md p-8 rounded-2xl border border-white border-opacity-10 shadow-2xl">
+            <div class="text-6xl mb-4 animate-bounce">✨🎁</div>
+            <h1 class="text-2xl font-bold mb-2 text-white">Greeting Not Found</h1>
+            <p class="text-gray-400 mb-6 text-sm">${msg || 'The celebration page you are looking for does not exist or has expired.'}</p>
+            <a href="/create" class="btn-gradient px-6 py-3 rounded-xl font-bold inline-block text-white shadow-lg">Create a New Wish</a>
           </div>
         </div>
       `;
     }
   },
 
+  renderCreatedBanner(recipientName) {
+    const mainEl = document.querySelector('main');
+    if (!mainEl) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'creatorSuccessBanner';
+    banner.className = 'glass-card border border-pink-500 rounded-2xl p-4 sm:p-5 mb-8 shadow-2xl animate-fade-in flex flex-col sm:flex-row items-center justify-between gap-4';
+    banner.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🎉</span>
+        <div>
+          <h3 class="text-sm sm:text-base font-extrabold text-white">Your Greeting for <span class="text-pink-400">${recipientName}</span> is Live!</h3>
+          <p class="text-xs text-gray-300 mt-0.5">Share this celebration page using the quick actions below.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="WishShare.copyLink(window.location.href.split('?')[0])" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl text-xs font-bold text-white shadow hover:opacity-90">
+          📋 Copy Link
+        </button>
+        <button onclick="WishShare.openWhatsApp(GreetingPage.wish, window.location.href.split('?')[0])" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white shadow">
+          💬 WhatsApp
+        </button>
+      </div>
+    `;
+    mainEl.insertBefore(banner, mainEl.firstChild);
+  },
+
   renderPage() {
-    const wish = this.wish;
+    const wish = this.wish || {};
     const occ = (wish.occasion || 'birthday').toLowerCase();
+    const theme = (wish.theme || 'birthday_celebration').toLowerCase();
+    const rel = (wish.relationship || 'friend').toLowerCase();
+    const recipientName = wish.recipient_name || 'Friend';
+    const senderName = wish.sender_name || 'Someone special';
+    const message = wish.message || '';
+
+    // Always make main content visible
+    const mainEl = document.getElementById('greetingMainContent');
+    if (mainEl) mainEl.style.display = 'block';
 
     // Set page title
-    document.title = `✨ For ${wish.recipient_name} — Happy ${wish.occasion}! | WishCraft AI`;
+    document.title = `✨ For ${recipientName} — Happy ${wish.occasion || 'Celebration'}! | Wish Yours`;
+
+    // Check if user just published this wish (?created=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('created')) {
+      this.renderCreatedBanner(recipientName);
+    }
 
     // Populate recipient and sender details
     const recNameEl = document.getElementById('recipientHeaderName');
     const senderNameEl = document.getElementById('senderHeaderName');
     const badgeEl = document.getElementById('occasionHeaderBadge');
 
-    if (recNameEl) recNameEl.innerText = wish.recipient_name;
-    if (senderNameEl) senderNameEl.innerText = `With love from ${wish.sender_name}`;
-    if (badgeEl) badgeEl.innerText = `${wish.occasion} Celebration`;
+    if (recNameEl) recNameEl.innerText = recipientName;
+    if (senderNameEl) senderNameEl.innerText = `With love from ${senderName}`;
+    if (badgeEl) badgeEl.innerText = `${wish.occasion || 'Celebration'} Celebration`;
 
     // Render occasion-specific hero module
     const heroModule = document.getElementById('occasionSpecificModule');
     if (heroModule) {
       if (occ.includes('birthday')) {
         heroModule.innerHTML = this.renderBirthdayCakeModule();
-      } else if (occ.includes('anniversary') || occ.includes('valentine') || wish.theme.includes('romantic')) {
+      } else if (occ.includes('anniversary') || occ.includes('valentine') || theme.includes('romantic')) {
         heroModule.innerHTML = this.renderWaxEnvelopeModule();
       } else {
         heroModule.innerHTML = this.renderFriendshipHeroModule();
@@ -130,7 +183,7 @@ const GreetingPage = {
     // Populate primary message with active typography styling
     const messageEl = document.getElementById('greetingMessageBody');
     if (messageEl) {
-      messageEl.innerText = wish.message;
+      messageEl.innerText = message;
       messageEl.classList.remove('font-serif-display', 'font-playfair', 'font-dancing', 'font-great-vibes', 'font-outfit', 'font-pacifico', 'font-cinzel');
       messageEl.classList.add(fontClass);
       messageEl.style.fontFamily = fontStack;
@@ -156,15 +209,11 @@ const GreetingPage = {
 
     // Render Timeline / Badges
     this.renderMilestonesAndBadges();
-
-    // Show main content container
-    const mainEl = document.getElementById('greetingMainContent');
-    if (mainEl) mainEl.style.display = 'block';
   },
 
   // 1. Birthday Cake with Interactive Candles
   renderBirthdayCakeModule() {
-    const age = this.wish.age ? `<div class="mt-2 text-sm font-semibold text-pink-300">Celebrating ${this.wish.age} Fantastic Years! 🌟</div>` : '';
+    const age = this.wish?.age ? `<div class="mt-2 text-sm font-semibold text-pink-300">Celebrating ${this.wish.age} Fantastic Years! 🌟</div>` : '';
 
     return `
       <div class="text-center py-6">
@@ -200,7 +249,7 @@ const GreetingPage = {
 
         <div id="candleBlowStatus" class="mt-4 text-base font-semibold transition-all">
           ${this.candlesBlown 
-            ? '<span class="text-emerald-400">🎉 Candled blown out! May all your wishes come true! ✨</span>' 
+            ? '<span class="text-emerald-400">🎉 Candles blown out! May all your wishes come true! ✨</span>' 
             : '<span class="text-gray-300">Click or tap the cake above to blow out the candles 🕯️</span>'
           }
         </div>
@@ -219,7 +268,7 @@ const GreetingPage = {
           </div>
           <div class="p-8 text-center" id="envelopeFront">
             <span class="text-xs tracking-widest text-amber-900 uppercase font-bold">Confidential & Sealed</span>
-            <h3 class="text-xl font-serif-display text-amber-950 mt-2">For My Beloved ${this.wish.recipient_name}</h3>
+            <h3 class="text-xl font-serif-display text-amber-950 mt-2">For My Beloved ${this.wish?.recipient_name || 'Loved One'}</h3>
             <p class="text-xs text-amber-800 mt-1 italic">Click the wax seal to open your love letter</p>
           </div>
         </div>
@@ -251,11 +300,13 @@ const GreetingPage = {
     // Play realistic audio whoosh & sparkle
     window.wishAudio?.playBlowOutSound();
 
-    // Trigger explosive celebratory confetti
+    // Trigger celebratory confetti
     const rect = event ? event.currentTarget.getBoundingClientRect() : null;
     const originX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
     const originY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
-    fireConfettiBurst(originX, originY);
+    if (typeof fireConfettiBurst === 'function') {
+      fireConfettiBurst(originX, originY);
+    }
 
     // Update status text
     const statusEl = document.getElementById('candleBlowStatus');
@@ -286,21 +337,23 @@ const GreetingPage = {
       if (envelope) {
         envelope.style.background = 'transparent';
         envelope.style.boxShadow = 'none';
-        const chosenFont = this.wish.font_family || 'Playfair Display';
+        const chosenFont = this.wish?.font_family || 'Playfair Display';
         const fontClass = this.getFontClass(chosenFont);
         const fontStack = this.getFontStack(chosenFont);
 
         envelope.innerHTML = `
           <div class="letter-content animate-fade-in text-left">
             <div class="text-right text-xs text-amber-800 italic mb-4 ${fontClass}" style="font-family: ${fontStack};">Forever & Always</div>
-            <div class="text-xl font-script text-rose-900 mb-2">My Dearest ${this.wish.recipient_name},</div>
-            <p class="text-base text-gray-800 ${fontClass} leading-relaxed mb-4" style="font-family: ${fontStack};">${this.wish.message}</p>
-            ${this.wish.memories ? `<div class="bg-rose-50 border-l-2 border-rose-400 p-3 my-3 text-xs italic text-rose-900 ${fontClass}" style="font-family: ${fontStack};">"${this.wish.memories}"</div>` : ''}
-            <div class="text-right text-lg ${fontClass} text-rose-900 mt-4" style="font-family: ${fontStack};">— ${this.wish.sender_name}</div>
+            <div class="text-xl font-script text-rose-900 mb-2">My Dearest ${this.wish?.recipient_name || 'Loved One'},</div>
+            <p class="text-base text-gray-800 ${fontClass} leading-relaxed mb-4" style="font-family: ${fontStack};">${this.wish?.message || ''}</p>
+            ${this.wish?.memories ? `<div class="bg-rose-50 border-l-2 border-rose-400 p-3 my-3 text-xs italic text-rose-900 ${fontClass}" style="font-family: ${fontStack};">"${this.wish.memories}"</div>` : ''}
+            <div class="text-right text-lg ${fontClass} text-rose-900 mt-4" style="font-family: ${fontStack};">— ${this.wish?.sender_name || 'Someone special'}</div>
           </div>
         `;
       }
-      fireConfettiBurst();
+      if (typeof fireConfettiBurst === 'function') {
+        fireConfettiBurst();
+      }
       window.wishAudio?.playRomanticMelody();
     }, 400);
   },
@@ -311,7 +364,7 @@ const GreetingPage = {
     const galleryGrid = document.getElementById('photoGalleryGrid');
     if (!gallerySection || !galleryGrid) return;
 
-    const images = this.wish.images || [];
+    const images = this.wish?.images || [];
     if (images.length === 0) {
       gallerySection.style.display = 'none';
       return;
@@ -336,10 +389,11 @@ const GreetingPage = {
     const container = document.getElementById('milestoneBadgesContainer');
     if (!container) return;
 
-    const occ = (this.wish.occasion || '').toLowerCase();
+    const occ = (this.wish?.occasion || '').toLowerCase();
+    const rel = (this.wish?.relationship || '').toLowerCase();
     const badges = [];
 
-    if (this.wish.anniversary_years) {
+    if (this.wish?.anniversary_years) {
       badges.push({
         title: `${this.wish.anniversary_years} Years of Togetherness`,
         desc: 'Built on love, patience, and endless memories',
@@ -347,7 +401,7 @@ const GreetingPage = {
       });
     }
 
-    if (this.wish.relationship_duration) {
+    if (this.wish?.relationship_duration) {
       badges.push({
         title: `${this.wish.relationship_duration} of Pure Magic`,
         desc: 'And a lifetime of adventures still ahead',
@@ -355,7 +409,7 @@ const GreetingPage = {
       });
     }
 
-    if (occ.includes('friend') || this.wish.relationship.toLowerCase().includes('friend')) {
+    if (occ.includes('friend') || rel.includes('friend')) {
       badges.push({
         title: 'Certified Ride-or-Die',
         desc: 'Partner in crime & human diary forever',
@@ -405,41 +459,51 @@ const GreetingPage = {
 
   // Setup Floating Music Bar
   setupAudioPlayer() {
-    const track = this.wish.music_track || (this.wish.occasion.toLowerCase().includes('birthday') ? 'birthday_celebration' : 'romantic_melody');
+    const occ = (this.wish?.occasion || '').toLowerCase();
+    const track = this.wish?.music_track || (occ.includes('birthday') ? 'birthday_celebration' : 'romantic_melody');
     const audioBtn = document.getElementById('floatingAudioToggle');
     const audioIcon = document.getElementById('audioPlayIcon');
     const musicBars = document.getElementById('musicVisualizerBars');
 
-    if (!audioBtn) return;
+    if (!audioBtn || !window.wishAudio) return;
 
     audioBtn.onclick = () => {
       window.wishAudio.toggle(track);
       if (window.wishAudio.isPlaying) {
-        audioIcon.innerText = '⏸️';
+        if (audioIcon) audioIcon.innerText = '⏸️';
         if (musicBars) musicBars.style.display = 'flex';
       } else {
-        audioIcon.innerText = '▶️';
+        if (audioIcon) audioIcon.innerText = '▶️';
         if (musicBars) musicBars.style.display = 'none';
       }
     };
 
     // Auto-prompt to start music on first user click anywhere on page
     const startAudioOnce = () => {
-      window.wishAudio.play(track);
-      if (audioIcon) audioIcon.innerText = '⏸️';
-      if (musicBars) musicBars.style.display = 'flex';
+      if (window.wishAudio) {
+        window.wishAudio.play(track);
+        if (audioIcon) audioIcon.innerText = '⏸️';
+        if (musicBars) musicBars.style.display = 'flex';
+      }
       document.removeEventListener('click', startAudioOnce);
     };
     document.addEventListener('click', startAudioOnce, { once: true });
   },
 
   initAmbientEffects() {
-    const occ = (this.wish.occasion || '').toLowerCase();
+    const occ = (this.wish?.occasion || '').toLowerCase();
+    const theme = (this.wish?.theme || '').toLowerCase();
     let effect = 'hearts';
     if (occ.includes('birthday')) effect = 'balloons';
-    else if (occ.includes('friend') || this.wish.theme.includes('luxury')) effect = 'stars';
+    else if (occ.includes('friend') || theme.includes('luxury')) effect = 'stars';
 
-    window.ambientEngine = new AmbientParticles('ambientCanvas', effect);
+    if (typeof AmbientParticles === 'function' && document.getElementById('ambientCanvas')) {
+      try {
+        window.ambientEngine = new AmbientParticles('ambientCanvas', effect);
+      } catch (e) {
+        console.warn('Ambient engine init note:', e);
+      }
+    }
   }
 };
 
