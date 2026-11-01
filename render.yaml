@@ -5,7 +5,7 @@
 
 services:
   - type: web
-    name: wish-yours
+    name: wishcraft-ai
     runtime: node
     plan: free
     region: oregon
