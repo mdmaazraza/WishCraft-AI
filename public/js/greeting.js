@@ -691,8 +691,8 @@ const GreetingPage = {
     galleryGrid.innerHTML = images.map((img, idx) => {
       const rot = rotations[idx % rotations.length];
       return `
-        <div class="polaroid" style="transform: rotate(${rot}deg);" onclick="GreetingPage.openLightbox('${img.url}', '${img.caption || ''}')">
-          <img src="${img.url}" alt="${img.caption || 'Memory'}" loading="lazy">
+        <div class="polaroid" style="transform: rotate(${rot}deg);" onclick="GreetingPage.openLightbox('${(typeof img === 'string' ? img : (img.url || '')).replace(/'/g, "\\'")}', '${(typeof img === 'string' ? `Memory #${idx + 1}` : (img.caption || 'Cherished moment')).replace(/'/g, "\\'")}')">
+          <img src="${typeof img === 'string' ? img : (img.url || '')}" alt="${typeof img === 'string' ? 'Memory' : (img.caption || 'Memory')}" loading="lazy">
           <div class="polaroid-caption">${img.caption || 'Cherished moment'}</div>
         </div>
       `;

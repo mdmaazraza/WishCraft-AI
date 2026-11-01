@@ -92,3 +92,23 @@ Under **Environment Variables** in the Render service settings, configure:
    - Outbound IVR telephone call wishes using Twilio Voice or Exotel when paid credits are configured.
 3. **Database Migration to Supabase**:
    - Run `data/supabase_schema.sql` on Supabase to enable PostgreSQL cloud persistence with Row Level Security (RLS).
+
+
+---
+
+## 5. Photo Storage & Render Verification Checklist
+
+### Photo Upload & Supabase Storage
+1. **Local & Inline Fallback**:
+   - Photos upload immediately and compress via canvas without needing external cloud storage.
+2. **Supabase Storage Bucket Setup (Optional for cloud hosting)**:
+   - If using Supabase Storage, ensure the bucket `wish-photos` is created in Supabase Dashboard → Storage → New Bucket (`wish-photos`, Public: ON).
+   - The policies from `supabase_schema.sql` allow public read and write access to `wish-photos`.
+   - Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Render environment variables.
+
+### Render Deployment Verification Checklist
+- [ ] Confirm Git commits are pushed to `main` before checking Render.
+- [ ] In Render Dashboard → Settings, confirm **Branch** is set to `main`.
+- [ ] In Render Dashboard → Settings, confirm **Auto-Deploy** is set to `Yes`.
+- [ ] In Render Dashboard → Settings, confirm **Root Directory** is empty.
+- [ ] Confirm first request wakes the free-tier service if dormant for >15 minutes.

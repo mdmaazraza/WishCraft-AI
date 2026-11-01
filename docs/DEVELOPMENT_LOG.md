@@ -393,3 +393,42 @@
   - `test_api.js`: 15/15 passed.
   - `test_scheduler.js`: 13/13 passed.
   - `test_audit_and_repair.js`: 6/6 passed.
+
+
+---
+
+### Session Log — November 1, 2026: Creation Controls, Improve Writing, Typography, Templates & Photo Upload Debugging
+
+#### 1. Objectives & Identified Root Causes
+- **Improve Writing**:
+  - Root Cause: In `creator.js`, `improveMemoryWriting()` relied on pre-blurred draft state instead of reading directly from `#memoriesInput`. The comparison box `#memoryComparisonBox` and spinner `#polishMemorySpinner` toggled CSS classes without explicit inline `style.display = 'block'` / `'inline-block'`, causing rendering failures when `.hidden { display: none !important; }` was present.
+  - Fix: Direct DOM reading with fallback to draft; explicit `style.display = 'block'` on success and `'none'` on close/apply; error handling preserving original text.
+- **Emotion Intensity**:
+  - Verified and ensured all 4 intensities (`Light`, `Balanced`, `Deep`, `Very Emotional`) trigger `selectIntensity()`, moving the active ring, updating `draft.emotionIntensity`, updating `#sumValIntensity` in Draft Summary, and passing through to Gemini prompts.
+- **Language & Message Length Clarity**:
+  - Root Cause: Step 5 heading was "Choose Language & Depth 🌐", creating confusion with Step 4's Emotion Intensity.
+  - Fix: Renamed Step 5 heading to "Choose Language & Message Length 🌐" with clear word count ranges: Short (25–45 words), Medium (50–80 words, recommended default), Long (90–130 words).
+- **Interactive Greeting Templates & Typography**:
+  - Added `selectFont()` alias delegating to `setFontFamily()`.
+  - Streamlined `setFontFamily` to trigger `highlightAllSelectors()` and `syncAll()`.
+  - Applied chosen font stack to preview memory text as well as preview message.
+- **Photo Upload Architecture**:
+  - Root Cause: Previous implementation only performed client-side `FileReader.readAsDataURL()` without file type validation, size checks, or count enforcement. Large uncompressed images exceeded localStorage quotas and server payload limits. In `greeting.js`, images were expected as `{ url, caption }` objects, causing strings to render `<img src="undefined">`.
+  - Fix:
+    1. Built client-side canvas compressor (`compressImage`) capping resolution to 1280px and quality to 0.85, shrinking multi-megabyte photos to ~150KB.
+    2. Enforced strict validation: JPEG, PNG, WebP only; 5MB limit; 6 photos maximum.
+    3. Added photo counter badge (`0/6 photos`), upload spinner, and remove button.
+    4. Added `#sumPillPhotos` in Draft Summary bar.
+    5. Created backend route `POST /api/upload-photo` in `server.js` supporting Supabase Storage bucket `wish-photos` with seamless inline fallback.
+    6. Normalized `images` in `api/wishes.js` and updated `public/js/greeting.js` to safely render both object and string image formats.
+- **Render Deployment Issue**:
+  - Investigated reasons why Render might not pick up latest GitHub commits.
+  - Documented 6-point Render dashboard diagnostic checklist (Branch setting, Auto-Deploy toggle, Root Directory configuration, Build/Start commands, Sleep state cold boot, GitHub App permissions).
+
+#### 2. Verification
+- Created comprehensive test runner `tests/test_all_creation_controls.js`: **30/30 tests passed**.
+- Full test suites passed:
+  - `tests/test_api.js`: 15/15 passed.
+  - `tests/test_step4_controls.js`: 3/3 passed.
+  - `tests/test_all_creation_controls.js`: 30/30 passed.
+  - **Total 48/48 passed**.

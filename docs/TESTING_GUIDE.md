@@ -314,3 +314,34 @@ Open your browser to [http://localhost:3000](http://localhost:3000).
   - Font sizes scale cleanly without text overflowing cards.
   - Multi-step progress tracker fits mobile screens.
   - Interactive cakes and wax envelopes are touch-friendly.
+
+
+---
+
+## 6. Creation Controls, Writing Improvement & Photo Upload Test Suite
+
+To verify all 7 creation studio controls, text improvement, typography, templates, photos, and state persistence end-to-end:
+
+```bash
+cd WishCraft-AI
+node tests/test_all_creation_controls.js
+```
+
+### What This Suite Validates:
+1. **Improve Writing Engine**:
+   - Polishes messy user text (`we was frnds from collage and you always suport me when i was sad`).
+   - Verifies original text preservation, grammar correction, and safe handling of short inputs.
+2. **Emotion Intensity**:
+   - Validates all 4 intensity settings (`Light`, `Balanced`, `Deep`, `Very Emotional`) in state, UI rings, summary, and Gemini generation.
+3. **Language & Message Length**:
+   - Validates English (`en`), Hindi (`hi`), and Hinglish (`hinglish`).
+   - Validates Word Count limits for Short (25–45), Medium (50–80), and Long (90–130).
+4. **Interactive Greeting Templates**:
+   - Validates all 4 templates (`cake`, `envelope`, `sincere_letter`, `friendship_card`) in draft, active rings, preview, and DB persistence.
+5. **Lettering & Typography Style**:
+   - Validates all 6 Google fonts (`Playfair Display`, `Dancing Script`, `Great Vibes`, `Outfit`, `Pacifico`, `Cinzel`).
+   - Validates `sanitizeFontFamily` security and computed font stacks.
+6. **Photo Upload & Gallery Attachment**:
+   - Validates multi-photo ingestion, MIME types, file size limits (5MB), max 6 photos, thumbnail reel rendering, remove button, and Supabase Storage / base64 fallback.
+7. **End-to-End Section 26 Flow**:
+   - Runs full flow: `Sorry` → `Best Friend` → `Aisha` / `MD RAZA` → Memory with Improve Writing → `Deeply Apologetic` / `Deep` → `Hinglish` / `Medium` → `sincere_letter` / `Playfair Display` → Photo attached → Wish created → Slug verified.

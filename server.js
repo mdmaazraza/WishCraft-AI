@@ -257,6 +257,61 @@ async function requestHandler(req, res) {
       return sendJSON(res, 200, { status: 'success', occasions: OCCASIONS });
     }
 
+        // Photo Upload (Supports Supabase Storage if configured, or base64 fallback)
+    if (pathname === '/api/upload-photo' && method === 'POST') {
+      const body = await parseBody(req);
+      const { image, filename } = body;
+      if (!image) {
+        return sendJSON(res, 400, { status: 'error', message: 'No image provided' });
+      }
+
+      // Check if Supabase Storage is configured
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && !supabaseKey.includes('your_')) {
+        try {
+          const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+          if (matches && matches.length === 3) {
+            const mimeType = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+            const ext = mimeType.split('/')[1] || 'jpg';
+            const cleanFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+
+            const uploadUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/wish-photos/${cleanFilename}`;
+            const uploadRes = await fetch(uploadUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'apikey': supabaseKey,
+                'Content-Type': mimeType
+              },
+              body: buffer
+            });
+
+            if (uploadRes.ok) {
+              const publicUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/wish-photos/${cleanFilename}`;
+              return sendJSON(res, 200, {
+                status: 'success',
+                url: publicUrl,
+                storage: 'supabase',
+                filename: cleanFilename
+              });
+            }
+          }
+        } catch (storageErr) {
+          console.warn('[Photo Upload] Supabase storage upload failed, falling back to data URL:', storageErr.message);
+        }
+      }
+
+      // Fallback: return data URL safely
+      return sendJSON(res, 200, {
+        status: 'success',
+        url: image,
+        storage: 'inline'
+      });
+    }
+
     // Wishes CRUD
     if (pathname === '/api/wishes' && method === 'GET') {
       const result = await handleListWishes(queryParams);

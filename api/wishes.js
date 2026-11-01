@@ -109,7 +109,18 @@ async function handleCreateWish(body, userId = null) {
     relationship_duration: sanitize(reqData.relationship_duration || reqData.relationshipDuration || ''),
     age: reqData.age ? parseInt(reqData.age, 10) : null,
     anniversary_years: reqData.anniversary_years ? parseInt(reqData.anniversary_years, 10) : null,
-    images: Array.isArray(reqData.images || reqData.photos) ? (reqData.images || reqData.photos) : [],
+    images: (() => {
+      const raw = Array.isArray(reqData.images) ? reqData.images : (Array.isArray(reqData.photos) ? reqData.photos : []);
+      return raw.map((img, idx) => {
+        if (typeof img === 'string') {
+          return { url: img, caption: `Memory #${idx + 1}` };
+        }
+        return {
+          url: img.url || '',
+          caption: sanitize(img.caption || `Memory #${idx + 1}`)
+        };
+      }).filter(img => Boolean(img.url));
+    })(),
     music_track: sanitize(reqData.music_track || 'celebration_tune'),
     is_public: reqData.is_public !== undefined ? Boolean(reqData.is_public) : true,
     custom_settings: reqData.custom_settings || {}
@@ -180,5 +191,6 @@ module.exports = {
   handleCreateWish,
   handleUpdateWish,
   handleDeleteWish,
-  handleBlowCandles
+  handleBlowCandles,
+  sanitizeFontFamily
 };

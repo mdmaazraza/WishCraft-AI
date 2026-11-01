@@ -153,31 +153,34 @@ const WishCreator = {
 
   // Synchronize values from DOM inputs into this.draft
   saveAllInputs() {
-    const getVal = (id) => document.getElementById(id)?.value?.trim() || '';
+    const getElVal = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : null;
+    };
 
-    const rec = getVal('recipientNameInput');
-    if (rec !== '') this.draft.recipientName = rec;
+    const rec = getElVal('recipientNameInput');
+    if (rec !== null) this.draft.recipientName = rec;
 
-    const sender = getVal('senderNameInput');
-    if (sender !== '') this.draft.senderName = sender;
+    const sender = getElVal('senderNameInput');
+    if (sender !== null) this.draft.senderName = sender;
 
     const gender = document.getElementById('genderSelect')?.value;
     if (gender) this.draft.recipientGender = gender;
 
-    const age = getVal('ageInput');
-    if (age !== '') this.draft.age = age;
+    const age = getElVal('ageInput');
+    if (age !== null) this.draft.age = age;
 
-    const anniv = getVal('annivYearsInput');
-    if (anniv !== '') this.draft.anniversaryYears = anniv;
+    const anniv = getElVal('annivYearsInput');
+    if (anniv !== null) this.draft.anniversaryYears = anniv;
 
-    const dur = getVal('durationInput');
-    if (dur !== '') this.draft.relationshipDuration = dur;
+    const dur = getElVal('durationInput');
+    if (dur !== null) this.draft.relationshipDuration = dur;
 
-    const mem = getVal('memoriesInput');
-    if (mem !== '') this.draft.memory = mem;
+    const mem = getElVal('memoriesInput');
+    if (mem !== null) this.draft.memory = mem;
 
-    const msg = getVal('finalMessageInput');
-    if (msg !== '') this.draft.generatedMessage = msg;
+    const msg = getElVal('finalMessageInput');
+    if (msg !== null) this.draft.generatedMessage = msg;
 
     this.persistDraft();
   },
@@ -409,6 +412,10 @@ const WishCreator = {
     this.draft.template = val;
     this.highlightAllSelectors();
     this.syncAll();
+  },
+
+  selectFont(val) {
+    this.setFontFamily(val);
   },
 
   selectTheme(val) {
@@ -723,6 +730,7 @@ const WishCreator = {
   setFontFamily(fontName) {
     if (!fontName) return;
     this.draft.font = fontName;
+    this.highlightAllSelectors();
 
     document.querySelectorAll('.font-btn').forEach(btn => {
       const match = btn.dataset.font === fontName;
@@ -837,6 +845,21 @@ const WishCreator = {
         memPill.classList.remove('flex');
       }
     }
+
+    // Photo pill visibility
+    const photoPill = document.getElementById('sumPillPhotos');
+    const photoVal = document.getElementById('sumValPhotos');
+    const photoCount = (this.draft.photos || []).length;
+    if (photoPill && photoVal) {
+      if (photoCount > 0) {
+        photoPill.classList.remove('hidden');
+        photoPill.classList.add('flex');
+        photoVal.innerText = `${photoCount}`;
+      } else {
+        photoPill.classList.add('hidden');
+        photoPill.classList.remove('flex');
+      }
+    }
   },
 
   // 6. UPDATE LIVE INTERACTIVE WEBPAGE PREVIEW (Occasion-Aware & Contextual)
@@ -916,6 +939,7 @@ const WishCreator = {
       if (memBlock && memText) {
         if (this.draft.memory && this.draft.memory.trim()) {
           memText.innerText = this.draft.memory.trim();
+          memText.style.fontFamily = fontStack;
           memBlock.classList.remove('hidden');
           memBlock.style.display = 'block';
         } else {
@@ -957,8 +981,9 @@ const WishCreator = {
   // 7. WRITING IMPROVEMENT ENGINE (Side-by-Side Comparison)
   async improveMemoryWriting() {
     this.saveAllInputs();
-    const rawText = this.draft.memory;
-    if (!rawText || rawText.trim().length < 3) {
+    const memEl = document.getElementById('memoriesInput');
+    const rawText = (memEl ? memEl.value.trim() : (this.draft.memory || '').trim());
+    if (!rawText || rawText.length < 3) {
       if (typeof showToast === 'function') showToast('Please enter a memory or personal note first to improve.', 'info');
       document.getElementById('memoriesInput')?.focus();
       return;
@@ -967,7 +992,7 @@ const WishCreator = {
     const btn = document.getElementById('polishMemoryBtn');
     const spinner = document.getElementById('polishMemorySpinner');
     if (btn) btn.disabled = true;
-    if (spinner) spinner.classList.remove('hidden');
+    if (spinner) { spinner.classList.remove('hidden'); spinner.style.display = 'inline-block'; }
 
     try {
       const res = await fetch('/api/correct-text', {
@@ -1000,7 +1025,7 @@ const WishCreator = {
         if (diffOrig) diffOrig.innerText = json.original || rawText;
         if (diffImp) diffImp.innerText = json.improved;
         if (badge) badge.innerText = json.explanation || 'Polished grammar and clarity while preserving your voice';
-        if (diffBox) diffBox.classList.remove('hidden');
+        if (diffBox) { diffBox.classList.remove('hidden'); diffBox.style.display = 'block'; }
 
         if (typeof showToast === 'function') {
           showToast('✨ Writing improved! Review comparison below.', 'success');
@@ -1008,10 +1033,10 @@ const WishCreator = {
       }
     } catch (err) {
       console.error('Improve text error:', err);
-      if (typeof showToast === 'function') showToast('Could not improve writing right now. Your text is safe!', 'error');
+      if (typeof showToast === 'function') showToast(err.message || 'Could not improve writing right now. Your text is safe!', 'error');
     } finally {
       if (btn) btn.disabled = false;
-      if (spinner) spinner.classList.add('hidden');
+      if (spinner) { spinner.classList.add('hidden'); spinner.style.display = 'none'; }
     }
   },
 
@@ -1022,7 +1047,7 @@ const WishCreator = {
     if (input) input.value = this.correctedMemory;
 
     const diffBox = document.getElementById('memoryComparisonBox');
-    if (diffBox) diffBox.classList.add('hidden');
+    if (diffBox) { diffBox.classList.add('hidden'); diffBox.style.display = 'none'; }
 
     this.syncAll();
     if (typeof showToast === 'function') showToast('Improved version applied! ✓', 'success');
@@ -1030,7 +1055,7 @@ const WishCreator = {
 
   keepOriginalMemory() {
     const diffBox = document.getElementById('memoryComparisonBox');
-    if (diffBox) diffBox.classList.add('hidden');
+    if (diffBox) { diffBox.classList.add('hidden'); diffBox.style.display = 'none'; }
     if (typeof showToast === 'function') showToast('Kept your original text.', 'info');
   },
 
@@ -1296,43 +1321,165 @@ const WishCreator = {
     }
   },
 
-  // 10. PHOTO UPLOADS (Up to 6)
-  handlePhotoUpload(event) {
-    const files = Array.from(event.target.files);
-    if (!files.length) return;
-
-    const remainingSlots = 6 - (this.draft.photos?.length || 0);
-    const filesToProcess = files.slice(0, remainingSlots);
-
-    filesToProcess.forEach(file => {
+  // Helper to compress image in browser for ultra-fast upload & localStorage efficiency
+  compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.85) {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (!this.draft.photos) this.draft.photos = [];
-        this.draft.photos.push(e.target.result);
-        this.renderPhotoReel();
-        this.persistDraft();
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error('Failed to load image for compression'));
+        img.src = e.target.result;
       };
+      reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsDataURL(file);
     });
   },
 
+  // 10. PHOTO UPLOADS (Up to 6 with validation, compression and Supabase Storage support)
+  async handlePhotoUpload(event) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = ''; // Reset so same file can be re-selected if removed
+    if (!files.length) return;
+
+    if (!Array.isArray(this.draft.photos)) this.draft.photos = [];
+    const remainingSlots = 6 - this.draft.photos.length;
+    if (remainingSlots <= 0) {
+      if (typeof showToast === 'function') showToast('Maximum 6 photos reached. Remove a photo to upload another.', 'info');
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const validFiles = [];
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        if (typeof showToast === 'function') showToast(`"${file.name}" skipped: only JPG, PNG, and WebP are supported.`, 'error');
+        continue;
+      }
+      if (file.size > maxFileSize) {
+        if (typeof showToast === 'function') showToast(`"${file.name}" skipped: file exceeds 5MB limit.`, 'error');
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (!validFiles.length) return;
+
+    const filesToProcess = validFiles.slice(0, remainingSlots);
+    if (validFiles.length > remainingSlots) {
+      if (typeof showToast === 'function') showToast(`Selected first ${remainingSlots} photo(s) to stay within the 6-photo limit.`, 'info');
+    }
+
+    const spinner = document.getElementById('uploadPhotosSpinner');
+    if (spinner) {
+      spinner.classList.remove('hidden');
+      spinner.style.display = 'inline-block';
+    }
+
+    try {
+      for (const file of filesToProcess) {
+        try {
+          const compressedDataUrl = await this.compressImage(file);
+          let photoObj = { url: compressedDataUrl, caption: file.name.replace(/\.[^/.]+$/, '') };
+
+          // Attempt server upload for Supabase Storage if configured
+          try {
+            const uploadRes = await fetch('/api/upload-photo', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: compressedDataUrl, filename: file.name })
+            });
+            if (uploadRes.ok) {
+              const uploadJson = await uploadRes.json();
+              if (uploadJson.url) {
+                photoObj.url = uploadJson.url;
+              }
+            }
+          } catch (netErr) {
+            // Fallback: keep inline data URL
+          }
+
+          this.draft.photos.push(photoObj);
+        } catch (procErr) {
+          console.warn('Failed to process image:', file.name, procErr);
+        }
+      }
+
+      this.renderPhotoReel();
+      this.persistDraft();
+      this.updateStickySummary();
+      if (typeof showToast === 'function') {
+        showToast(`Uploaded ${filesToProcess.length} photo${filesToProcess.length > 1 ? 's' : ''}! 📸`, 'success');
+      }
+    } finally {
+      if (spinner) {
+        spinner.classList.add('hidden');
+        spinner.style.display = 'none';
+      }
+    }
+  },
+
   renderPhotoReel() {
     const reel = document.getElementById('photoPreviewReel');
+    const badge = document.getElementById('photoCountBadge');
+    const photos = this.draft.photos || [];
+
+    if (badge) {
+      badge.innerText = `${photos.length} / 6 photos`;
+      if (photos.length >= 6) {
+        badge.classList.add('text-pink-400');
+      } else {
+        badge.classList.remove('text-pink-400');
+      }
+    }
+
     if (!reel) return;
 
-    reel.innerHTML = (this.draft.photos || []).map((img, idx) => `
-      <div class="relative group rounded-xl overflow-hidden aspect-square border border-slate-700 shadow">
-        <img src="${img}" class="w-full h-full object-cover">
-        <button type="button" onclick="WishCreator.removePhoto(${idx})" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
-      </div>
-    `).join('');
+    if (photos.length === 0) {
+      reel.innerHTML = '';
+      return;
+    }
+
+    reel.innerHTML = photos.map((photo, idx) => {
+      const src = typeof photo === 'string' ? photo : (photo.url || '');
+      return `
+        <div class="relative group rounded-xl overflow-hidden aspect-square border border-slate-700 shadow bg-slate-950">
+          <img src="${src}" class="w-full h-full object-cover">
+          <button type="button" onclick="WishCreator.removePhoto(${idx})" title="Remove photo" class="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow transition">✕</button>
+          <span class="absolute bottom-1 left-1 bg-slate-900/80 px-1.5 py-0.5 rounded text-[10px] text-gray-300">#${idx + 1}</span>
+        </div>
+      `;
+    }).join('');
   },
 
   removePhoto(index) {
-    if (this.draft.photos) {
+    if (this.draft.photos && this.draft.photos.length > index) {
       this.draft.photos.splice(index, 1);
       this.renderPhotoReel();
       this.persistDraft();
+      this.updateStickySummary();
+      if (typeof showToast === 'function') showToast('Photo removed.', 'info');
     }
   },
 

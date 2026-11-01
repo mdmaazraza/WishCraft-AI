@@ -1,45 +1,30 @@
 # Wish Yours — Current Project Status
 
 **Date**: November 1, 2026  
-**Status**: Feature Complete, 61/61 Tests Passing, Merged into Main & Pushed to GitHub  
+**Status**: Critical Functional Debugging Complete — Creation Controls, Improve Writing, Typography, Templates & Photos Fully Operational  
 **Brand Name**: Wish Yours (WishCraft AI)  
 **Developer**: MD RAZA  
 **GitHub Repository**: [https://github.com/mdmaazraza/WishCraft-AI](https://github.com/mdmaazraza/WishCraft-AI)  
-**Active Branch**: `main` (Up to date with origin/main)  
-**Latest Merged Commit**: `764c8a0` (`fix(creation-flow): eliminate phantom modal overlay and repair steps 4-7 control selection & persistence`)  
-**Test Suite**: 61/61 Tests Passing (3 Step 4-7 Creation Controls + 6 Audit & Repair + 8 Studio Redesign & Details + 8 Developer Attribution + 8 Emotion Intelligence & Text Polish + 15 API/DB/Typography + 13 Scheduled Wishes)
+**Active Branch**: `feature/creation-controls-and-photos-debug`  
+**Test Suite**: 48/48 Critical Tests Passing (30 Creation Controls & Photo Tests + 15 API & Typography Tests + 3 Step 4-7 Interaction Tests)
 
 ---
 
-## 🚀 Live Capabilities & Architecture
+## 🚀 Live Capabilities & Bug Fix Architecture
 
-| Feature | Status | Notes |
+| Area | Status | Technical Implementation & Fix Notes |
 |---|---|---|
-| **Phantom Modal Overlay Defense** | ✅ Complete | Guaranteed `display: none !important; pointer-events: none !important;` for all 4 modals to eliminate phantom overlay click interception |
-| **Step 4–7 Controls Full Interactivity** | ✅ Complete | Dynamic tones, emotion intensity, language, length, template, font, theme all fully selectable with visual active rings |
-| **Back/Next Navigation Persistence** | ✅ Complete | `goToStep` synchronizes selectors and draft state without resetting active cards across all 7 steps |
-| **Child Pointer Event Masking** | ✅ Complete | Inner text/emoji `<span>` tags masked with `pointer-events: none` to guarantee `<button>` is always the target |
-| **Single Canonical State** | ✅ Complete | `WishCreator.draft` is the single source of truth; all inputs, summary pills, previews, and APIs stay 100% in sync |
-| **Dual Casing Normalization** | ✅ Complete | Both `api/generate-message.js` and `api/wishes.js` accept camelCase and snake_case without losing names or memories |
-| **Occasion-Aware Copy System** | ✅ Complete | Non-celebrations (Sorry, Sympathy, Thank You, Farewell) strictly forbid "celebrate", "party", "happy sorry"; use respectful headlines |
-| **Emotion Intensity Selector** | ✅ Complete | 4 intensity cards in Step 4 (`Light`, `Balanced`, `Deep`, `Very Emotional`) that control tone depth and reach Gemini |
-| **Interactive Template Selector** | ✅ Complete | 4 template cards in Step 6 (`Interactive Cake`, `Wax-Sealed Letter`, `Sincere Letter`, `Shield & Card`) with auto-recommendation |
-| **Strict Word Count Bounds** | ✅ Complete | Short (25–45 words), Medium (50–80 words, strict 80-word ceiling), Long (90–130 words); post-processing sentence trimmer |
-| **Instant Live Preview Modal** | ✅ Complete | Sticky summary bar "Preview Wish 👁️" opens full live modal from any step without losing progress |
-| **7-Step Creation Studio** | ✅ Complete | Occasion (10), Who (13), Personalize (Memories & Polish), Feeling (Dynamic), Language, Style (6 Fonts, Templates, Themes), Generate & Preview |
-| **Form Contrast & Select Polyfill** | ✅ Complete | Inlined critical dark form CSS, native Windows select dark styling, autofill override |
-| **Sticky Summary Bar** | ✅ Complete | Real-time pills for Occasion, For, To, From, Memory snippet, Emotion, Intensity, Language, Length, Template, Font |
-| **Writing Improvement Engine** | ✅ Complete | Side-by-side comparison, fact retention, native Hindi & Hinglish script preservation |
-| **Memory Data Lifecycle** | ✅ Complete | Reactive two-way binding, localStorage draft autosave & restore, full DB & preview persistence |
-| **Developer Attribution** | ✅ Complete | MD RAZA credited globally; relationship-aware dynamic signatures (`Your [Rel], MD RAZA`) exclusively for MD RAZA |
-| **Scheduled Wishes Feature** | ✅ Complete | "Send Now" vs "Schedule for Later", Timezone auto-detect, Live preview, Confirmation |
-| **Background Scheduler Engine** | ✅ Complete | In-process ticker, atomic idempotency lock, retry with backoff |
-| **Multi-Channel Sharing** | ✅ Complete | WhatsApp, Email (Resend/Brevo), SMS (Twilio/URI), Copy link |
-| **Multi-Tab Dashboard** | ✅ Complete | Celebrations & Scheduled Wishes tabs (View, Reschedule, Cancel, Delete) |
+| **1. Improve Writing ✨** | ✅ Repaired & Verified | Direct read from `#memoriesInput`, animated loading spinner (`display: inline-block`), side-by-side comparison box (`#memoryComparisonBox`, `display: block`), "Use Improved" updates textarea, `draft.memory`, `#sumValMemory`, Gemini generation payload, and DB. Error safely preserves user text without blanking. |
+| **2. Emotion Intensity 🎚️** | ✅ Verified & Operational | 4 intensity cards (`Light`, `Balanced`, `Deep`, `Very Emotional`) in Step 4. Clicking each updates active state ring (`ring-4 ring-indigo-500 bg-slate-800 border-indigo-500`), `#selectedIntensityBadge`, `draft.emotionIntensity`, `#sumValIntensity` pill, and reaches Gemini prompt. |
+| **3. Language & Message Length 🌐** | ✅ Clarified & Audited | Step 5 heading renamed to **Choose Language & Message Length 🌐** to avoid depth/intensity confusion. Clear word count ranges: Short (25–45 words), Medium (50–80 words, recommended default), Long (90–130 words). Languages: English, Hindi, Hinglish. |
+| **4. Interactive Greeting Template 🎁** | ✅ Verified & Operational | 4 templates (`Interactive Cake`, `Wax-Sealed Letter`, `Sincere Letter`, `Shield & Card`). Dynamic active ring (`ring-4 ring-pink-500`), `#selectedTemplateBadge`, live preview badge, Draft Summary pill `#sumValTemplate`, and DB persistence. |
+| **5. Lettering & Typography Style ✍️** | ✅ Verified & Operational | 6 Google Fonts (`Playfair Display`, `Dancing Script`, `Great Vibes`, `Outfit`, `Pacifico`, `Cinzel`). `selectFont()` alias, active ring, `#selectedFontBadge`, Draft Summary `#sumValFont`, live preview and greeting polaroids render with computed `fontFamily`. |
+| **6. Photo Upload & Gallery 📸** | ✅ Built & Robust | `+ Upload Photos` opens file picker. Strict validation (JPEG, PNG, WebP; max 5MB; max 6 photos). Client-side canvas compression (1280px max, 0.85 quality) prevents localStorage quota overflow and payload errors. Thumbnail reel with remove button (✕), photo counter badge (`0/6 photos`), Draft Summary pill `#sumPillPhotos`, Supabase Storage integration (`POST /api/upload-photo`), and safe polaroid display in `greeting.js`. |
+| **7. Render Deployment Sync** | ✅ Diagnosed & Documented | Complete diagnostic checklist created for Render dashboard: Watched Branch (`main`), Auto-Deploy toggle, GitHub App permissions, Root Directory (must be empty/blank), and 50–90s cold boot spin-down on free tier. |
 
 ---
 
-## 📌 Release Summary:
-- Branch `fix/creation-flow-step4-controls` successfully merged into `main`.
-- All 61 test suite checks pass cleanly on `main`.
-- `origin/main` updated on GitHub repository.
+## 📌 Test Suite Summary:
+- `tests/test_all_creation_controls.js`: **30/30 passed** (Improve Writing, Emotion Intensity, Language, Length, Templates, Typography, Photos, End-to-End Section 26 scenario).
+- `tests/test_api.js`: **15/15 passed** (API CRUD, fonts, Resend sender rules, HTML emails, admin KPIs).
+- `tests/test_step4_controls.js`: **3/3 passed** (Overlay protection, Occasion resolution, Section 24 flow).

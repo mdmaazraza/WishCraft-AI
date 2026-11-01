@@ -171,6 +171,9 @@
           <button type="button" onclick="WishCreator.goToStep(6)" id="sumPillFont" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-fuchsia-300 border border-slate-700 font-semibold flex items-center gap-1 transition">
             <span>Font:</span> <span id="sumValFont">Playfair</span> ✏️
           </button>
+          <button type="button" onclick="WishCreator.goToStep(6)" id="sumPillPhotos" class="px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 font-semibold items-center gap-1 transition hidden">
+            <span>Photos:</span> <span id="sumValPhotos">0</span> 📸
+          </button>
         </div>
         <button type="button" onclick="WishCreator.openPreviewModal()" class="px-3.5 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold whitespace-nowrap shadow-sm text-xs transition flex items-center gap-1.5">
           <span>👁️</span> <span>Preview Wish</span>
@@ -568,8 +571,8 @@
         <section id="stepSection5" style="display: none;">
           <div class="text-center mb-8">
             <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Step 5 of 7</span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Choose Language & Depth 🌐</h2>
-            <p class="text-gray-400 text-sm mt-1">Select the dialect that sounds most natural to your relationship.</p>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Choose Language & Message Length 🌐</h2>
+            <p class="text-gray-400 text-sm mt-1">Select your preferred dialect and desired greeting length.</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -613,15 +616,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button type="button" data-length="short" class="length-btn p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition hover:border-pink-500">
                 <span class="font-bold text-xs text-white block">⚡ Short & Punchy</span>
-                <span class="text-[10px] text-gray-400">1-2 impactful sentences</span>
+                <span class="text-[10px] text-gray-400">25–45 words • Crisp & punchy</span>
               </button>
               <button type="button" data-length="medium" class="length-btn ring-4 ring-pink-500 bg-slate-800 p-3 rounded-xl border border-slate-700 text-center transition">
                 <span class="font-bold text-xs text-white block">💖 Standard Heartfelt</span>
-                <span class="text-[10px] text-gray-400">Balanced 3-4 warm sentences</span>
+                <span class="text-[10px] text-pink-300 font-medium">50–80 words • Recommended default</span>
               </button>
               <button type="button" data-length="long" class="length-btn p-3 rounded-xl border border-slate-700 bg-slate-900 text-center transition hover:border-pink-500">
                 <span class="font-bold text-xs text-white block">📜 Long & Deeply Poetic</span>
-                <span class="text-[10px] text-gray-400">Full emotional love letter</span>
+                <span class="text-[10px] text-gray-400">90–130 words • Deep love letter</span>
               </button>
             </div>
           </div>
@@ -755,10 +758,14 @@
                 <label class="block text-xs font-bold text-gray-300 uppercase">Attach Memory Photos (Optional up to 6)</label>
                 <p class="text-xs text-gray-400">Photos will render as interactive polaroids on the recipient's webpage.</p>
               </div>
-              <label class="cursor-pointer px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-pink-400 transition">
-                <span>+ Upload Photos</span>
-                <input type="file" id="photoUploadInput" accept="image/*" multiple class="hidden">
-              </label>
+              <div class="flex items-center gap-2">
+                <span id="photoCountBadge" class="text-xs text-gray-400 font-medium">0 / 6 photos</span>
+                <label id="uploadPhotosBtnLabel" class="cursor-pointer px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-pink-400 transition flex items-center gap-1.5">
+                  <span id="uploadPhotosSpinner" class="hidden animate-spin">⏳</span>
+                  <span>+ Upload Photos</span>
+                  <input type="file" id="photoUploadInput" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
+                </label>
+              </div>
             </div>
             <div id="photoPreviewReel" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
           </div>
